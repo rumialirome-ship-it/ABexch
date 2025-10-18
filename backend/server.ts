@@ -1,16 +1,26 @@
 
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
 import { db } from './db';
 import { UserRole } from './types';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // --- Middleware ---
-app.use(cors());
-app.use(bodyParser.json());
+// Configure CORS to use the origin from the .env file
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// FIX: Replaced deprecated `bodyParser.json()` with the built-in `express.json()` middleware. This resolves type conflicts that caused errors with Express's Request and Response objects.
+app.use(express.json());
 
 // Simple Auth Middleware
 const auth = (roles: UserRole[]) => (req: Request, res: Response, next: NextFunction) => {

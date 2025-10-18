@@ -17,24 +17,50 @@ Before you begin, ensure you have the following:
 
 ### 🚨 IMPORTANT SECURITY NOTICE 🚨
 
-You previously provided an API key in your request. **NEVER** hard-code API keys, passwords, or any other secrets directly into your source code or commit them to a Git repository.
+**NEVER** hard-code API keys, passwords, or any other secrets directly into your source code or commit them to a Git repository.
 
-The best practice is to use **environment variables**. The backend application should be configured to read secrets from `process.env`. On your server, you can manage these variables using a `.env` file (which must be listed in `.gitignore`) or by passing them directly to PM2.
-
-**This guide will assume secrets are managed securely and not hard-coded.**
+The best practice is to use **environment variables**. The backend application is configured to read secrets from `process.env`. On your server, you will create a `.env` file to manage these variables. This file **must not** be committed to your repository.
 
 ---
 
 ## Deployment Process Overview
 
-The deployment involves three main parts:
-1.  **Deploying the Backend:** Running the Node.js/Express API server using PM2.
-2.  **Building and Deploying the Frontend:** Placing the static React application files where Nginx can serve them.
-3.  **Configuring Nginx:** Setting up Nginx to serve the frontend and act as a reverse proxy to route API requests to the backend.
+The deployment involves four main parts:
+1.  **Setting up Environment Variables:** Securely configuring your backend.
+2.  **Deploying the Backend:** Running the Node.js/Express API server using PM2.
+3.  **Building and Deploying the Frontend:** Placing the static React application files where Nginx can serve them.
+4.  **Configuring Nginx:** Setting up Nginx to serve the frontend and act as a reverse proxy to route API requests to the backend.
 
-### Step 1: Deploy the Backend
+### Step 1: Set Up Environment Variables
 
-First, we'll set up and run the backend API server.
+On your server, you need to create a `.env` file inside the `backend` directory. This file will hold all your production-specific configuration and secrets.
+
+1.  **Navigate to the backend directory:**
+    ```bash
+    cd <your_repository_folder>/backend
+    ```
+
+2.  **Create the `.env` file from the example:**
+    A `.env.example` file is provided as a template. Copy it to create your local `.env` configuration file.
+    ```bash
+    cp .env.example .env
+    ```
+
+3.  **Edit the `.env` file:**
+    Open the file in a text editor like `nano` and add your production values.
+    ```bash
+    nano .env
+    ```
+    It is **critical** that you set the following variables:
+    - `JWT_SECRET`: You must generate a strong, random secret. Use this command in your terminal to create one, then copy the output into the file:
+      ```bash
+      openssl rand -base64 32
+      ```
+    - `CORS_ORIGIN`: This must be the exact URL of your frontend application (e.g., `https://abexch.live`).
+
+### Step 2: Deploy the Backend
+
+Now, we'll set up and run the backend API server.
 
 1.  **SSH into your server:**
     ```bash
@@ -63,7 +89,7 @@ First, we'll set up and run the backend API server.
     This creates a `dist` directory with the compiled `.js` files.
 
 5.  **Run the backend with PM2:**
-    PM2 will manage your backend process, keeping it running continuously and restarting it if it crashes.
+    PM2 will manage your backend process, keeping it running continuously and restarting it if it crashes. `dotenv` will automatically load the `.env` file we created.
     ```bash
     pm2 start dist/server.js --name "ababa-backend"
     ```
@@ -83,7 +109,7 @@ First, we'll set up and run the backend API server.
     pm2 save
     ```
 
-### Step 2: Build and Deploy the Frontend
+### Step 3: Build and Deploy the Frontend
 
 The frontend needs to be "built" into static HTML, CSS, and JavaScript files that Nginx can serve directly. Since the project doesn't have a root `package.json` with a build script, you will need a tool like `esbuild` to bundle the application.
 
@@ -123,7 +149,7 @@ The frontend needs to be "built" into static HTML, CSS, and JavaScript files tha
     sudo cp dist/bundle.js /var/www/abexch.live/html/
     ```
 
-### Step 3: Configure Nginx
+### Step 4: Configure Nginx
 
 Nginx will serve your frontend files and forward any API requests (those starting with `/api`) to your backend server running on port 3001.
 
@@ -195,7 +221,7 @@ Nginx will serve your frontend files and forward any API requests (those startin
     sudo systemctl restart nginx
     ```
 
-### Step 4: Set up SSL with Let's Encrypt (Highly Recommended)
+### Step 5: Set up SSL with Let's Encrypt (Highly Recommended)
 
 1.  **Install Certbot:**
     ```bash
