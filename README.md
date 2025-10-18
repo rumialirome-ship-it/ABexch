@@ -1,247 +1,351 @@
-# A-BABA EXCHANGE - Deployment Guide
+# A-BABA EXCHANGE
 
-This guide provides step-by-step instructions to deploy the A-BABA EXCHANGE application on a Virtual Private Server (VPS) running Ubuntu with Nginx.
-
-## Prerequisites
-
-Before you begin, ensure you have the following:
-- A VPS running Ubuntu 20.04 or later.
-- A domain name (e.g., `abexch.live`) pointed to your VPS's IP address.
-- SSH access to your VPS with `sudo` privileges.
-- Node.js (v18 or later) and npm installed on your server.
-- Git installed on your server.
-- Nginx installed (`sudo apt install nginx`).
-- PM2, a process manager for Node.js, installed globally (`sudo npm install -g pm2`).
+A visually striking, modern web application for the A-BABA EXCHANGE online betting platform. It features a neon-inspired UI and facilitates 2-Digit and 1-Digit games with a multi-role system for Admins, Dealers, and Users.
 
 ---
 
-### 🚨 IMPORTANT SECURITY NOTICE 🚨
+## Technology Stack
 
-**NEVER** hard-code API keys, passwords, or any other secrets directly into your source code or commit them to a Git repository.
-
-The best practice is to use **environment variables**. The backend application is configured to read secrets from `process.env`. On your server, you will create a `.env` file to manage these variables. This file **must not** be committed to your repository.
+-   **Frontend:** React, TypeScript, Tailwind CSS, React Router
+-   **Backend:** Node.js, Express, TypeScript
+-   **Process Manager:** PM2
+-   **Web Server / Reverse Proxy:** Nginx
 
 ---
 
-## Deployment Process Overview
+## Project Structure
 
-The deployment involves four main parts:
-1.  **Setting up Environment Variables:** Securely configuring your backend.
-2.  **Deploying the Backend:** Running the Node.js/Express API server using PM2.
-3.  **Building and Deploying the Frontend:** Placing the static React application files where Nginx can serve them.
-4.  **Configuring Nginx:** Setting up Nginx to serve the frontend and act as a reverse proxy to route API requests to the backend.
+```
+.
+├── backend/
+│   ├── dist/                 # Compiled JavaScript output
+│   ├── node_modules/         # Backend dependencies
+│   ├── .env.example          # Environment variable template
+│   ├── .env                  # (Git-ignored) Local/Production environment variables
+│   ├── db.ts                 # In-memory database logic and business rules
+│   ├── package.json          # Backend npm dependencies and scripts
+│   ├── server.ts             # Express server setup and API routes
+│   └── tsconfig.json         # TypeScript configuration for the backend
+├── assets/
+│   └── ...                   # SVG logos and other static assets
+├── components/
+│   └── ...                   # Shared React components (UI, layout, etc.)
+├── contexts/
+│   └── ...                   # React context providers (Auth, Notifications)
+├── pages/
+│   └── ...                   # Top-level page components for each route
+├── services/
+│   ├── api.ts                # Frontend functions for making API calls
+│   └── realtime.ts           # Frontend service for polling backend state
+├── types/
+│   └── index.ts              # Shared TypeScript types and enums
+├── utils/
+│   └── formatters.ts         # Utility functions for formatting data
+├── App.tsx                   # Main React application component with routing
+├── index.html                # The single HTML page for the SPA
+├── index.tsx                 # Entry point for the React application
+└── README.md                 # This file
+```
+
+---
+
+## 1. Local Development Setup
+
+Follow these instructions to run the application on your local machine for development and testing.
+
+### Prerequisites
+
+-   [Node.js](https://nodejs.org/) (v18 or later)
+-   [npm](https://www.npmjs.com/) (usually included with Node.js)
+
+### Backend Setup
+
+1.  **Navigate to the Backend Directory:**
+    ```bash
+    cd backend
+    ```
+
+2.  **Install Dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set Up Environment Variables:**
+    Copy the example environment file to create your local configuration.
+    ```bash
+    cp .env.example .env
+    ```
+    Now, open the newly created `.env` file and configure the variables for your local setup.
+    ```ini
+    # .env
+    PORT=3001
+    NODE_ENV=development
+    JWT_SECRET=your_super_secret_local_key # Generate a random string
+    CORS_ORIGIN=http://localhost:8080 # Or your frontend's local address
+    ```
+    *Note: `JWT_SECRET` can be any random string for local development.*
+
+4.  **Run the Backend Development Server:**
+    This command uses `nodemon` to automatically restart the server whenever you make changes to the code.
+    ```bash
+    npm run dev
+    ```
+    The backend API will be running at `http://localhost:3001`.
+
+### Frontend Setup
+
+The frontend is a static application that makes calls to the backend API.
+
+1.  **Navigate to the Project Root:**
+    If you are in the `backend` directory, go back to the root.
+    ```bash
+    cd ..
+    ```
+
+2.  **Serve the Frontend:**
+    You need a simple static file server to serve `index.html`. The easiest way is using the `serve` package.
+    ```bash
+    # Install serve globally if you don't have it
+    # sudo npm install -g serve
+
+    # Serve the current directory on port 8080 (or any other port)
+    serve -l 8080
+    ```
+
+3.  **Access the Application:**
+    Open your web browser and navigate to **`http://localhost:8080`**. The application should load, and it will be able to communicate with your backend running on port 3001.
+
+---
+
+## 2. Production Deployment Guide
+
+This guide provides step-by-step instructions to deploy the application on a Virtual Private Server (VPS) running Ubuntu with Nginx.
+
+### Prerequisites
+
+-   A VPS running Ubuntu 20.04 or later.
+-   A domain name (e.g., `abexch.live`) pointed to your VPS's IP address.
+-   SSH access to your VPS with `sudo` privileges.
+-   Git installed (`sudo apt install git`).
+-   Node.js (v18+) and npm installed.
+-   Nginx installed (`sudo apt install nginx`).
+-   PM2 installed globally (`sudo npm install -g pm2`).
 
 ### Step 1: Set Up Environment Variables
 
-On your server, you need to create a `.env` file inside the `backend` directory. This file will hold all your production-specific configuration and secrets.
+On your server, create a secure `.env` file inside the `backend` directory.
 
 1.  **Navigate to the backend directory:**
     ```bash
     cd <your_repository_folder>/backend
     ```
 
-2.  **Create the `.env` file from the example:**
-    A `.env.example` file is provided as a template. Copy it to create your local `.env` configuration file.
+2.  **Create the `.env` file:**
     ```bash
     cp .env.example .env
     ```
 
-3.  **Edit the `.env` file:**
-    Open the file in a text editor like `nano` and add your production values.
-    ```bash
-    nano .env
-    ```
-    It is **critical** that you set the following variables:
-    - `JWT_SECRET`: You must generate a strong, random secret. Use this command in your terminal to create one, then copy the output into the file:
-      ```bash
-      openssl rand -base64 32
-      ```
-    - `CORS_ORIGIN`: This must be the exact URL of your frontend application (e.g., `https://abexch.live`).
+3.  **Edit the `.env` file (`nano .env`) and set your production values:**
 
-### Step 2: Deploy the Backend
+    ```ini
+    # The port your Node.js app will run on. Nginx will forward requests to this port.
+    PORT=3001
 
-Now, we'll set up and run the backend API server.
+    # Set the environment to production.
+    NODE_ENV=production
 
-1.  **SSH into your server:**
-    ```bash
-    ssh your_username@your_server_ip
+    # A strong, unique secret for signing JSON Web Tokens (JWT).
+    # Generate one with: openssl rand -base64 32
+    JWT_SECRET=paste_your_strong_random_secret_here
+
+    # CRITICAL: This is a security feature. Set it to your exact frontend domain.
+    # This tells the backend to only accept API requests from your website.
+    CORS_ORIGIN=https://abexch.live
     ```
 
-2.  **Clone your repository:**
-    If you haven't already, clone your project onto the server.
-    ```bash
-    git clone <your_repository_url>
-    cd <your_repository_folder>
-    ```
+### Step 2: Deploy the Backend with PM2
 
-3.  **Install backend dependencies:**
-    Navigate to the `backend` directory and install the required Node.js packages.
+1.  **Clone your repository** on the server if you haven't already.
+2.  **Install backend dependencies:**
     ```bash
-    cd backend
+    cd <your_repository_folder>/backend
     npm install
     ```
-
-4.  **Build the backend code:**
-    The backend is written in TypeScript and needs to be compiled into JavaScript.
+3.  **Build the TypeScript code:**
     ```bash
     npm run build
     ```
-    This creates a `dist` directory with the compiled `.js` files.
-
-5.  **Run the backend with PM2:**
-    PM2 will manage your backend process, keeping it running continuously and restarting it if it crashes. `dotenv` will automatically load the `.env` file we created.
+4.  **Start the server with PM2:**
+    This command starts your app, names the process "ababa-backend", and ensures it restarts automatically.
     ```bash
     pm2 start dist/server.js --name "ababa-backend"
     ```
-    Your backend is now running on `http://localhost:3001`. This port does not conflict with your other application on port 5000.
-
-6.  **Verify the backend is running:**
+5.  **Verify and Save the Process:**
     ```bash
-    pm2 list
-    # You should see 'ababa-backend' with a status of 'online'.
-    # You can view logs with: pm2 logs ababa-backend
-    ```
-
-7.  **Enable PM2 to start on server reboot:**
-    ```bash
-    pm2 startup
-    # Follow the instructions provided by the command to complete setup.
-    pm2 save
+    pm2 list          # Check that 'ababa-backend' is online
+    pm2 startup       # Generates a command to run, enabling PM2 on server boot
+    # (run the generated command)
+    pm2 save          # Saves the current process list for reboot
     ```
 
 ### Step 3: Build and Deploy the Frontend
 
-The frontend needs to be "built" into static HTML, CSS, and JavaScript files that Nginx can serve directly. Since the project doesn't have a root `package.json` with a build script, you will need a tool like `esbuild` to bundle the application.
-
-1.  **Install `esbuild` globally (if not already installed):**
+1.  **Install `esbuild` globally on your server:**
     ```bash
     sudo npm install -g esbuild
     ```
-
-2.  **Navigate to the project root directory:**
-    ```bash
-    # From the 'backend' directory
-    cd .. 
-    ```
-
+2.  **Navigate to the project root directory.**
 3.  **Build the frontend application:**
-    Run the following command to bundle `index.tsx` into a single JavaScript file named `bundle.js`.
+    This bundles your React app into a single production-ready JavaScript file.
     ```bash
-    esbuild index.tsx --bundle --outfile=dist/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV='\"production\"'
+    esbuild index.tsx --bundle --outfile=dist/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV='\"production\"' --minify
     ```
-    This will create a `dist` directory containing your `bundle.js` file.
-
 4.  **Update `index.html` to use the bundle:**
-    You need to change the script tag in `index.html` to load the bundled file instead of the source `tsx` file.
-    Open `index.html` and change the last script tag from:
-    `<script type="module" src="/index.tsx"></script>`
-    to:
-    `<script src="/bundle.js"></script>`
-
+    Open `index.html` and change the final `<script>` tag:
+    -   **From:** `<script type="module" src="/index.tsx"></script>`
+    -   **To:**   `<script src="/bundle.js" defer></script>`
 5.  **Move the build files to the Nginx web root:**
-    Create a directory for your site and copy the necessary static files into it.
     ```bash
-    # Create the directory
+    # Create the directory for your site
     sudo mkdir -p /var/www/abexch.live/html
 
-    # Copy the modified index.html and the bundled JS
+    # Copy the necessary files
     sudo cp index.html /var/www/abexch.live/html/
     sudo cp dist/bundle.js /var/www/abexch.live/html/
     ```
 
-### Step 4: Configure Nginx
-
-Nginx will serve your frontend files and forward any API requests (those starting with `/api`) to your backend server running on port 3001.
+### Step 4: Configure Nginx as a Reverse Proxy
 
 1.  **Create a new Nginx configuration file:**
     ```bash
     sudo nano /etc/nginx/sites-available/abexch.live
     ```
-
-2.  **Paste the following configuration into the file.** This configuration handles both serving the static frontend and reverse-proxying API calls.
-
+2.  **Paste the following configuration.** Comments explain each part.
     ```nginx
     server {
         listen 80;
         server_name abexch.live www.abexch.live;
 
-        # Redirect all HTTP traffic to HTTPS (recommended after setting up SSL)
+        # This block is for initial setup and SSL certificate generation.
+        # It will redirect all HTTP traffic to HTTPS once SSL is enabled.
         location / {
-            return 301 https://$host$request_uri;
+            return 310 https://$host$request_uri;
         }
     }
 
     server {
-        # If you set up SSL, change this line to: listen 443 ssl;
+        # This is the main server block for your application.
+        # Update this to 'listen 443 ssl http2;' after setting up SSL.
         listen 443 ssl http2;
         server_name abexch.live www.abexch.live;
 
-        # SSL Configuration (Certbot will manage this)
+        # --- SSL Configuration (Certbot will manage this) ---
         # ssl_certificate /etc/letsencrypt/live/abexch.live/fullchain.pem;
         # ssl_certificate_key /etc/letsencrypt/live/abexch.live/privkey.pem;
         # include /etc/letsencrypt/options-ssl-nginx.conf;
         # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-        # Path to your frontend files
+        # Path to your static frontend files.
         root /var/www/abexch.live/html;
         index index.html;
 
-        # Location block for the API reverse proxy
-        # This forwards any request starting with /api/ to your backend server.
+        # --- Reverse Proxy for API Calls ---
+        # This rule forwards any request starting with /api/ to your backend server.
         location /api/ {
-            proxy_pass http://localhost:3001/api/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
+            proxy_pass http://localhost:3001/api/; # Note the trailing slash
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_cache_bypass $http_upgrade;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
         }
 
-        # Location block to serve the static frontend files (React SPA)
+        # --- Rule for the React Single-Page Application ---
+        # This ensures that refreshing a page like /user/dashboard works correctly.
+        # It tries to find a file, then a directory, and if not found, falls back to index.html.
         location / {
             try_files $uri $uri/ /index.html;
         }
     }
     ```
-
-3.  **Enable the site and test the configuration:**
+3.  **Enable the site and restart Nginx:**
     ```bash
-    # Create a symbolic link to enable the site
     sudo ln -s /etc/nginx/sites-available/abexch.live /etc/nginx/sites-enabled/
-
-    # Test for syntax errors
-    sudo nginx -t
-    ```
-    If the test is successful, restart Nginx.
-
-4.  **Restart Nginx to apply the changes:**
-    ```bash
+    sudo nginx -t          # Test configuration for errors
     sudo systemctl restart nginx
     ```
 
-### Step 5: Set up SSL with Let's Encrypt (Highly Recommended)
+### Step 5: Secure with SSL (Let's Encrypt)
 
-1.  **Install Certbot:**
+1.  **Ensure your firewall allows HTTPS traffic:**
+    ```bash
+    sudo ufw allow 'Nginx Full'
+    ```
+2.  **Install Certbot:**
     ```bash
     sudo apt update
     sudo apt install certbot python3-certbot-nginx
     ```
-
-2.  **Obtain and install the SSL certificate:**
-    Certbot will automatically edit your Nginx configuration file to install the certificate and set up HTTPS.
+3.  **Obtain and install the SSL certificate:**
+    Certbot will automatically edit your Nginx config.
     ```bash
     sudo certbot --nginx -d abexch.live -d www.abexch.live
     ```
-    Follow the on-screen prompts. Choose the option to **redirect all HTTP traffic to HTTPS**.
-
-3.  **Verify auto-renewal:**
-    Certbot sets up a cron job to automatically renew your certificate. You can test it with:
-    ```bash
-    sudo certbot renew --dry-run
-    ```
+    When prompted, choose to **redirect all HTTP traffic to HTTPS**.
 
 ---
 
-**Congratulations!** Your A-BABA EXCHANGE application should now be live, secure, and accessible at `https://abexch.live`.
+## 3. API Endpoint Documentation
+
+All endpoints are prefixed with `/api`.
+
+### Public Routes
+
+| Method | Endpoint         | Description                               |
+| :----- | :--------------- | :---------------------------------------- |
+| `POST` | `/login`         | Authenticates a user, dealer, or admin.   |
+| `GET`  | `/results`       | Fetches all declared draw results.        |
+
+### User Routes
+
+| Method | Endpoint                 | Description                               |
+| :----- | :----------------------- | :---------------------------------------- |
+| `GET`  | `/users/:userId/bets`    | Fetches the bet history for a user.       |
+| `GET`  | `/users/:userId/transactions` | Fetches the transaction history for a user. |
+| `POST` | `/bets`                  | Places one or more new bets.              |
+
+### Dealer Routes (Requires Dealer Auth)
+
+| Method | Endpoint                         | Description                               |
+| :----- | :------------------------------- | :---------------------------------------- |
+| `GET`  | `/dealer/users`                  | Gets all users managed by the dealer.     |
+| `POST` | `/dealer/users`                  | Creates a new user under the dealer.      |
+| `POST` | `/dealer/users/:userId/credit`   | Adds credit to a user's wallet.           |
+| `GET`  | `/dealer/bets`                   | Fetches all bets placed by the dealer's users. |
+| `POST` | `/dealer/top-up`                 | Submits a wallet top-up request to the admin. |
+| `GET`  | `/dealer/commissions/pending`    | Gets pending commissions for the dealer.  |
+
+### Admin Routes (Requires Admin Auth)
+
+| Method | Endpoint                         | Description                               |
+| :----- | :------------------------------- | :---------------------------------------- |
+| `GET`  | `/admin/users`                   | Gets all users on the platform.           |
+| `GET`  | `/admin/dealers`                 | Gets all dealers on the platform.         |
+| `POST` | `/admin/dealers`                 | Creates a new dealer.                     |
+| `POST` | `/admin/users/:userId/credit`    | Adds credit directly to a user's wallet.  |
+| `POST` | `/admin/dealers/:dealerId/credit` | Adds credit to a dealer's wallet.         |
+| `POST` | `/admin/draws`                   | Declares winning numbers and settles bets. |
+| `GET`  | `/admin/commissions/pending`     | Gets all pending commissions.             |
+| `POST` | `/admin/commissions/:id/approve` | Approves a specific commission.           |
+| `GET`  | `/admin/prizes/pending`          | Gets all pending prize payouts.           |
+| `POST` | `/admin/prizes/:id/approve`      | Approves a specific prize payout.         |
+| `GET`  | `/admin/top-ups/pending`         | Gets all pending dealer top-up requests.  |
+| `POST` | `/admin/top-ups/:id/approve`     | Approves a specific top-up request.       |
+| `POST` | `/admin/debit`                   | Debits funds from a user/dealer's wallet. |
+
+### Universal Authenticated Routes
+
+| Method | Endpoint         | Description                   |
+| :----- | :--------------- | :---------------------------- |
+| `GET`  | `/users/:userId` | Fetches details for any user. |
