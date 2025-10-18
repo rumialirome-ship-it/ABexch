@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150" width="400" height="150">
+  <defs>
+    <filter id="glow-lime" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feFlood flood-color="#CCFF00" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#33FFFF" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <style>
+    .a-baba-text {
+        font-family: 'Poppins', sans-serif;
+        text-anchor: middle;
+        text-transform: uppercase;
+    }
+  </style>
+  <g class="a-baba-text">
+    <text x="200" y="80" fill="#CCFF00" font-size="70" font-weight="700" letter-spacing="5" style="filter: url(#glow-lime);">A-BABA</text>
+    <text x="200" y="125" fill="#E1E1F0" font-size="35" font-weight="700" letter-spacing="8" style="filter: url(#glow-cyan);">Exchange</text>
+  </g>
+</svg>
