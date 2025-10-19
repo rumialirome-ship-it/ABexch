@@ -41,7 +41,7 @@ const AddUserPage: React.FC = () => {
         try {
             const newUser = await addUser(dealer, {
                 username: formData.name,
-                password: formData.password,
+                password: formData.password || undefined, // Send undefined if empty to allow default password
                 phone: formData.contactNumber,
                 city: formData.cityArea,
                 initial_deposit: parseFloat(formData.initialDeposit) || 0,
@@ -66,7 +66,7 @@ const AddUserPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {/* Left Column */}
                     <div className="space-y-6">
-                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" required />
+                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" />
                         <InputGroup label="Name" name="name" value={formData.name} onChange={handleChange} required />
                         <InputGroup label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleChange} required />
                         <InputGroup label="City / Area" name="cityArea" value={formData.cityArea} onChange={handleChange} />

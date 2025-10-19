@@ -24,19 +24,25 @@ const ResultsPage: React.FC = () => {
     loadResults();
   }, []);
 
-  const handleResultUpdate = useCallback((newResult: DrawResult) => {
+  const handleResultUpdate = useCallback((updatedResult: DrawResult) => {
     setResults(currentResults => {
-        if (currentResults.some(r => r.id === newResult.id)) {
-            return currentResults;
+        const index = currentResults.findIndex(r => r.id === updatedResult.id);
+        if (index !== -1) {
+            // Update existing result
+            const newResults = [...currentResults];
+            newResults[index] = updatedResult;
+            return newResults;
+        } else {
+            // Add new result and re-sort
+            return [updatedResult, ...currentResults].sort((a, b) => new Date(b.declared_at).getTime() - new Date(a.declared_at).getTime());
         }
-        return [newResult, ...currentResults];
     });
 
-    setHighlightedRows(prev => new Set(prev).add(newResult.id));
+    setHighlightedRows(prev => new Set(prev).add(updatedResult.id));
     setTimeout(() => {
         setHighlightedRows(prev => {
             const next = new Set(prev);
-            next.delete(newResult.id);
+            next.delete(updatedResult.id);
             return next;
         });
     }, 2500);

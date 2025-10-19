@@ -64,13 +64,16 @@ class RealtimeService {
                 this.lastBetsState = currentBetsState;
             }
 
-            // Check for new draws
+            // Check for new or updated draws
             const currentDraws = await fetchAllDrawsState();
             const currentDrawsState = JSON.stringify(currentDraws);
             if (currentDrawsState !== this.lastDrawsState) {
                 const lastDraws: DrawResult[] = JSON.parse(this.lastDrawsState);
-                const newDraws = currentDraws.filter(d => !lastDraws.some(ld => ld.id === d.id));
-                newDraws.forEach(draw => this.notify('result-update', draw));
+                const changedDraws = currentDraws.filter(currentDraw => {
+                    const oldDraw = lastDraws.find(d => d.id === currentDraw.id);
+                    return !oldDraw || JSON.stringify(oldDraw) !== JSON.stringify(currentDraw);
+                });
+                changedDraws.forEach(draw => this.notify('result-update', draw));
                 this.lastDrawsState = currentDrawsState;
             }
 

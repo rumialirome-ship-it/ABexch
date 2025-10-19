@@ -1,15 +1,13 @@
 
-
-
+// @google/genai-dev-tool: Fix: Import types FIRST for side-effects to enable Express.Request type augmentation.
+// This allows the global types to be patched before any other module consumes them.
+import './types';
 
 import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { apiRouter } from './routes';
 import { globalErrorHandler } from './middleware/errorHandler';
-
-// Import types for side-effects to enable Express.Request type augmentation
-import './types';
 
 // Load environment variables
 dotenv.config();

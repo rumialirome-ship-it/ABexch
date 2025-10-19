@@ -147,7 +147,7 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
             await addDealer(admin, {
                 username,
                 phone,
-                password,
+                password: password || undefined, // Send undefined if empty to allow default password
                 city,
                 initial_deposit: parseFloat(initialDeposit) || 0,
                 commission_rate: parseFloat(commissionRate) || 0,
