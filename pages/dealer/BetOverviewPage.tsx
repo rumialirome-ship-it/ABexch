@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -29,9 +30,8 @@ const BetOverviewPage: React.FC = () => {
     if (user && user.role === 'dealer') {
       const loadBets = async () => {
         try {
-          // FIX: Pass the full user object instead of just the ID.
           const data = await fetchBetsByDealer(user);
-          setBets(data.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+          setBets(data.sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
         } catch (error) {
           console.error("Failed to fetch bets for dealer", error);
         } finally {
@@ -86,9 +86,9 @@ const BetOverviewPage: React.FC = () => {
     return [...bets]
         .filter(bet => {
             if (filters.status && bet.status !== filters.status) return false;
-            if (filters.gameType && bet.gameType !== filters.gameType) return false;
+            if (filters.gameType && bet.game_type !== filters.gameType) return false;
             
-            const betDate = new Date(bet.createdAt);
+            const betDate = new Date(bet.created_at);
             if (filters.startDate) {
                 const startDate = new Date(filters.startDate);
                 startDate.setHours(0, 0, 0, 0);
@@ -106,7 +106,7 @@ const BetOverviewPage: React.FC = () => {
             const order = sortOrder === 'asc' ? 1 : -1;
 
             if (sortField === 'createdAt') {
-                return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * -order;
+                return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * -order;
             }
             if (sortField === 'stake') {
                 return (a.stake - b.stake) * order;
@@ -152,13 +152,13 @@ const BetOverviewPage: React.FC = () => {
 
                 return (
                     <tr key={bet.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-secondary/5 transition-colors duration-300`}>
-                      <td className="py-4 px-4 font-mono">{bet.userId}</td>
-                      <td className="py-4 px-4">{bet.drawLabel}</td>
-                      <td className="py-4 px-4">{bet.gameType}</td>
+                      <td className="py-4 px-4 font-mono">{bet.user_id}</td>
+                      <td className="py-4 px-4">{bet.draw_label}</td>
+                      <td className="py-4 px-4">{bet.game_type}</td>
                       <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{bet.number}</td>
                       <td className="py-4 px-4 text-right">{formatCurrency(bet.stake)}</td>
                       <td className="py-4 px-4 text-center"><BetStatusBadge status={bet.status} animationClassName={badgeAnimationClass} /></td>
-                      <td className="py-4 px-4 text-sm text-text-secondary">{new Date(bet.createdAt).toLocaleString()}</td>
+                      <td className="py-4 px-4 text-sm text-text-secondary">{new Date(bet.created_at).toLocaleString()}</td>
                     </tr>
                 );
               })}

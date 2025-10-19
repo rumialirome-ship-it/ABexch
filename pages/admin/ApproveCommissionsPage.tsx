@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingCommissions, approveCommission } from '../../services/api';
@@ -16,7 +17,6 @@ const ApproveCommissionsPage: React.FC = () => {
         if (!admin) return;
         setLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             const data = await fetchPendingCommissions(admin);
             setCommissions(data);
         } catch (error) {
@@ -32,14 +32,12 @@ const ApproveCommissionsPage: React.FC = () => {
     
     const handleApprove = async (id: string) => {
         if (!admin) return;
-        // FIX: Pass the admin user object to the API call.
         await approveCommission(admin, id);
         loadCommissions();
     };
     
     const handleApproveAll = async () => {
         if (!admin) return;
-        // FIX: Pass the admin user object to each API call.
         await Promise.all(commissions.map(c => approveCommission(admin, c.id)));
         loadCommissions();
     };
@@ -72,9 +70,9 @@ const ApproveCommissionsPage: React.FC = () => {
                         <tbody>
                             {commissions.map((c) => (
                                 <tr key={c.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-tertiary/5 transition-colors duration-300">
-                                    <td className="py-3 px-4 font-mono">{c.recipientId}</td>
-                                    <td className="py-3 px-4 capitalize">{c.recipientType}</td>
-                                    <td className="py-3 px-4">{c.drawLabel}</td>
+                                    <td className="py-3 px-4 font-mono">{c.recipient_id}</td>
+                                    <td className="py-3 px-4 capitalize">{c.recipient_type}</td>
+                                    <td className="py-3 px-4">{c.draw_label}</td>
                                     <td className="py-3 px-4 text-right font-mono">{formatCurrency(c.amount)}</td>
                                     <td className="py-3 px-4 text-center">
                                         <button onClick={() => handleApprove(c.id)} className="bg-accent-primary/80 text-black font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-primary hover:-translate-y-0.5 active:scale-95">

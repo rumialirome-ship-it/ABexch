@@ -58,7 +58,7 @@ const TransactionHistoryPage: React.FC = () => {
         const direction = order === 'asc' ? 1 : -1;
 
         if (field === 'date') {
-          return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * direction;
+          return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction;
         }
         if (field === 'amount') {
           return (a.amount - b.amount) * direction;
@@ -127,10 +127,10 @@ const TransactionHistoryPage: React.FC = () => {
                 <tbody>
                   {filteredAndSortedTransactions.map((t) => (
                     <tr key={t.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-primary/5">
-                      <td className="py-4 px-4 text-sm text-text-secondary whitespace-nowrap">{new Date(t.createdAt).toLocaleString()}</td>
+                      <td className="py-4 px-4 text-sm text-text-secondary whitespace-nowrap">{new Date(t.created_at).toLocaleString()}</td>
                       <td className="py-4 px-4"><TransactionTypeBadge type={t.type} /></td>
-                      <td className={`py-4 px-4 text-right font-mono font-bold ${t.balanceChange > 0 ? 'text-success' : 'text-danger'}`}>
-                        {t.balanceChange > 0 ? '+' : ''}{formatCurrency(t.amount)}
+                      <td className={`py-4 px-4 text-right font-mono font-bold ${t.balance_change > 0 ? 'text-success' : 'text-danger'}`}>
+                        {t.balance_change > 0 ? '+' : ''}{formatCurrency(t.amount)}
                       </td>
                     </tr>
                   ))}

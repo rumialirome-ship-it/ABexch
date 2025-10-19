@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingTopUps, approveTopUp } from '../../services/api';
@@ -19,9 +20,8 @@ const ApproveTopUpsPage: React.FC = () => {
         if (!admin) return;
         setLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             const data = await fetchPendingTopUps(admin);
-            setRequests(data.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+            setRequests(data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()));
         } catch (error) {
             console.error("Failed to fetch top-up requests", error);
             addNotification('Failed to load requests.', 'error');
@@ -38,7 +38,6 @@ const ApproveTopUpsPage: React.FC = () => {
         if (!admin) return;
         setApproving(prev => new Set(prev).add(id));
         try {
-            // FIX: Pass the admin user object to the API call.
             await approveTopUp(admin, id);
             addNotification(`Approved ${formatCurrency(amount)} for ${dealerUsername}.`, 'success');
             loadRequests();
@@ -73,14 +72,14 @@ const ApproveTopUpsPage: React.FC = () => {
                             {requests.map((r) => (
                                 <tr key={r.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-tertiary/5 transition-colors duration-300">
                                     <td className="py-3 px-4">
-                                        {r.dealerUsername} <span className="text-text-secondary font-mono text-xs">({r.dealerId})</span>
+                                        {r.dealer_username} <span className="text-text-secondary font-mono text-xs">({r.dealer_id})</span>
                                     </td>
                                     <td className="py-3 px-4 text-right font-mono">{formatCurrency(r.amount)}</td>
                                     <td className="py-3 px-4">{r.reference}</td>
-                                    <td className="py-3 px-4 text-sm text-text-secondary">{new Date(r.createdAt).toLocaleString()}</td>
+                                    <td className="py-3 px-4 text-sm text-text-secondary">{new Date(r.created_at).toLocaleString()}</td>
                                     <td className="py-3 px-4 text-center">
                                         <button 
-                                            onClick={() => handleApprove(r.id, r.dealerUsername, r.amount)} 
+                                            onClick={() => handleApprove(r.id, r.dealer_username, r.amount)} 
                                             disabled={approving.has(r.id)}
                                             className="bg-accent-primary/80 text-black font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-primary hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
                                             {approving.has(r.id) ? 'Approving...' : 'Approve'}

@@ -1,9 +1,9 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-// FIX: Import updateUserBetLimit which was missing.
 import { fetchUserById, fetchBetHistory, fetchTransactionHistory, addCreditToUser, updateUserBetLimit } from '../../services/api';
 import { User, Bet, Transaction, UserRole } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
@@ -30,19 +30,18 @@ const DealerUserDetailsPage: React.FC = () => {
         }
         try {
             setLoading(true);
-            // FIX: Pass the dealer user object to the API call.
             const [userData, betData, transactionData] = await Promise.all([
                 fetchUserById(dealer, userId),
                 fetchBetHistory(userId),
                 fetchTransactionHistory(userId)
             ]);
             
-            if (dealer && userData.dealerId !== dealer.id) {
+            if (dealer && userData.dealer_id !== dealer.id) {
                 throw new Error("User does not belong to this dealer.");
             }
 
             setUser(userData);
-            setBets(betData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+            setBets(betData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
             setTransactions(transactionData);
         } catch (error) {
             console.error("Failed to load user details", error);
@@ -82,9 +81,9 @@ const DealerUserDetailsPage: React.FC = () => {
                     <InfoItem label="User ID" value={user.id} isMono />
                     <InfoItem label="Username" value={user.username} />
                     <InfoItem label="Phone" value={user.phone || 'N/A'} />
-                    <InfoItem label="Bet Limit per Draw" value={user.betLimitPerDraw ? formatCurrency(user.betLimitPerDraw) : 'No Limit'} isMono />
+                    <InfoItem label="Bet Limit per Draw" value={user.bet_limit_per_draw ? formatCurrency(user.bet_limit_per_draw) : 'No Limit'} isMono />
                     <div className="lg:col-span-2">
-                        <InfoItem label="Wallet Balance" value={formatCurrency(user.walletBalance)} isMono highlight />
+                        <InfoItem label="Wallet Balance" value={formatCurrency(user.wallet_balance)} isMono highlight />
                     </div>
                 </div>
             </div>
@@ -106,7 +105,7 @@ const DealerUserDetailsPage: React.FC = () => {
                             <tbody className="divide-y divide-border-color/30">
                                 {bets.map(bet => (
                                     <tr key={bet.id} className="hover:bg-accent-secondary/5">
-                                        <td className="py-3 px-3">{bet.drawLabel}<br/><span className="text-xs text-text-secondary">{new Date(bet.createdAt).toLocaleDateString()}</span></td>
+                                        <td className="py-3 px-3">{bet.draw_label}<br/><span className="text-xs text-text-secondary">{new Date(bet.created_at).toLocaleDateString()}</span></td>
                                         <td className="py-3 px-3 text-center font-mono text-lg font-bold">{bet.number}</td>
                                         <td className="py-3 px-3 text-right font-mono">{formatCurrency(bet.stake)}</td>
                                         <td className="py-3 px-3 text-center"><BetStatusBadge status={bet.status} /></td>
@@ -131,10 +130,10 @@ const DealerUserDetailsPage: React.FC = () => {
                             <tbody className="divide-y divide-border-color/30">
                                 {transactions.map(t => (
                                     <tr key={t.id} className="hover:bg-accent-secondary/5">
-                                        <td className="py-3 px-3 whitespace-nowrap text-text-secondary">{new Date(t.createdAt).toLocaleString()}</td>
+                                        <td className="py-3 px-3 whitespace-nowrap text-text-secondary">{new Date(t.created_at).toLocaleString()}</td>
                                         <td className="py-3 px-3"><TransactionTypeBadge type={t.type} /></td>
-                                        <td className={`py-3 px-3 text-right font-mono font-bold ${t.balanceChange > 0 ? 'text-success' : 'text-danger'}`}>
-                                            {t.balanceChange > 0 ? '+' : ''}{formatCurrency(Math.abs(t.amount))}
+                                        <td className={`py-3 px-3 text-right font-mono font-bold ${t.balance_change > 0 ? 'text-success' : 'text-danger'}`}>
+                                            {t.balance_change > 0 ? '+' : ''}{formatCurrency(Math.abs(t.amount))}
                                         </td>
                                     </tr>
                                 ))}
@@ -171,7 +170,6 @@ const AddCreditModal: React.FC<{user: User, dealer: User | null, onClose: () => 
         
         setIsLoading(true);
         try {
-            // FIX: Pass the full dealer object instead of just the ID.
             await addCreditToUser(dealer, user.id, creditAmount);
             addNotification(`Successfully sent ${formatCurrency(creditAmount)} to ${user.username}.`, 'success');
             onSuccess();
@@ -202,7 +200,7 @@ const AddCreditModal: React.FC<{user: User, dealer: User | null, onClose: () => 
                             required 
                             autoFocus
                         />
-                        <p className="text-xs text-text-secondary mt-1">Your balance: {formatCurrency(dealer?.walletBalance || 0)}</p>
+                        <p className="text-xs text-text-secondary mt-1">Your balance: {formatCurrency(dealer?.wallet_balance || 0)}</p>
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
@@ -218,7 +216,7 @@ const AddCreditModal: React.FC<{user: User, dealer: User | null, onClose: () => 
 
 const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => void, onSuccess: () => void}> = ({ user, dealer, onClose, onSuccess }) => {
     const { addNotification } = useNotification();
-    const [limit, setLimit] = useState(user.betLimitPerDraw?.toString() || '');
+    const [limit, setLimit] = useState(user.bet_limit_per_draw?.toString() || '');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSave = async (e?: React.FormEvent) => {
@@ -237,7 +235,6 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
         setIsLoading(true);
         try {
             const newLimit = limit.trim() === '' ? null : limitAmount;
-            // FIX: Pass the full dealer object instead of just the ID.
             await updateUserBetLimit(dealer, user.id, newLimit);
             addNotification(`Bet limit for ${user.username} has been updated.`, 'success');
             onSuccess();
@@ -253,7 +250,6 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
         if (!dealer) return;
         setIsLoading(true);
          try {
-            // FIX: Pass the full dealer object instead of just the ID.
             await updateUserBetLimit(dealer, user.id, null);
             addNotification(`Bet limit for ${user.username} has been removed.`, 'success');
             onSuccess();
@@ -286,7 +282,7 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
                     </div>
                     <div className="flex justify-between items-center space-x-4 pt-4 border-t border-border-color/50">
                         <div>
-                             {user.betLimitPerDraw && (
+                             {user.bet_limit_per_draw && (
                                 <button type="button" onClick={handleRemove} disabled={isLoading} className="border border-danger/50 text-danger font-bold py-2 px-4 rounded-lg transition-all text-sm duration-300 hover:bg-danger hover:text-white active:scale-95 disabled:opacity-50">
                                     Remove Limit
                                 </button>

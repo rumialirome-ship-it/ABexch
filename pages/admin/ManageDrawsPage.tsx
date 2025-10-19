@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import MainLayout from '../../components/layout/MainLayout';
 import { declareDraw } from '../../services/api';
@@ -22,7 +24,7 @@ const ManageDrawsPage: React.FC = () => {
 
     useEffect(() => {
         if (selectedDate && selectedGameName) {
-            const gameNameForLabel = selectedGame.baseDrawName || selectedGame.name.replace(/\s/g, '_');
+            const gameNameForLabel = selectedGame.base_draw_name || selectedGame.name.replace(/\s/g, '_');
             setDrawLabel(`${selectedDate}-${gameNameForLabel}`);
         }
     }, [selectedDate, selectedGameName, selectedGame]);
@@ -36,7 +38,7 @@ const ManageDrawsPage: React.FC = () => {
             return;
         }
 
-        const isSplitGame = selectedGame.betType === 'open' || selectedGame.betType === 'close';
+        const isSplitGame = selectedGame.bet_type === 'open' || selectedGame.bet_type === 'close';
 
         if (isSplitGame) {
              if (singleD.length !== 1 || !/^\d+$/.test(singleD)) {
@@ -57,15 +59,14 @@ const ManageDrawsPage: React.FC = () => {
 
         setIsLoading(true);
         const winningNumbers = isSplitGame
-            ? (selectedGame.betType === 'open' ? { oneDOpen: singleD } : { oneDClose: singleD })
+            ? (selectedGame.bet_type === 'open' ? { one_digit_open: singleD } : { one_digit_close: singleD })
             : {
-                twoD,
-                oneDOpen: twoD.charAt(0),
-                oneDClose: twoD.charAt(1)
+                two_digit: twoD,
+                one_digit_open: twoD.charAt(0),
+                one_digit_close: twoD.charAt(1)
             };
 
         try {
-            // FIX: Pass the admin user object to the API call.
             await declareDraw(admin, drawLabel, winningNumbers);
             addNotification(`Declared result for ${drawLabel}. Bets are being settled.`, 'success');
             setTwoD('');
@@ -116,9 +117,9 @@ const ManageDrawsPage: React.FC = () => {
                             className={readOnlyInputClasses}
                         />
                     </div>
-                    {selectedGame.betType === 'open' || selectedGame.betType === 'close' ? (
+                    {selectedGame.bet_type === 'open' || selectedGame.bet_type === 'close' ? (
                         <div>
-                            <label className="block text-text-secondary mb-2">Winning 1-Digit Number ({selectedGame.betType})</label>
+                            <label className="block text-text-secondary mb-2">Winning 1-Digit Number ({selectedGame.bet_type})</label>
                             <input
                                 type="text"
                                 value={singleD}

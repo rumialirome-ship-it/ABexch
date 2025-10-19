@@ -65,22 +65,32 @@ npm install
 
 Log in to PostgreSQL to create a dedicated database and user for the application.
 
-1.  **Access the PostgreSQL command line:**
+1.  **Switch to the `postgres` user:**
+    It appears you are encountering issues with `sudo`. The most reliable way to perform database operations is to switch to the `postgres` system user, which is created during the PostgreSQL installation. Run this from your `root` shell:
     ```bash
-    sudo -u postgres psql
+    su - postgres
     ```
+    This command will open a new shell session as the `postgres` user. Your command prompt will likely change to `postgres@...$`.
 
-2.  **Execute the following SQL commands.** Replace `'your_strong_password'` with a secure password.
+2.  **Create the Database and User:**
+    From within the new `postgres` shell, start the PostgreSQL command-line tool:
+    ```bash
+    psql
+    ```
+    Now, execute the following SQL commands inside the `psql` prompt. Replace `'your_strong_password'` with a secure password.
     ```sql
     CREATE DATABASE ababa_db;
     CREATE USER ababa_user WITH ENCRYPTED PASSWORD 'your_strong_password';
     GRANT ALL PRIVILEGES ON DATABASE ababa_db TO ababa_user;
     \q
     ```
+    The `\q` command will exit `psql` and return you to the `postgres` user's shell.
 
-3.  **Import the database schema.** Run this command from your project's root directory. It will create all the necessary tables.
+3.  **Import the Database Schema:**
+    While still in the `postgres` user's shell, run the following command to create the application's tables. You must use the **full path** to your `schema.sql` file. The path below assumes your project is at `/var/www/html/ABexch`.
     ```bash
-    sudo -u postgres psql -d ababa_db -f backend/db/schema.sql
+    # Replace the path with the actual location of your project if it's different
+    psql -d ababa_db -f /var/www/html/ABexch/backend/db/schema.sql
     ```
     This command is **safe to run multiple times**. It will create all required tables and ensure a default **admin** user exists. If you ever forget the admin password, running this script again will reset it.
 
@@ -89,6 +99,12 @@ Log in to PostgreSQL to create a dedicated database and user for the application
     -   **PIN:** `Admin@123`
 
     **Security Warning:** You should log in and change this default password immediately after deployment.
+
+4.  **Return to the root user:**
+    Once the schema is imported, you can return to your original shell:
+    ```bash
+    exit
+    ```
 
 ### 6. Configure Environment Variables
 
@@ -111,6 +127,12 @@ CORS_ORIGIN=http://your_domain.com
 # PostgreSQL Database Connection URL
 # Use the database credentials you created in Step 5.
 DATABASE_URL="postgresql://ababa_user:your_strong_password@localhost:5432/ababa_db"
+
+# Optional: API Key for an external service
+# If your application needs to connect to an external API (e.g., for SMS, payments, etc.),
+# you should add its API key here. You will also need to update the backend code to
+# read this variable using `process.env.EXTERNAL_API_KEY` and use it when making API calls.
+# EXTERNAL_API_KEY="paste_your_api_key_here"
 ```
 
 Save the file (in `nano`, press `CTRL+X`, then `Y`, then `Enter`).

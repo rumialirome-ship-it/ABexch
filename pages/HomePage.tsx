@@ -67,13 +67,13 @@ const GameRow: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result }
     // Only determine the winning number if the draw is closed and a result is available
     let winningNumberToShow: string | undefined;
     if (isClosed && result) {
-        if (game.betType === 'open') {
-            winningNumberToShow = result.oneDigitOpen;
-        } else if (game.betType === 'close') {
-            winningNumberToShow = result.oneDigitClose;
+        if (game.bet_type === 'open') {
+            winningNumberToShow = result.one_digit_open;
+        } else if (game.bet_type === 'close') {
+            winningNumberToShow = result.one_digit_close;
         } else {
             // For full games, show the 2D number
-            winningNumberToShow = result.twoDigit;
+            winningNumberToShow = result.two_digit;
         }
     }
 
@@ -145,7 +145,7 @@ const HomePage: React.FC = () => {
         const loadResults = async () => {
             try {
                 const data = await fetchAllResults();
-                setResults(data.sort((a, b) => new Date(b.declaredAt).getTime() - new Date(a.declaredAt).getTime()));
+                setResults(data.sort((a, b) => new Date(b.declared_at).getTime() - new Date(a.declared_at).getTime()));
             } catch (error) {
                 console.error("Failed to fetch results for homepage", error);
             }
@@ -158,8 +158,8 @@ const HomePage: React.FC = () => {
         if (results.length === 0) return map;
         
         for (const game of TIMING_GAMES) {
-            const gameIdentifier = game.baseDrawName || game.name.replace(/\s/g, '_');
-            const latestResultForGame = results.find(r => r.drawLabel.endsWith(gameIdentifier));
+            const gameIdentifier = game.base_draw_name || game.name.replace(/\s/g, '_');
+            const latestResultForGame = results.find(r => r.draw_label.endsWith(gameIdentifier));
 
             if (latestResultForGame) {
                 map.set(game.name, latestResultForGame);

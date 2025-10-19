@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -24,6 +25,7 @@ import AddUserPage from './pages/dealer/AddUserPage';
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsersPage from './pages/admin/ManageUsersPage';
+// FIX: Corrected import statement for ManageDealersPage. The component is a default export.
 import ManageDealersPage from './pages/admin/ManageDealersPage';
 import ManageDrawsPage from './pages/admin/ManageDrawsPage';
 import ApproveCommissionsPage from './pages/admin/ApproveCommissionsPage';

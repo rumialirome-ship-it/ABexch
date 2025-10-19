@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingPrizes, approvePrize } from '../../services/api';
@@ -16,7 +17,6 @@ const ApprovePrizesPage: React.FC = () => {
         if (!admin) return;
         setLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             const data = await fetchPendingPrizes(admin);
             setPrizes(data);
         } catch (error) {
@@ -32,14 +32,12 @@ const ApprovePrizesPage: React.FC = () => {
     
     const handleApprove = async (id: string) => {
         if (!admin) return;
-        // FIX: Pass the admin user object to the API call.
         await approvePrize(admin, id);
         loadPrizes();
     };
     
     const handleApproveAll = async () => {
         if (!admin) return;
-        // FIX: Pass the admin user object to each API call.
         await Promise.all(prizes.map(p => approvePrize(admin, p.id)));
         loadPrizes();
     };
@@ -71,8 +69,8 @@ const ApprovePrizesPage: React.FC = () => {
                         <tbody>
                             {prizes.map((p) => (
                                 <tr key={p.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-tertiary/5 transition-colors duration-300">
-                                    <td className="py-3 px-4 font-mono">{p.userId}</td>
-                                    <td className="py-3 px-4">{p.drawLabel}</td>
+                                    <td className="py-3 px-4 font-mono">{p.user_id}</td>
+                                    <td className="py-3 px-4">{p.draw_label}</td>
                                     <td className="py-3 px-4 text-right font-mono">{formatCurrency(p.amount)}</td>
                                     <td className="py-3 px-4 text-center">
                                         <button onClick={() => handleApprove(p.id)} className="bg-accent-primary/80 text-black font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-primary hover:-translate-y-0.5 active:scale-95">

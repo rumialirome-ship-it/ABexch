@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -19,7 +20,6 @@ const DealerManageUsersPage: React.FC = () => {
     const loadUsers = async () => {
         if (!user || user.role !== UserRole.DEALER) return;
         setLoading(true);
-        // FIX: Pass the full user object instead of just the ID.
         const data = await fetchUsersByDealer(user);
         setUsers(data);
         setLoading(false);
@@ -92,7 +92,7 @@ const DealerManageUsersPage: React.FC = () => {
                                     <td className="py-4 px-4 font-mono">{user.id}</td>
                                     <td className="py-4 px-4">{user.username}</td>
                                     <td className="py-4 px-4">{user.phone}</td>
-                                    <td className="py-4 px-4 text-right font-mono">{formatCurrency(user.walletBalance)}</td>
+                                    <td className="py-4 px-4 text-right font-mono">{formatCurrency(user.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center">
                                         <Link to={`/dealer/users/${user.id}`} className="text-accent-secondary hover:underline text-sm font-semibold">
                                             View Details

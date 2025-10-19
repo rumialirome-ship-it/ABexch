@@ -1,6 +1,5 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-// FIX: Import process to resolve type error for process.exit.
 import process from 'process';
 
 dotenv.config();

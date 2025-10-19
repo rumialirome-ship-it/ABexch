@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, ReactNode, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -36,7 +38,6 @@ const RequestTopUpModal: React.FC<{
 
         setIsLoading(true);
         try {
-            // FIX: Pass the full user object instead of just the ID.
             await apiRequestTopUp(user, topUpAmount, reference);
             onSuccess();
         } catch (err) {
@@ -92,7 +93,6 @@ const AddCreditModal: React.FC<{targetUser: User, dealer: User | null, onClose: 
         
         setIsLoading(true);
         try {
-            // FIX: Pass the full dealer object instead of just the ID.
             await addCreditToUser(dealer, targetUser.id, creditAmount);
             addNotification(`Successfully sent ${formatCurrency(creditAmount)} to ${targetUser.username}.`, 'success');
             onSuccess();
@@ -123,7 +123,7 @@ const AddCreditModal: React.FC<{targetUser: User, dealer: User | null, onClose: 
                             required 
                             autoFocus
                         />
-                        <p className="text-xs text-text-secondary mt-1">Your balance: {formatCurrency(dealer?.walletBalance || 0)}</p>
+                        <p className="text-xs text-text-secondary mt-1">Your balance: {formatCurrency(dealer?.wallet_balance || 0)}</p>
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
@@ -157,7 +157,6 @@ const DealerDashboard: React.FC = () => {
     if (!user || user.role !== UserRole.DEALER) return;
         setLoading(true);
         try {
-            // FIX: Pass the full user object to API calls instead of just the ID.
             const [transactionsData, usersData, commissionsData, betsData] = await Promise.all([
                 fetchTransactionHistory(user.id),
                 fetchUsersByDealer(user),
@@ -184,7 +183,7 @@ const DealerDashboard: React.FC = () => {
             let dailyTotal = 0;
             let weeklyTotal = 0;
             betsData.forEach(bet => {
-                const betDate = new Date(bet.createdAt);
+                const betDate = new Date(bet.created_at);
                 if (betDate >= weekStart) {
                     weeklyTotal += bet.stake;
                     if (betDate >= todayStart) {
@@ -232,8 +231,8 @@ const DealerDashboard: React.FC = () => {
   const getTransactionDescription = (tx: Transaction): string => {
     switch (tx.type) {
         case TransactionType.DEALER_DEBIT_TO_USER:
-            const username = usersMap.get(tx.relatedEntityId || '');
-            return `Credit sent to user: ${username || tx.relatedEntityId}`;
+            const username = usersMap.get(tx.related_entity_id || '');
+            return `Credit sent to user: ${username || tx.related_entity_id}`;
         case TransactionType.ADMIN_CREDIT:
             return `Credit received from Admin`;
         case TransactionType.TOP_UP_APPROVED:
@@ -249,7 +248,7 @@ const DealerDashboard: React.FC = () => {
   return (
     <MainLayout title={`Dealer Dashboard: ${user.username}`} titleClassName="text-accent-secondary text-shadow-glow-secondary">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <StatCard label="Available Wallet Balance" value={formatCurrency(user.walletBalance)} />
+        <StatCard label="Available Wallet Balance" value={formatCurrency(user.wallet_balance)} />
         <StatCard label="Pending Commission" value={formatCurrency(pendingCommission)} isLoading={loading} />
         <StatCard label="Managed Users" value={managedUsers.length.toString()} isLoading={loading} />
       </div>
@@ -283,7 +282,7 @@ const DealerDashboard: React.FC = () => {
                             {managedUsers.map(u => (
                                 <tr key={u.id} className="hover:bg-accent-secondary/5">
                                     <td className="py-3 px-3">{u.username} <span className="text-xs text-text-secondary font-mono">({u.id})</span></td>
-                                    <td className="py-3 px-3 text-right font-mono">{formatCurrency(u.walletBalance)}</td>
+                                    <td className="py-3 px-3 text-right font-mono">{formatCurrency(u.wallet_balance)}</td>
                                     <td className="py-3 px-3 text-center space-x-2 whitespace-nowrap">
                                         <button onClick={() => handleOpenCreditModal(u)} className="bg-accent-primary/80 text-black font-bold py-1 px-3 rounded text-xs transition-all duration-300 hover:bg-accent-primary hover:-translate-y-0.5 active:scale-95">
                                             Add Credit
@@ -313,10 +312,10 @@ const DealerDashboard: React.FC = () => {
                                 <li key={tx.id} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                                     <div>
                                         <p className="font-semibold text-text-primary">{getTransactionDescription(tx)}</p>
-                                        <p className="text-xs text-text-secondary mt-1">{new Date(tx.createdAt).toLocaleString()}</p>
+                                        <p className="text-xs text-text-secondary mt-1">{new Date(tx.created_at).toLocaleString()}</p>
                                     </div>
-                                    <div className={`text-right font-mono font-bold text-lg whitespace-nowrap ${tx.balanceChange > 0 ? 'text-success' : 'text-danger'}`}>
-                                        {tx.balanceChange > 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                                    <div className={`text-right font-mono font-bold text-lg whitespace-nowrap ${tx.balance_change > 0 ? 'text-success' : 'text-danger'}`}>
+                                        {tx.balance_change > 0 ? '+' : ''}{formatCurrency(tx.amount)}
                                     </div>
                                 </li>
                             ))}

@@ -1,8 +1,9 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchAllUsers, addUser } from '../../services/api';
+import { fetchAllUsers, addUser, fetchAllDealers } from '../../services/api';
 import { User } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useNotification } from '../../contexts/NotificationContext';
@@ -17,18 +18,27 @@ const ManageUsersPage: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [dealers, setDealers] = useState<User[]>([]);
 
-    const loadUsers = async () => {
+    const loadData = async () => {
         if (!admin) return;
         setLoading(true);
-        // FIX: Pass the admin user object to the API call.
-        const data = await fetchAllUsers(admin);
-        setUsers(data);
-        setLoading(false);
+        try {
+            const [usersData, dealersData] = await Promise.all([
+                fetchAllUsers(admin),
+                fetchAllDealers(admin)
+            ]);
+            setUsers(usersData);
+            setDealers(dealersData);
+        } catch(error) {
+            console.error("Failed to load users and dealers", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        loadUsers();
+        loadData();
     }, [admin]);
 
     const filteredUsers = useMemo(() => {
@@ -95,8 +105,8 @@ const ManageUsersPage: React.FC = () => {
                                     <td className="py-4 px-4 font-mono">{user.id}</td>
                                     <td className="py-4 px-4">{user.username}</td>
                                     <td className="py-4 px-4">{user.phone}</td>
-                                    <td className="py-4 px-4 font-mono">{user.dealerId || 'N/A'}</td>
-                                    <td className="py-4 px-4 text-right font-mono">{formatCurrency(user.walletBalance)}</td>
+                                    <td className="py-4 px-4 font-mono">{user.dealer_id || 'N/A'}</td>
+                                    <td className="py-4 px-4 text-right font-mono">{formatCurrency(user.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center">
                                         <Link to={`/admin/users/${user.id}`} className="text-accent-tertiary hover:underline text-sm font-semibold">
                                             View Details
@@ -125,17 +135,17 @@ const ManageUsersPage: React.FC = () => {
                 )}
                 </>
             )}
-            {showModal && <AddUserModal onClose={() => setShowModal(false)} onUserAdded={loadUsers} />}
+            {showModal && <AddUserModal dealers={dealers} onClose={() => setShowModal(false)} onUserAdded={loadData} />}
         </MainLayout>
     );
 };
 
-const AddUserModal: React.FC<{onClose: () => void, onUserAdded: () => void}> = ({onClose, onUserAdded}) => {
+const AddUserModal: React.FC<{dealers: User[], onClose: () => void, onUserAdded: () => void}> = ({dealers, onClose, onUserAdded}) => {
     const { addNotification } = useNotification();
     const { user: admin } = useAuth();
     const [username, setUsername] = useState('');
     const [phone, setPhone] = useState('');
-    const [dealerId, setDealerId] = useState('');
+    const [dealerId, setDealerId] = useState(dealers[0]?.id || '');
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -144,10 +154,13 @@ const AddUserModal: React.FC<{onClose: () => void, onUserAdded: () => void}> = (
             addNotification('Admin user not found. Please log in again.', 'error');
             return;
         }
+        if (!dealerId) {
+            addNotification('Please select a dealer.', 'error');
+            return;
+        }
         setIsLoading(true);
         try {
-            // FIX: The addUser function expects the actor (admin) and userData containing the dealerId.
-            await addUser(admin, { username, phone, dealerId, initialDeposit: 0 });
+            await addUser(admin, { username, phone, dealer_id: dealerId, initial_deposit: 0 });
             addNotification(`User ${username} created successfully.`, 'success');
             onUserAdded();
             onClose();
@@ -174,13 +187,15 @@ const AddUserModal: React.FC<{onClose: () => void, onUserAdded: () => void}> = (
                         <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClasses} required />
                     </div>
                      <div>
-                        {/* FIX: The addUser API requires a dealerId, so this field is now required. */}
-                        <label className="block text-text-secondary mb-1">Dealer ID</label>
-                        <input type="text" value={dealerId} onChange={e => setDealerId(e.target.value)} className={inputClasses} required />
+                        <label className="block text-text-secondary mb-1">Assign to Dealer</label>
+                        <select value={dealerId} onChange={e => setDealerId(e.target.value)} className={inputClasses} required>
+                            <option value="" disabled>Select a dealer</option>
+                            {dealers.map(d => <option key={d.id} value={d.id}>{d.username} ({d.id})</option>)}
+                        </select>
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
-                        <button type="submit" disabled={isLoading} className="bg-accent-tertiary text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 hover:shadow-glow-tertiary active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add User'}</button>
+                        <button type="submit" disabled={isLoading || dealers.length === 0} className="bg-accent-tertiary text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 hover:shadow-glow-tertiary active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add User'}</button>
                     </div>
                 </form>
             </div>

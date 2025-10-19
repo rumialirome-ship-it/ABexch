@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -38,18 +39,17 @@ const AddUserPage: React.FC = () => {
         }
         setIsLoading(true);
         try {
-            // FIX: Pass the full dealer object instead of just the ID.
             const newUser = await addUser(dealer, {
                 username: formData.name,
                 password: formData.password,
                 phone: formData.contactNumber,
                 city: formData.cityArea,
-                initialDeposit: parseFloat(formData.initialDeposit) || 0,
-                commissionRate: parseFloat(formData.commissionRate) || 0,
-                prizeRate2D: parseFloat(formData.prizeRate2D) || 85,
-                prizeRate1D: parseFloat(formData.prizeRate1D) || 9.5,
-                betLimit2D: formData.betLimit2D ? parseFloat(formData.betLimit2D) : undefined,
-                betLimit1D: formData.betLimit1D ? parseFloat(formData.betLimit1D) : undefined,
+                initial_deposit: parseFloat(formData.initialDeposit) || 0,
+                commission_rate: parseFloat(formData.commissionRate) || 0,
+                prize_rate_2d: parseFloat(formData.prizeRate2D) || 85,
+                prize_rate_1d: parseFloat(formData.prizeRate1D) || 9.5,
+                bet_limit_2d: formData.betLimit2D ? parseFloat(formData.betLimit2D) : undefined,
+                bet_limit_1d: formData.betLimit1D ? parseFloat(formData.betLimit1D) : undefined,
             });
             addNotification(`User ${newUser.username} created! ID: ${newUser.id}. Default PIN is 'Pak@123' if no password set.`, 'success');
             navigate('/dealer/manage-users');

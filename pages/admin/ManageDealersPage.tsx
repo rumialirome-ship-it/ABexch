@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchAllDealers, addDealer, addCreditToDealer, debitFundsByAdmin } from '../../services/api';
@@ -20,7 +22,6 @@ const ManageDealersPage: React.FC = () => {
         if (!admin) return;
         setLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             const data = await fetchAllDealers(admin);
             setDealers(data);
         } catch (error) {
@@ -80,7 +81,7 @@ const ManageDealersPage: React.FC = () => {
                                     <td className="py-4 px-4 font-mono">{dealer.id}</td>
                                     <td className="py-4 px-4">{dealer.username}</td>
                                     <td className="py-4 px-4">{dealer.phone}</td>
-                                    <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.walletBalance)}</td>
+                                    <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center space-x-2">
                                         <button 
                                             onClick={() => handleOpenDebitFunds(dealer)}
@@ -140,14 +141,13 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
         }
         setIsLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             await addDealer(admin, {
                 username,
                 phone,
                 password,
                 city,
-                initialDeposit: parseFloat(initialDeposit) || 0,
-                commissionRate: parseFloat(commissionRate) || 0,
+                initial_deposit: parseFloat(initialDeposit) || 0,
+                commission_rate: parseFloat(commissionRate) || 0,
             });
             addNotification(`Dealer ${username} added successfully. Default PIN is 'Admin@123' if no password is set.`, 'success');
             onDealerAdded();
@@ -232,7 +232,6 @@ const AddCreditModal: React.FC<{dealer: User; onClose: () => void; onSuccess: ()
         
         setIsLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             await addCreditToDealer(admin, dealer.id, creditAmount);
             addNotification(`Successfully added ${formatCurrency(creditAmount)} to ${dealer.username}.`, 'success');
             onSuccess();
@@ -293,14 +292,13 @@ const DebitFundsModal: React.FC<{dealer: User; onClose: () => void; onSuccess: (
             addNotification('Please enter a valid, positive amount.', 'error');
             return;
         }
-        if (debitAmount > dealer.walletBalance) {
+        if (debitAmount > dealer.wallet_balance) {
             addNotification('Debit amount cannot exceed dealer balance.', 'error');
             return;
         }
         
         setIsLoading(true);
         try {
-            // FIX: Pass the admin object and correct the argument order.
             await debitFundsByAdmin(admin, dealer.id, debitAmount);
             addNotification(`Successfully debited ${formatCurrency(debitAmount)} from ${dealer.username}.`, 'success');
             onSuccess();
@@ -331,7 +329,7 @@ const DebitFundsModal: React.FC<{dealer: User; onClose: () => void; onSuccess: (
                             required 
                             autoFocus
                         />
-                         <p className="text-xs text-text-secondary mt-1">Dealer balance: {formatCurrency(dealer.walletBalance)}</p>
+                         <p className="text-xs text-text-secondary mt-1">Dealer balance: {formatCurrency(dealer.wallet_balance)}</p>
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
@@ -347,6 +345,7 @@ const DebitFundsModal: React.FC<{dealer: User; onClose: () => void; onSuccess: (
 
 
 const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
+{/* FIX: Replaced truncated SVG content with the full, correct SVG for the icon. */}
 const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" /></svg>;
 
 export default ManageDealersPage;

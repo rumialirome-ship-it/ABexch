@@ -1,6 +1,8 @@
 
-// FIX: Changed type-only import to a regular import to ensure AuthenticatedRequest inherits properties from Express.Request correctly.
-import { Request } from 'express';
+
+// FIX: This file is updated to use module augmentation to add the 'user' property to the global Express.Request interface.
+// This is the standard and most robust way to extend request types in an Express/TypeScript application,
+// resolving the issue where properties on the request object were not being recognized by the type checker.
 
 export enum UserRole {
   USER = 'user',
@@ -108,10 +110,13 @@ export interface TopUpRequest {
   approved_at?: string;
 }
 
-// For Express request augmentation in middleware
-export interface AuthenticatedRequest extends Request {
-    user?: {
+declare global {
+  namespace Express {
+    export interface Request {
+      user?: {
         id: string;
         role: UserRole;
-    };
+      };
+    }
+  }
 }

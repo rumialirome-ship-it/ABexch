@@ -31,7 +31,6 @@ async function calculateRebatesAndDealerCommissions(client: PoolClient, drawLabe
     for (const [userId, data] of Object.entries(userStakeTotals)) {
         const rebateAmount = data.totalStake * (data.commissionRate / 100);
         if (rebateAmount > 0) {
-            // FIX: Corrected call to use the new transaction service method.
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: userId,
                 amount: rebateAmount,
@@ -89,7 +88,6 @@ export const adminService = {
             );
 
             if (newUser.wallet_balance > 0) {
-                // FIX: Corrected call to use the new transaction service method.
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: userId,
                     amount: newUser.wallet_balance,
@@ -108,23 +106,21 @@ export const adminService = {
         }
     },
 
-    // FIX: Added commissionRate to the type definition to match its usage.
-    async addDealer(dealerData: Partial<User> & { username: string, initialDeposit: number, commissionRate?: number }): Promise<Omit<User, 'password'>> {
+    async addDealer(dealerData: Partial<User> & { username: string, initial_deposit: number, commission_rate?: number }): Promise<Omit<User, 'password'>> {
         const client = await db.getClient();
         try {
             await client.query('BEGIN');
             
             const dealerId = generateId('dlr');
-            const { username, phone, password, city, initialDeposit, commissionRate } = dealerData;
-            const newDealer: User = { id: dealerId, username, phone, role: UserRole.DEALER, wallet_balance: initialDeposit || 0, password, city, commission_rate: commissionRate };
+            const { username, phone, password, city, initial_deposit, commission_rate } = dealerData;
+            const newDealer: User = { id: dealerId, username, phone, role: UserRole.DEALER, wallet_balance: initial_deposit || 0, password, city, commission_rate: commission_rate };
             
             await client.query(
                 'INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-                [dealerId, username, password, phone, UserRole.DEALER, newDealer.wallet_balance, city, commissionRate]
+                [dealerId, username, password, phone, UserRole.DEALER, newDealer.wallet_balance, city, commission_rate]
             );
             
             if (newDealer.wallet_balance > 0) {
-                 // FIX: Corrected call to use the new transaction service method.
                  await transactionService.createSystemCreditTransaction(client, {
                     toUserId: dealerId,
                     amount: newDealer.wallet_balance,
@@ -143,7 +139,6 @@ export const adminService = {
     },
 
     // ... Financial Actions ...
-    // FIX: Refactored to correctly manage its own database transaction.
     async addCreditToUser(adminId: string, userId: string, amount: number): Promise<void> {
         const client = await db.getClient();
         try {
@@ -168,7 +163,6 @@ export const adminService = {
         try {
             await client.query('BEGIN');
             
-            // FIX: Corrected call to use the new transaction service method.
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: dealerId,
                 amount: amount,
@@ -287,7 +281,6 @@ export const adminService = {
             const { rows } = await client.query("UPDATE commissions SET status = 'approved' WHERE id = $1 AND status = 'pending' RETURNING *", [id]);
             const commission = rows[0];
             if (commission) {
-                // FIX: Corrected call to use the new transaction service method.
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: commission.recipient_id,
                     amount: parseFloat(commission.amount),
@@ -318,7 +311,6 @@ export const adminService = {
             const { rows } = await client.query("UPDATE prizes SET status = 'approved' WHERE id = $1 AND status = 'pending' RETURNING *", [id]);
             const prize = rows[0];
             if (prize) {
-                 // FIX: Corrected call to use the new transaction service method.
                  await transactionService.createSystemCreditTransaction(client, {
                     toUserId: prize.user_id,
                     amount: parseFloat(prize.amount),
@@ -350,7 +342,6 @@ export const adminService = {
             const request = rows[0];
             if (!request) throw new ApiError(404, "Request not found or already processed");
             
-            // FIX: Corrected call to use the new transaction service method.
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: request.dealer_id,
                 amount: parseFloat(request.amount),
@@ -376,7 +367,6 @@ export const adminService = {
             if (!targetUserRows[0]) throw new ApiError(404, "Target user or dealer not found.");
             if (targetUserRows[0].wallet_balance < amount) throw new ApiError(400, "Target has insufficient funds.");
 
-            // FIX: Corrected call to use the new transaction service method.
             await transactionService.createCreditTransaction(client, {
                 fromUserId: targetUserId,
                 toUserId: adminId,

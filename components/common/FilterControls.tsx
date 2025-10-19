@@ -1,5 +1,6 @@
 
 
+
 import React from 'react';
 import { BetStatus } from '../../types';
 
@@ -61,7 +62,6 @@ const FilterControls: React.FC<FilterControlsProps> = ({
           className={selectClasses}
         >
           <option value="">All</option>
-          {/* FIX: Replaced Object.values for better type safety and to prevent potential inference issues. */}
           {[BetStatus.PENDING, BetStatus.WON, BetStatus.LOST].map(status => (
             <option key={status} value={status}>{status}</option>
           ))}

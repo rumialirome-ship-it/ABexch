@@ -2,9 +2,10 @@
 
 
 
-import express from 'express';
+
+
+import express, { Request, Response, NextFunction } from 'express';
 // FIX: Changed to type-only imports for Express types to resolve widespread type errors.
-import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { db } from './db';

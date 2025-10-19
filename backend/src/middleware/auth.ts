@@ -1,6 +1,10 @@
 
-import type { Response, NextFunction } from 'express';
-import { UserRole, AuthenticatedRequest } from '../types';
+
+
+// FIX: Changed import to get Request type directly from express.
+import { Request, Response, NextFunction } from 'express';
+// FIX: AuthenticatedRequest is no longer needed due to module augmentation.
+import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';
 
@@ -11,7 +15,8 @@ import { ApiError } from './errorHandler';
  * @param roles An array of UserRole enums that are allowed to access the route.
  */
 export const requireAuth = (roles: UserRole[]) => {
-    return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    // FIX: Changed req type from AuthenticatedRequest to the augmented express.Request
+    return async (req: Request, res: Response, next: NextFunction) => {
         const id = req.headers['x-user-id'] as string;
         const role = req.headers['x-user-role'] as UserRole;
 

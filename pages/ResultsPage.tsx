@@ -14,7 +14,7 @@ const ResultsPage: React.FC = () => {
     const loadResults = async () => {
       try {
         const data = await fetchAllResults();
-        setResults(data.sort((a, b) => new Date(b.declaredAt).getTime() - new Date(a.declaredAt).getTime()));
+        setResults(data.sort((a, b) => new Date(b.declared_at).getTime() - new Date(a.declared_at).getTime()));
       } catch (error) {
         console.error("Failed to fetch results", error);
       } finally {
@@ -69,11 +69,11 @@ const ResultsPage: React.FC = () => {
             <tbody>
               {results.map((result) => (
                 <tr key={result.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-primary/5 transition-colors duration-300 ${highlightedRows.has(result.id) ? 'animate-highlight' : ''}`}>
-                  <td className="py-4 px-4">{result.drawLabel}</td>
-                  <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{result.twoDigit}</td>
-                  <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{result.oneDigitOpen}</td>
-                  <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{result.oneDigitClose}</td>
-                  <td className="py-4 px-4 text-sm text-text-secondary">{new Date(result.declaredAt).toLocaleString()}</td>
+                  <td className="py-4 px-4">{result.draw_label}</td>
+                  <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{result.two_digit}</td>
+                  <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{result.one_digit_open}</td>
+                  <td className="py-4 px-4 text-center font-bold text-xl text-text-primary">{result.one_digit_close}</td>
+                  <td className="py-4 px-4 text-sm text-text-secondary">{new Date(result.declared_at).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

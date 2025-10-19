@@ -1,11 +1,10 @@
 
+
 import { db } from '../db';
 import { Transaction, TransactionType } from '../types';
-// FIX: Import PoolClient for type safety in transaction methods.
 import { PoolClient } from 'pg';
 import { generateId } from '../utils/helpers';
 
-// FIX: Define types for transaction parameters for clarity and safety.
 type CreditTxnParams = {
     fromUserId: string;
     toUserId: string;
@@ -35,7 +34,6 @@ export const transactionService = {
         return rows;
     },
 
-    // FIX: Added missing `createCreditTransaction` method used by dealer and admin services.
     /**
      * Creates a credit transfer between two users within a single transaction.
      * This function expects to be called within an existing DB transaction client.
@@ -63,7 +61,6 @@ export const transactionService = {
         );
     },
 
-    // FIX: Added missing `createSystemCreditTransaction` method used by admin services.
     /**
      * Creates a system-generated credit transaction (e.g., prize, commission).
      * This function expects to be called within an existing DB transaction client.

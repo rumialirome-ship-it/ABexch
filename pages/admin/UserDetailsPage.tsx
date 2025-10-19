@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -28,20 +30,18 @@ const UserDetailsPage: React.FC = () => {
         }
         try {
             setLoading(true);
-            // FIX: Pass the admin user object to the API calls.
             const [userData, betData, transactionData] = await Promise.all([
                 fetchUserById(admin, userId),
                 fetchBetHistory(userId),
                 fetchTransactionHistory(userId)
             ]);
             setUser(userData);
-            setBets(betData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+            setBets(betData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
             setTransactions(transactionData); // Already sorted by API
 
-            if (userData.dealerId) {
-                // FIX: Pass the admin user object to the API call.
+            if (userData.dealer_id) {
                 const dealers = await fetchAllDealers(admin);
-                const userDealer = dealers.find(d => d.id === userData.dealerId);
+                const userDealer = dealers.find(d => d.id === userData.dealer_id);
                 if (userDealer) {
                     setDealerName(userDealer.username);
                 }
@@ -84,10 +84,10 @@ const UserDetailsPage: React.FC = () => {
                     <InfoItem label="User ID" value={user.id} isMono />
                     <InfoItem label="Username" value={user.username} />
                     <InfoItem label="Phone" value={user.phone || 'N/A'} />
-                    <InfoItem label="Dealer ID" value={user.dealerId || 'N/A'} isMono />
-                    <InfoItem label="Dealer Username" value={dealerName || (user.dealerId ? 'Loading...' : 'N/A')} />
+                    <InfoItem label="Dealer ID" value={user.dealer_id || 'N/A'} isMono />
+                    <InfoItem label="Dealer Username" value={dealerName || (user.dealer_id ? 'Loading...' : 'N/A')} />
                     <div>
-                        <InfoItem label="Wallet Balance" value={formatCurrency(user.walletBalance)} isMono highlight />
+                        <InfoItem label="Wallet Balance" value={formatCurrency(user.wallet_balance)} isMono highlight />
                     </div>
                 </div>
             </div>
@@ -109,7 +109,7 @@ const UserDetailsPage: React.FC = () => {
                             <tbody className="divide-y divide-border-color/30">
                                 {bets.map(bet => (
                                     <tr key={bet.id} className="hover:bg-accent-tertiary/5">
-                                        <td className="py-3 px-3">{bet.drawLabel}<br/><span className="text-xs text-text-secondary">{new Date(bet.createdAt).toLocaleDateString()}</span></td>
+                                        <td className="py-3 px-3">{bet.draw_label}<br/><span className="text-xs text-text-secondary">{new Date(bet.created_at).toLocaleDateString()}</span></td>
                                         <td className="py-3 px-3 text-center font-mono text-lg font-bold">{bet.number}</td>
                                         <td className="py-3 px-3 text-right font-mono">{formatCurrency(bet.stake)}</td>
                                         <td className="py-3 px-3 text-center"><BetStatusBadge status={bet.status} /></td>
@@ -134,10 +134,10 @@ const UserDetailsPage: React.FC = () => {
                             <tbody className="divide-y divide-border-color/30">
                                 {transactions.map(t => (
                                     <tr key={t.id} className="hover:bg-accent-tertiary/5">
-                                        <td className="py-3 px-3 whitespace-nowrap text-text-secondary">{new Date(t.createdAt).toLocaleString()}</td>
+                                        <td className="py-3 px-3 whitespace-nowrap text-text-secondary">{new Date(t.created_at).toLocaleString()}</td>
                                         <td className="py-3 px-3"><TransactionTypeBadge type={t.type} /></td>
-                                        <td className={`py-3 px-3 text-right font-mono font-bold ${t.balanceChange > 0 ? 'text-success' : 'text-danger'}`}>
-                                            {t.balanceChange > 0 ? '+' : ''}{formatCurrency(Math.abs(t.amount))}
+                                        <td className={`py-3 px-3 text-right font-mono font-bold ${t.balance_change > 0 ? 'text-success' : 'text-danger'}`}>
+                                            {t.balance_change > 0 ? '+' : ''}{formatCurrency(Math.abs(t.amount))}
                                         </td>
                                     </tr>
                                 ))}
@@ -183,7 +183,6 @@ const AddCreditModal: React.FC<{user: User, onClose: () => void, onSuccess: () =
         
         setIsLoading(true);
         try {
-            // FIX: Pass the admin user object to the API call.
             await addCreditToUserByAdmin(admin, user.id, creditAmount);
             addNotification(`Successfully sent ${formatCurrency(creditAmount)} to ${user.username}.`, 'success');
             onSuccess();
@@ -245,14 +244,13 @@ const DebitFundsModal: React.FC<{user: User, onClose: () => void, onSuccess: () 
             addNotification('Please enter a valid, positive amount.', 'error');
             return;
         }
-        if (debitAmount > user.walletBalance) {
+        if (debitAmount > user.wallet_balance) {
             addNotification('Debit amount cannot exceed user balance.', 'error');
             return;
         }
         
         setIsLoading(true);
         try {
-            // FIX: Pass the admin object and correct the argument order.
             await debitFundsByAdmin(admin, user.id, debitAmount);
             addNotification(`Successfully debited ${formatCurrency(debitAmount)} from ${user.username}.`, 'success');
             onSuccess();
@@ -283,7 +281,7 @@ const DebitFundsModal: React.FC<{user: User, onClose: () => void, onSuccess: () 
                             required 
                             autoFocus
                         />
-                         <p className="text-xs text-text-secondary mt-1">User balance: {formatCurrency(user.walletBalance)}</p>
+                         <p className="text-xs text-text-secondary mt-1">User balance: {formatCurrency(user.wallet_balance)}</p>
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>

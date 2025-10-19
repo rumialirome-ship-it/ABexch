@@ -43,7 +43,7 @@ const getNextDrawForGame = (game: Game): { drawLabel: string } => {
     const month = (drawTimePkt.getUTCMonth() + 1).toString().padStart(2, '0');
     const day = drawTimePkt.getUTCDate().toString().padStart(2, '0');
     
-    const gameNameForLabel = game.baseDrawName || game.name.replace(/\s/g, '_');
+    const gameNameForLabel = game.base_draw_name || game.name.replace(/\s/g, '_');
     
     return { drawLabel: `${year}-${month}-${day}-${gameNameForLabel}` };
 };
@@ -97,10 +97,10 @@ const BettingPage: React.FC = () => {
     const { drawLabel } = getNextDrawForGame(selectedGame);
 
     const availableTabs = useMemo((): BetType[] => {
-        if (selectedGame.betType === 'open') {
+        if (selectedGame.bet_type === 'open') {
             return ['1D Open Quick'];
         }
-        if (selectedGame.betType === 'close') {
+        if (selectedGame.bet_type === 'close') {
             return ['1D Close Quick'];
         }
         return ['2D Bulk', '2D Quick', '2D Combo', '1D Open Quick', '1D Close Quick'];
@@ -175,7 +175,7 @@ const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel
     const [errors, setErrors] = useState<{ numbers?: string; stake?: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false);
-    const [betsToConfirm, setBetsToConfirm] = useState<Omit<Bet, 'id' | 'createdAt' | 'status'>[]>([]);
+    const [betsToConfirm, setBetsToConfirm] = useState<Omit<Bet, 'id' | 'created_at' | 'status'>[]>([]);
 
     const numberLength = gameType === '2D' ? 2 : 1;
     
@@ -243,10 +243,10 @@ const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel
             return;
         }
 
-        const betsToPlace: Omit<Bet, 'id' | 'createdAt' | 'status'>[] = numberEntries.map(num => ({
-            userId: user.id,
-            drawLabel: drawLabel,
-            gameType,
+        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = numberEntries.map(num => ({
+            user_id: user.id,
+            draw_label: drawLabel,
+            game_type: gameType,
             number: num,
             stake: stakeValue,
         }));
@@ -256,9 +256,10 @@ const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel
     };
 
     const handleConfirmBet = async () => {
+        if (!user) return;
         setIsLoading(true);
         try {
-            const placedBets = await placeBets(betsToConfirm);
+            const placedBets = await placeBets(user.id, betsToConfirm);
             addNotification(`Successfully placed ${placedBets.length} bet(s).`, 'success');
             setNumbers('');
             setStake('');
@@ -338,7 +339,7 @@ const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel
                 <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
                     {betsToConfirm.map((bet, index) => (
                         <div key={index} className="flex justify-between items-center">
-                            <span><strong>{bet.gameType}</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
+                            <span><strong>{bet.game_type}</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
                             <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
                         </div>
                     ))}
@@ -358,7 +359,7 @@ const BulkBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
     const [errors, setErrors] = useState<{ numberBlock?: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false);
-    const [betsToConfirm, setBetsToConfirm] = useState<Omit<Bet, 'id' | 'createdAt' | 'status'>[]>([]);
+    const [betsToConfirm, setBetsToConfirm] = useState<Omit<Bet, 'id' | 'created_at' | 'status'>[]>([]);
 
     const parsedResult = useMemo(() => {
         const lines = numberBlock.trim().split(/[\r\n]+/);
@@ -462,10 +463,10 @@ const BulkBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
             return;
         }
 
-        const betsToPlace: Omit<Bet, 'id' | 'createdAt' | 'status'>[] = parsedResult.validBets.map(bet => ({
-            userId: user.id,
-            drawLabel: drawLabel,
-            gameType: '2D',
+        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = parsedResult.validBets.map(bet => ({
+            user_id: user.id,
+            draw_label: drawLabel,
+            game_type: '2D',
             number: bet.number,
             stake: bet.stake,
         }));
@@ -475,9 +476,10 @@ const BulkBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
     };
 
     const handleConfirmBet = async () => {
+        if (!user) return;
         setIsLoading(true);
         try {
-            const placedBets = await placeBets(betsToConfirm);
+            const placedBets = await placeBets(user.id, betsToConfirm);
             addNotification(`Successfully placed ${placedBets.length} bet(s).`, 'success');
             setNumberBlock('');
             setErrors({});
@@ -596,7 +598,7 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
     const [errors, setErrors] = useState<{ inputDigits?: string; stake?: string; selection?: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     const [isConfirming, setIsConfirming] = useState(false);
-    const [betsToConfirm, setBetsToConfirm] = useState<Omit<Bet, 'id' | 'createdAt' | 'status'>[]>([]);
+    const [betsToConfirm, setBetsToConfirm] = useState<Omit<Bet, 'id' | 'created_at' | 'status'>[]>([]);
 
     const uniqueDigits = useMemo(() => [...new Set(inputDigits.replace(/\D/g, '').split(''))], [inputDigits]);
 
@@ -690,10 +692,10 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
             return;
         }
 
-        const betsToPlace: Omit<Bet, 'id' | 'createdAt' | 'status'>[] = Array.from(selectedCombos).map(combo => ({
-            userId: user.id,
-            drawLabel: drawLabel,
-            gameType: '2D',
+        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map(combo => ({
+            user_id: user.id,
+            draw_label: drawLabel,
+            game_type: '2D',
             number: combo,
             stake: stakeValue,
         }));
@@ -703,9 +705,10 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
     };
 
     const handleConfirmBet = async () => {
+        if (!user) return;
         setIsLoading(true);
         try {
-            await placeBets(betsToConfirm);
+            await placeBets(user.id, betsToConfirm);
             addNotification(`Successfully placed ${betsToConfirm.length} combo bet(s).`, 'success');
             setInputDigits('');
             setStake('');

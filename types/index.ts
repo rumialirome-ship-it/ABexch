@@ -9,17 +9,17 @@ export interface User {
   username: string;
   phone?: string;
   role: UserRole;
-  walletBalance: number;
-  dealerId?: string;
-  betLimitPerDraw?: number; // Kept for compatibility, but new logic uses specific limits
+  wallet_balance: number;
+  dealer_id?: string;
+  bet_limit_per_draw?: number; // Kept for compatibility, but new logic uses specific limits
   // New fields from form
   password?: string;
   city?: string;
-  commissionRate?: number; // In percentage
-  prizeRate2D?: number; // Multiplier, e.g., 85
-  prizeRate1D?: number; // Multiplier, e.g., 9.5
-  betLimit2D?: number; // Max stake amount
-  betLimit1D?: number; // Max stake amount
+  commission_rate?: number; // In percentage
+  prize_rate_2d?: number; // Multiplier, e.g., 85
+  prize_rate_1d?: number; // Multiplier, e.g., 9.5
+  bet_limit_2d?: number; // Max stake amount
+  bet_limit_1d?: number; // Max stake amount
 }
 
 export enum BetStatus {
@@ -32,43 +32,43 @@ export type GameType = '2D' | '1D-Open' | '1D-Close';
 
 export interface Bet {
   id: string;
-  userId: string;
-  drawLabel: string;
-  gameType: GameType;
+  user_id: string;
+  draw_label: string;
+  game_type: GameType;
   number: string;
   stake: number;
   status: BetStatus;
-  createdAt: string; // ISO date string
+  created_at: string; // ISO date string
 }
 
 export interface DrawResult {
     id: string;
-    drawLabel: string;
-    twoDigit?: string;
-    oneDigitOpen?: string;
-    oneDigitClose?: string;
-    declaredAt: string; // Represents final declaration time
-    openDeclaredAt?: string; // For split-time games
+    draw_label: string;
+    two_digit?: string;
+    one_digit_open?: string;
+    one_digit_close?: string;
+    declared_at: string; // Represents final declaration time
+    open_declared_at?: string; // For split-time games
 }
 
 export interface Commission {
     id: string;
-    recipientId: string;
-    recipientType: 'dealer' | 'admin';
-    drawLabel: string;
+    recipient_id: string;
+    recipient_type: 'dealer' | 'admin';
+    draw_label: string;
     amount: number;
     status: 'pending' | 'approved';
-    createdAt: string;
+    created_at: string;
 }
 
 export interface Prize {
     id: string;
-    userId: string;
-    betId: string;
-    drawLabel: string;
+    user_id: string;
+    bet_id: string;
+    draw_label: string;
     amount: number;
     status: 'pending' | 'approved';
-    createdAt: string;
+    created_at: string;
 }
 
 export enum TransactionType {
@@ -86,31 +86,31 @@ export enum TransactionType {
 
 export interface Transaction {
     id: string;
-    userId: string;
+    user_id: string;
     type: TransactionType;
     amount: number;
-    balanceChange: number; // can be positive or negative
-    relatedEntityId?: string; // e.g., betId, commissionId
-    createdAt: string;
+    balance_change: number; // can be positive or negative
+    related_entity_id?: string; // e.g., betId, commissionId
+    created_at: string;
 }
 
 export interface TopUpRequest {
   id: string;
-  dealerId: string;
-  dealerUsername: string;
+  dealer_id: string;
+  dealer_username: string;
   amount: number;
   reference: string;
   status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-  approvedAt?: string;
+  created_at: string;
+  approved_at?: string;
 }
 
 export interface Game {
   name: string;
   time: string;
   icon: string;
-  baseDrawName?: string;
-  betType?: 'open' | 'close';
+  base_draw_name?: string;
+  bet_type?: 'open' | 'close';
 }
 
 export const TIMING_GAMES: Game[] = [
@@ -119,8 +119,8 @@ export const TIMING_GAMES: Game[] = [
   { name: 'OYO Tv', time: '20:15', icon: '📺' },
   { name: 'Ls1', time: '20:45', icon: '🎮' },
   { name: 'OLA Tv', time: '21:15', icon: '📺' },
-  { name: 'AK', time: '21:55', icon: '🎯', baseDrawName: 'AK-SPECIAL', betType: 'open' },
+  { name: 'AK', time: '21:55', icon: '🎯', base_draw_name: 'AK-SPECIAL', bet_type: 'open' },
   { name: 'Ls2', time: '23:45', icon: '🎮' },
-  { name: 'Akc', time: '12:55', icon: '🎲', baseDrawName: 'AK-SPECIAL', betType: 'close' },
+  { name: 'Akc', time: '12:55', icon: '🎲', base_draw_name: 'AK-SPECIAL', bet_type: 'close' },
   { name: 'Ls3', time: '14:10', icon: '🕑' }, 
 ];

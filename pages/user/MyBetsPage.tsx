@@ -29,7 +29,7 @@ const MyBetsPage: React.FC = () => {
     if (user) {
       try {
         const data = await fetchBetHistory(user.id);
-        setBets(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        setBets(data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       } catch (error) {
         console.error("Failed to fetch bet history", error);
       } finally {
@@ -43,7 +43,7 @@ const MyBetsPage: React.FC = () => {
   }, [loadBets]);
   
   const handleBetUpdate = useCallback((updatedBet: Bet) => {
-    if (updatedBet.userId !== user?.id) return;
+    if (updatedBet.user_id !== user?.id) return;
 
     setBets(currentBets => {
         const index = currentBets.findIndex(b => b.id === updatedBet.id);
@@ -72,7 +72,7 @@ const MyBetsPage: React.FC = () => {
                     return next;
                 });
             }, 2500);
-            return [updatedBet, ...currentBets].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            return [updatedBet, ...currentBets].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         }
     });
   }, [user?.id]);
@@ -97,9 +97,9 @@ const MyBetsPage: React.FC = () => {
     return [...bets]
         .filter(bet => {
             if (filters.status && bet.status !== filters.status) return false;
-            if (filters.gameType && bet.gameType !== filters.gameType) return false;
+            if (filters.gameType && bet.game_type !== filters.gameType) return false;
             
-            const betDate = new Date(bet.createdAt);
+            const betDate = new Date(bet.created_at);
             if (filters.startDate) {
                 const startDate = new Date(filters.startDate);
                 startDate.setHours(0, 0, 0, 0);
@@ -117,7 +117,7 @@ const MyBetsPage: React.FC = () => {
             const order = sortOrder === 'asc' ? 1 : -1;
 
             if (sortField === 'createdAt') {
-                return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * -order;
+                return (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * -order;
             }
             if (sortField === 'stake') {
                 return (a.stake - b.stake) * order;
@@ -162,12 +162,12 @@ const MyBetsPage: React.FC = () => {
 
                 return (
                     <tr key={bet.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-primary/5 transition-colors duration-300 ${highlightedRows.has(bet.id) ? 'animate-highlight' : ''}`}>
-                      <td className="py-4 px-4">{bet.drawLabel}</td>
-                      <td className="py-4 px-4">{bet.gameType}</td>
+                      <td className="py-4 px-4">{bet.draw_label}</td>
+                      <td className="py-4 px-4">{bet.game_type}</td>
                       <td className="py-4 px-4 text-center font-bold text-xl text-text-primary font-mono">{bet.number}</td>
                       <td className="py-4 px-4 text-right font-mono">{formatCurrency(bet.stake)}</td>
                       <td className="py-4 px-4 text-center"><BetStatusBadge status={bet.status} animationClassName={badgeAnimationClass} /></td>
-                      <td className="py-4 px-4 text-sm text-text-secondary">{new Date(bet.createdAt).toLocaleString()}</td>
+                      <td className="py-4 px-4 text-sm text-text-secondary">{new Date(bet.created_at).toLocaleString()}</td>
                     </tr>
                 );
               })}

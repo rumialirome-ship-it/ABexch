@@ -1,5 +1,6 @@
 
 
+
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -39,7 +40,7 @@ const UserDashboard: React.FC = () => {
         today.setHours(0, 0, 0, 0);
 
         transactions.forEach((tx: Transaction) => {
-            const txDate = new Date(tx.createdAt);
+            const txDate = new Date(tx.created_at);
             if (txDate >= today) {
                 switch(tx.type) {
                     case TransactionType.DEALER_CREDIT:
@@ -61,7 +62,6 @@ const UserDashboard: React.FC = () => {
             }
         });
         setTodaySummary(summary);
-      // FIX: Added curly braces to the catch block to correct syntax and scope.
       } catch (error) {
         console.error("Failed to fetch today's summary", error);
       } finally {
@@ -123,12 +123,12 @@ const UserDashboard: React.FC = () => {
             <div className="space-y-3">
                 <div className="flex justify-between items-center text-lg">
                     <span className="text-text-secondary">Current Balance:</span>
-                    <span className="text-2xl font-bold text-text-primary font-mono">{formatCurrency(user.walletBalance)}</span>
+                    <span className="text-2xl font-bold text-text-primary font-mono">{formatCurrency(user.wallet_balance)}</span>
                 </div>
                 <div className="flex justify-between items-center text-base pt-3 border-t border-border-color/30">
                     <span className="text-text-secondary">Bet Limit / Draw:</span>
                     <span className="font-bold text-accent-primary font-mono">
-                         {user.betLimitPerDraw != null ? formatCurrency(user.betLimitPerDraw) : 'No Limit'}
+                         {user.bet_limit_per_draw != null ? formatCurrency(user.bet_limit_per_draw) : 'No Limit'}
                     </span>
                 </div>
             </div>
