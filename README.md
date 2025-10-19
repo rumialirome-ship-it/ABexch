@@ -256,7 +256,24 @@ At this point, you should be able to access your site at `http://abexch.live`.
     ```
     Follow the on-screen prompts, choosing to **redirect all HTTP traffic to HTTPS**. Your site will now be secure and accessible at `https://abexch.live`. Remember to update your `CORS_ORIGIN` in the `.env` file to use `https`.
 
-### 9. Managing the Application
+### 9. Seeding the Database (for Development)
+
+After setting up the database schema, you can populate it with sample data for development and testing purposes. This script is idempotent, meaning you can run it multiple times without creating duplicate entries. It will insert or update an admin, a dealer, and a user.
+
+1.  **Ensure you are in the `backend` directory.**
+
+2.  **Run the seed script:**
+    ```bash
+    npm run db:seed
+    ```
+
+This will execute the `src/db/seed.ts` script, which populates the `users` table with the following sample accounts:
+-   **Admin:** `seed_admin` / `Admin@123`
+-   **Dealer:** `main_dealer` / `Admin@123`
+-   **User:** `test_user` / `Pak@123` (assigned to `main_dealer`)
+
+
+### 10. Managing the Application
 
 Here are some useful PM2 commands:
 
@@ -265,7 +282,7 @@ Here are some useful PM2 commands:
 -   **Restart the application:** `pm2 restart ababa-backend`
 -   **Stop the application:** `pm2 stop ababa-backend`
 
-### 10. Troubleshooting
+### 11. Troubleshooting
 
 #### Diagnosing "Nothing Happens" or Data Not Loading
 
