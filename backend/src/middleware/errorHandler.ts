@@ -1,6 +1,6 @@
 
-
-import { Request, Response, NextFunction } from 'express';
+// FIX: Added type-only import for express types.
+import type { Request, Response, NextFunction } from 'express';
 
 /**
  * Custom error class for handling API-specific errors with status codes.

@@ -34,10 +34,10 @@ export const apiLogin = async (role: UserRole, username: string, pin: string): P
 export const fetchAllResults = (): Promise<DrawResult[]> => apiRequest('/results');
 
 // --- User-Specific Data ---
-export const fetchBetHistory = (userId: string): Promise<Bet[]> => apiRequest(`/user/bets`, { headers: { 'x-user-id': userId, 'x-user-role': UserRole.USER }});
-export const fetchTransactionHistory = (userId: string): Promise<Transaction[]> => apiRequest(`/user/transactions`, { headers: { 'x-user-id': userId, 'x-user-role': UserRole.USER }});
+export const fetchBetHistory = (userId: string): Promise<Bet[]> => apiRequest(`/bets`, { headers: { 'x-user-id': userId, 'x-user-role': UserRole.USER }});
+export const fetchTransactionHistory = (userId: string): Promise<Transaction[]> => apiRequest(`/transactions`, { headers: { 'x-user-id': userId, 'x-user-role': UserRole.USER }});
 export const placeBets = (userId: string, betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[]): Promise<Bet[]> => {
-    return apiRequest('/user/bets', {
+    return apiRequest('/bets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': userId, 'x-user-role': UserRole.USER },
         body: JSON.stringify(betsToPlace)

@@ -6,17 +6,17 @@ import { handleGetBetHistory, handleGetTransactionHistory, handlePlaceBets, hand
 
 const router = Router();
 
-// This middleware will apply to all routes in this file
-router.use(requireAuth([UserRole.USER, UserRole.DEALER, UserRole.ADMIN]));
+// This middleware will apply to all routes in this file,
+// protecting them and making user info available on req.user
+const userAuth = requireAuth([UserRole.USER]);
 
 // --- Betting ---
-router.post('/bets', asyncHandler(handlePlaceBets));
+router.post('/bets', userAuth, asyncHandler(handlePlaceBets));
 
 // --- Data Fetching ---
-// Note: Changed from /users/:userId/bets to a more RESTful approach where the user ID is implicit from auth
-router.get('/bets', asyncHandler(handleGetBetHistory));
-router.get('/transactions', asyncHandler(handleGetTransactionHistory));
-router.get('/profile', asyncHandler(handleGetUserById)); // Fetch own profile
+router.get('/bets', userAuth, asyncHandler(handleGetBetHistory));
+router.get('/transactions', userAuth, asyncHandler(handleGetTransactionHistory));
+router.get('/profile', userAuth, asyncHandler(handleGetUserById)); // Fetch own profile
 
 
 export { router as userRouter };

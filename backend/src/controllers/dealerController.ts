@@ -1,8 +1,6 @@
 
-
-
-// FIX: Replaced AuthenticatedRequest with the standard Express Request type, which is now augmented via module augmentation.
-import { Request, Response } from 'express';
+// FIX: Changed import to be type-only.
+import type { Request, Response } from 'express';
 import { dealerService } from '../services/dealerService';
 import { ApiError } from '../middleware/errorHandler';
 

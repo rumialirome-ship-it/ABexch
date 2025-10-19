@@ -1,8 +1,4 @@
-
-
-
-// FIX: Replaced AuthenticatedRequest with the standard Express Request type, which is now augmented via module augmentation.
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { bettingService } from '../services/bettingService';
 import { transactionService } from '../services/transactionService';
 import { userService } from '../services/userService';
@@ -12,7 +8,13 @@ export const handlePlaceBets = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
+    if (!Array.isArray(req.body)) {
+        throw new ApiError(400, 'Request body must be an array of bets.');
+    }
+
+    // Enforce the authenticated user's ID on all bets to prevent spoofing
     const betsToPlace = req.body.map((bet: any) => ({ ...bet, user_id: userId }));
+
     const placedBets = await bettingService.placeBets(betsToPlace);
     res.status(201).json(placedBets);
 };
@@ -34,6 +36,7 @@ export const handleGetTransactionHistory = async (req: Request, res: Response) =
 };
 
 export const handleGetUserById = async (req: Request, res: Response) => {
+    // This is intended for a user to get their own profile data.
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
 

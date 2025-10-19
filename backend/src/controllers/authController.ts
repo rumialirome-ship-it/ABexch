@@ -1,6 +1,6 @@
 
-
-import { Request, Response } from 'express';
+// FIX: Changed import to be type-only.
+import type { Request, Response } from 'express';
 import { authService } from '../services/authService';
 
 export const handleLogin = async (req: Request, res: Response) => {

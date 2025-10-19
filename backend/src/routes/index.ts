@@ -12,6 +12,6 @@ router.use('/', publicRouter);
 // --- Authenticated & Role-Specific Routes ---
 router.use('/admin', adminRouter);
 router.use('/dealer', dealerRouter);
-router.use('/user', userRouter); // Note: Renamed from '/users' for consistency
+router.use('/', userRouter); // User routes are now at the root, e.g., /api/bets, /api/transactions
 
 export { router as apiRouter };
