@@ -1,4 +1,5 @@
-import type { Request, Response } from 'express';
+
+import { Request, Response } from 'express';
 import { bettingService } from '../services/bettingService';
 import { transactionService } from '../services/transactionService';
 import { userService } from '../services/userService';

@@ -1,6 +1,5 @@
 
-// FIX: Changed import to be type-only.
-import type { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { bettingService } from '../services/bettingService';
 import { pollingService } from '../services/pollingService';
 

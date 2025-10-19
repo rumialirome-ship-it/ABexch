@@ -1,6 +1,5 @@
 
-// FIX: Changed import to be type-only.
-import type { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';

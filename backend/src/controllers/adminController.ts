@@ -1,6 +1,5 @@
 
-// FIX: Changed import to be type-only.
-import type { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { UserRole } from '../types';
 import { adminService } from '../services/adminService';
 import { ApiError } from '../middleware/errorHandler';
