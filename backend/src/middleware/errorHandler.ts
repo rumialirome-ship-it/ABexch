@@ -26,7 +26,7 @@ export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunctio
  * Global error handling middleware. This should be the last middleware added to the Express app.
  * It catches all errors passed via `next(error)` and sends a formatted JSON response.
  */
-// FIX: Explicitly type the handler as ErrorRequestHandler to resolve type inference issues.
+// @google/genai-dev-tool: Fix: Explicitly type the handler as ErrorRequestHandler to resolve type inference issues.
 export const globalErrorHandler: ErrorRequestHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
     // Log the full error for debugging purposes, especially for non-ApiError types
     console.error(err);
