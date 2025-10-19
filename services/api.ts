@@ -33,9 +33,13 @@ export const apiLogin = async (role: UserRole, username: string, pin: string): P
 // --- Public Data ---
 export const fetchAllResults = (): Promise<DrawResult[]> => apiRequest('/results');
 
-// --- User-Specific Data ---
-export const fetchBetHistory = (userId: string): Promise<Bet[]> => apiRequest(`/bets`, { headers: { 'x-user-id': userId, 'x-user-role': UserRole.USER }});
-export const fetchTransactionHistory = (userId: string): Promise<Transaction[]> => apiRequest(`/transactions`, { headers: { 'x-user-id': userId, 'x-user-role': UserRole.USER }});
+// --- User-Specific Actions (for the logged-in user) ---
+export const fetchMyBetHistory = (user: User): Promise<Bet[]> => {
+    return apiRequest(`/bets`, { headers: { 'x-user-id': user.id, 'x-user-role': user.role }});
+};
+export const fetchMyTransactionHistory = (user: User): Promise<Transaction[]> => {
+    return apiRequest(`/transactions`, { headers: { 'x-user-id': user.id, 'x-user-role': user.role }});
+};
 export const placeBets = (userId: string, betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[]): Promise<Bet[]> => {
     return apiRequest('/bets', {
         method: 'POST',
@@ -43,6 +47,18 @@ export const placeBets = (userId: string, betsToPlace: Omit<Bet, 'id' | 'created
         body: JSON.stringify(betsToPlace)
     });
 };
+
+
+// --- Admin/Dealer fetching data for a specific user ---
+export const fetchBetsForUserByActor = (actor: User, targetUserId: string): Promise<Bet[]> => {
+    const rolePath = actor.role; // 'admin' or 'dealer'
+    return apiRequest(`/${rolePath}/users/${targetUserId}/bets`, { headers: { 'x-user-id': actor.id, 'x-user-role': actor.role } });
+};
+export const fetchTransactionsForUserByActor = (actor: User, targetUserId: string): Promise<Transaction[]> => {
+    const rolePath = actor.role;
+    return apiRequest(`/${rolePath}/users/${targetUserId}/transactions`, { headers: { 'x-user-id': actor.id, 'x-user-role': actor.role } });
+};
+
 
 // --- Admin-Specific Actions ---
 export const fetchAllUsers = (admin: User): Promise<User[]> => {

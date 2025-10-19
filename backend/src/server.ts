@@ -1,5 +1,6 @@
 
 
+
 import express, { Express, ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -27,7 +28,7 @@ app.use('/api', apiRouter);
 // --- Global Error Handler ---
 // This should be the last piece of middleware
 // FIX: Explicitly cast globalErrorHandler to ErrorRequestHandler to resolve type inference issue with app.use().
-app.use(globalErrorHandler as ErrorRequestHandler);
+app.use(globalErrorHandler);
 
 
 // --- Server Activation ---

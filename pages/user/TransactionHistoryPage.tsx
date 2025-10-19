@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchTransactionHistory } from '../../services/api';
+import { fetchMyTransactionHistory } from '../../services/api';
 import { Transaction, TransactionType } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import TransactionTypeBadge from '../../components/common/TransactionTypeBadge';
@@ -23,7 +23,7 @@ const TransactionHistoryPage: React.FC = () => {
     const loadTransactions = async () => {
       if (user) {
         try {
-          const data = await fetchTransactionHistory(user.id);
+          const data = await fetchMyTransactionHistory(user);
           setTransactions(data);
         } catch (error) {
           console.error("Failed to fetch transaction history", error);

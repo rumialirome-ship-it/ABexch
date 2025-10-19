@@ -1,10 +1,11 @@
 
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchUserById, fetchBetHistory, fetchTransactionHistory, addCreditToUserByAdmin, debitFundsByAdmin, fetchAllDealers } from '../../services/api';
+import { fetchUserById, fetchBetsForUserByActor, fetchTransactionsForUserByActor, addCreditToUserByAdmin, debitFundsByAdmin, fetchAllDealers } from '../../services/api';
 import { User, Bet, Transaction } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import BetStatusBadge from '../../components/common/BetStatusBadge';
@@ -32,8 +33,8 @@ const UserDetailsPage: React.FC = () => {
             setLoading(true);
             const [userData, betData, transactionData] = await Promise.all([
                 fetchUserById(admin, userId),
-                fetchBetHistory(userId),
-                fetchTransactionHistory(userId)
+                fetchBetsForUserByActor(admin, userId),
+                fetchTransactionsForUserByActor(admin, userId)
             ]);
             setUser(userData);
             setBets(betData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));

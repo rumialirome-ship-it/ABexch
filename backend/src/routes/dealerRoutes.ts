@@ -10,7 +10,9 @@ import {
     handleRequestTopUp,
     handleGetPendingCommissions,
     handleUpdateUserBetLimit,
-    handleGetManagedUserById
+    handleGetManagedUserById,
+    handleGetBetsForManagedUser,
+    handleGetTransactionsForManagedUser
 } from '../controllers/dealerController';
 
 const router = Router();
@@ -24,6 +26,8 @@ router.post('/users', asyncHandler(handleAddUser));
 router.get('/users/:userId', asyncHandler(handleGetManagedUserById));
 router.post('/users/:userId/credit', asyncHandler(handleAddCreditToUser));
 router.put('/users/:userId/bet-limit', asyncHandler(handleUpdateUserBetLimit));
+router.get('/users/:userId/bets', asyncHandler(handleGetBetsForManagedUser));
+router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForManagedUser));
 
 // --- Data & Actions ---
 router.get('/bets', asyncHandler(handleGetBetsByDealer));

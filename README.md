@@ -2,222 +2,214 @@
 
 A-BABA Exchange is a modern web application for an online betting platform. It features a sleek, dark-themed UI and facilitates 2-Digit and 1-Digit games with a multi-role system for Admins, Dealers, and Users.
 
-This guide provides instructions for deploying the application to a Virtual Private Server (VPS).
+This guide provides comprehensive instructions for deploying the application to a production environment on a Virtual Private Server (VPS).
 
-## Understanding the Application Architecture
+## Application Architecture Overview
 
-It's important to understand how the different parts of this application work together. This is a secure and standard setup for modern web applications.
+Understanding the application's structure is key to a successful deployment. This is a secure, standard setup for modern web applications.
 
-1.  **Frontend (React):** This is the user interface that runs in the user's browser. It is built into static files (`index.html`, `bundle.js`). It **does not contain any secret API keys**. When it needs data, it makes requests to its own server at a relative path, like `/api/login`.
+1.  **Frontend (React):** The user interface built with React. This code is compiled into static files (`index.html`, `bundle.js`) that run in the user's web browser. It makes API calls to its own server at relative paths (e.g., `/api/login`).
 
-2.  **Nginx (Web Server & Reverse Proxy):** Nginx has two jobs:
-    *   It serves the static frontend files to the user.
-    *   It acts as a gateway. When it receives a request for `/api/...`, it intelligently forwards (proxies) that request to your backend server running internally on port 3001.
+2.  **Nginx (Web Server & Reverse Proxy):** Nginx serves two critical functions:
+    *   **Serves Static Files:** It delivers the frontend's `index.html` and `bundle.js` files to the user.
+    *   **Acts as a Gateway:** When it receives a request starting with `/api/`, it securely forwards (proxies) that request to the backend Node.js server, which is not exposed to the public internet.
 
-3.  **Backend (Node.js / Express):** This is the secure "engine" of your application.
-    *   It listens on port 3001 for requests from Nginx.
-    *   It connects to the PostgreSQL database.
-    *   **This is where all secret API keys would be stored** (in the `backend/.env` file). If you needed to connect to an external service (like a payment gateway or SMS provider), the backend code would securely use the key from the `.env` file.
+3.  **Backend (Node.js / Express):** The secure "engine" of the application.
+    *   It runs internally, typically on port `3001`, and only accepts connections from Nginx.
+    *   It securely connects to the PostgreSQL database.
+    *   **It is the only part of the application that handles sensitive data** like database credentials and any external API keys, which are stored in an untracked `.env` file.
 
-This setup ensures that no sensitive information is ever exposed in the frontend code that users can see.
+This architecture ensures that no secret keys or credentials are ever exposed in the frontend code.
 
 ---
 
-## Deployment to VPS
+## Deployment Guide
 
-> **🔒 Security Best Practice:** Never commit secret keys, passwords, or other sensitive credentials directly into your source code (e.g., in `.js`, `.ts`, or `README.md` files). Always use environment variables, as described in Step 6.
+> **🔒 Security First:** Never commit secret keys, passwords, or other sensitive credentials directly into your source code. Always use environment variables as described in Step 5.
 
-Follow these steps to get your application running in a production environment on a Linux-based VPS (e.g., Ubuntu).
+### Before You Begin: Prerequisites
 
-### 1. Prerequisites on the VPS
+Before starting, ensure you have the following:
 
-Ensure you have the following software installed on your server.
+*   **A Linux VPS:** An Ubuntu 20.04 or newer server is recommended.
+*   **SSH Access:** You should be able to connect to your VPS as a user with `sudo` privileges.
+*   **A Domain Name:** A registered domain (e.g., `your-domain.com`) with its DNS "A" record pointing to your VPS's public IP address.
 
--   **Git:** For cloning the repository.
--   **Node.js & npm:** (Version 16.x or newer is recommended).
--   **PM2:** A process manager for Node.js to keep your application running.
-    ```bash
-    sudo npm install pm2 -g
-    ```
--   **Nginx:** A web server and reverse proxy.
-    ```bash
-    sudo apt update && sudo apt install nginx -y
-    ```
--   **PostgreSQL Server:** The database for the application.
-    ```bash
-    sudo apt update && sudo apt install postgresql postgresql-contrib -y
-    ```
+### Step 1: Server Setup
 
-### 2. Clone the Repository
+First, install all the necessary software on your VPS.
 
-Clone your project's source code onto the VPS.
+```bash
+# Update your package list
+sudo apt update && sudo apt upgrade -y
+
+# Install Git, Nginx, and PostgreSQL
+sudo apt install git nginx postgresql postgresql-contrib -y
+
+# Install Node.js (we'll use nvm for easy version management)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+nvm install --lts
+nvm use --lts
+
+# Install PM2 globally to manage the backend process
+npm install pm2 -g
+```
+
+### Step 2: Get the Application Code
+
+Clone your project's repository onto the VPS.
 
 ```bash
 git clone <your-repository-url>
 cd <your-project-directory>
 ```
 
-### 3. Build the Frontend
+### Step 3: Build the Frontend
 
-The React frontend is built using a local version of `esbuild` managed by `npm`.
-
-1.  **Install frontend dependencies:**
-    From the project's root directory, run:
-    ```bash
-    npm install
-    ```
-
-2.  **Build the application:**
-    ```bash
-    npm run build
-    ```
-    This command bundles the frontend into a single file at `dist/bundle.js`. The `index.html` file is already configured to use this bundle, so no manual changes are needed.
-
-### 4. Set Up the Backend Application
-
-Navigate to the backend directory and install its dependencies.
+The frontend is built using `esbuild`. Install the dependencies and run the build script from the **project's root directory**.
 
 ```bash
-cd backend
+# Install root-level dependencies (like esbuild)
 npm install
+
+# Build the frontend code
+npm run build
 ```
 
-### 5. Set Up the Backend Database (PostgreSQL)
+This creates a single file at `dist/bundle.js`, which `index.html` is already configured to use.
 
-Log in to PostgreSQL to create a dedicated database and user for the application.
+### Step 4: Database Configuration (PostgreSQL)
 
-1.  **Switch to the `postgres` user:**
-    To perform database operations, first switch to the `postgres` system user.
+Here, we'll create a dedicated database and user for the application.
+
+1.  **Switch to the `postgres` User:**
+    To perform database setup, you must become the `postgres` system user.
 
     ```bash
-    # Your prompt should look something like: root@vps:~#
+    # Your prompt should be something like: user@vps:~$
     sudo su - postgres
     ```
-    > **Note:** Make sure there is a space between `su`, `-`, and `postgres`.
 
 2.  **Create the Database and User:**
-    After running the command above, your prompt will change. Now, start the PostgreSQL command-line tool.
+    Your command prompt will now look like `postgres@vps:~$`. Start the PostgreSQL interactive terminal.
 
     ```bash
-    # Your prompt should now look like: postgres@vps:~$
     psql
     ```
-    Execute the following SQL commands inside the `psql` prompt. Replace `'your_strong_password'` with a secure password.
+
+    Your prompt will change again to `postgres=#`. Execute the following SQL commands. **Replace `'your_strong_password'` with a secure password you create and save.**
 
     ```sql
-    -- Your prompt will now be: postgres=#
     CREATE DATABASE ababa_db;
     CREATE USER ababa_user WITH ENCRYPTED PASSWORD 'your_strong_password';
     GRANT ALL PRIVILEGES ON DATABASE ababa_db TO ababa_user;
     \q
     ```
-    The `\q` command will exit `psql` and return you to the `postgres` user's shell.
+    The `\q` command exits `psql`.
 
-3.  **Import the Database Schema:**
-    While still in the `postgres` user's shell, run the following command to create the application's tables. **Use the full path** to your `schema.sql` file.
+3.  **Create Tables by Importing the Schema:**
+    You are now back in the `postgres` user's shell. Run the command below to create the application's tables. You must provide the **full, absolute path** to the `schema.sql` file.
+
+    > **Tip:** In another terminal, navigate to your project's `backend/src/db` directory and run `pwd` to get the correct full path.
 
     ```bash
-    # Ensure you are still the postgres user (postgres@vps:~$)
     # Replace the path with the actual location of your project
-    psql -d ababa_db -f /path/to/your/project/backend/src/db/schema.sql
+    psql -d ababa_db -f /home/user/your-project-directory/backend/src/db/schema.sql
     ```
-    This command is **safe to run multiple times**. It creates all required tables and ensures a default **admin** user exists. If you ever forget the admin password, running this script again will reset it.
 
-    The default login credentials for the admin are:
+    This script creates all tables and also ensures a default **admin** user exists with the following credentials:
     -   **Username:** `admin`
     -   **PIN:** `Admin@123`
 
-    **Security Warning:** You should log in and change this default password immediately after deployment.
-
-4.  **Return to the root user:**
-    Once the schema is imported, you can return to your original shell:
+4.  **Return to Your User:**
     ```bash
     exit
     ```
 
-### 6. Configure Environment Variables
+### Step 5: Backend Configuration
 
-Create a `.env` file inside the `backend` directory. This file stores sensitive configuration details and is the **correct place for your API keys**.
+Now, configure and run the backend server.
 
-```bash
-# Still inside the 'backend' directory
-nano .env
-```
-
-Paste the following content into the file, **replacing the placeholder values with your actual database credentials**.
-
-```env
-# Backend Server Port
-PORT=3001
-
-# Frontend URL for CORS. This MUST use https once SSL is configured.
-CORS_ORIGIN=https://abexch.live
-
-# PostgreSQL Database Connection URL
-# Use the database credentials you created in Step 5.
-DATABASE_URL="postgresql://ababa_user:your_strong_password@localhost:5432/ababa_db"
-
-# --- API KEY CONFIGURATION ---
-# This is the correct and secure place for any external API keys.
-# Do NOT store keys in the README or any other source code file.
-#
-# If your application needs to connect to an external API (e.g., for SMS, payments, etc.),
-# uncomment the line below and paste your key. You will also need to update the backend code to
-# read this variable using `process.env.EXTERNAL_API_KEY`.
-#
-# EXTERNAL_API_KEY="paste_your_api_key_here"
-```
-
-Save the file (in `nano`, press `CTRL+X`, then `Y`, then `Enter`).
-
-### 7. Build and Start the Backend with PM2
-
-Now, build the TypeScript backend and start it using PM2.
-
-```bash
-# This assumes you are already in the 'backend' directory
-
-# Build the TypeScript code into JavaScript
-npm run build
-
-# Start the application with PM2
-pm2 start dist/server.js --name "ababa-backend"
-
-# Save the process list to restart on server reboot
-pm2 save
-```
-
-Your backend is now running. It's only accessible directly via port 3001. The next step is to configure Nginx to make it accessible through your domain.
-
-### 8. Configure Nginx and Secure with SSL
-
-#### A. Copy Frontend Files and Configure Nginx
-
-1.  **Create a web directory and copy frontend files:**
-    From your project's root directory:
+1.  **Navigate to the Backend Directory and Install Dependencies:**
     ```bash
-    # Create a directory for your site
-    sudo mkdir -p /var/www/abexch.live
+    cd backend
+    npm install
+    ```
+
+2.  **Create the Environment File (`.env`):**
+    This file stores your secret credentials.
+
+    ```bash
+    nano .env
+    ```
+
+    Paste the following content into the file, replacing the placeholder values with your actual settings.
+
+    ```env
+    # Backend Server Port (should not be changed)
+    PORT=3001
+
+    # Frontend URL for CORS. This MUST match your domain EXACTLY.
+    # We will set it to HTTP for now and change it to HTTPS after adding SSL.
+    CORS_ORIGIN=http://your-domain.com
+
+    # PostgreSQL Database Connection URL
+    # Use the database credentials you created in Step 4.
+    DATABASE_URL="postgresql://ababa_user:your_strong_password@localhost:5432/ababa_db"
+
+    # (Optional) Google Gemini API Key for any AI features
+    # This is required if the application integrates with Google's AI services.
+    GEMINI_API_KEY="your_google_gemini_api_key_here"
+    ```
+    Save the file (`CTRL+X`, then `Y`, then `Enter`).
+
+3.  **Build and Run with PM2:**
+    Compile the TypeScript code and start the server using the PM2 process manager.
+
+    ```bash
+    # Build the TypeScript code into JavaScript
+    npm run build
+
+    # Start the application with PM2
+    pm2 start dist/server.js --name "ababa-backend"
+
+    # Save the process list to automatically restart on server reboot
+    pm2 save
+    ```
+
+### Step 6: Web Server Configuration (Nginx)
+
+Configure Nginx to serve the frontend and act as a reverse proxy for the backend.
+
+1.  **Prepare the Web Directory:**
+    Create a directory to hold your static frontend files. **Replace `your-domain.com` with your actual domain.**
+
+    ```bash
+    # Create the directory
+    sudo mkdir -p /var/www/your-domain.com
     
-    # Copy the necessary frontend files
-    sudo cp index.html dist/bundle.js /var/www/abexch.live/
+    # Copy the frontend files into it (run from your project's root directory)
+    sudo cp index.html dist/bundle.js /var/www/your-domain.com/
     ```
 
-2.  **Create an Nginx configuration file:**
+2.  **Create an Nginx Configuration File:**
     ```bash
-    sudo nano /etc/nginx/sites-available/abexch.live
+    sudo nano /etc/nginx/sites-available/your-domain.com
     ```
 
-3.  **Paste the following configuration.** This serves your frontend and forwards API requests to your backend on port 3001.
+3.  **Paste the following configuration.** Remember to replace all instances of `your-domain.com`.
     ```nginx
     server {
         listen 80;
-        server_name abexch.live www.abexch.live;
+        server_name your-domain.com www.your-domain.com;
 
-        root /var/www/abexch.live;
+        root /var/www/your-domain.com;
         index index.html;
 
-        # Forward API requests to your backend
+        # Forward all requests starting with /api/ to your backend server
         location /api/ {
             proxy_pass http://localhost:3001;
             proxy_set_header Host $host;
@@ -226,115 +218,82 @@ Your backend is now running. It's only accessible directly via port 3001. The ne
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        # Handle client-side routing for React
+        # This allows React Router to handle all other routes
         location / {
             try_files $uri $uri/ /index.html;
         }
     }
     ```
 
-4.  **Enable the site and restart Nginx:**
+4.  **Enable the Site and Restart Nginx:**
     ```bash
-    sudo ln -s /etc/nginx/sites-available/abexch.live /etc/nginx/sites-enabled/
+    # Link the config to the 'sites-enabled' directory
+    sudo ln -s /etc/nginx/sites-available/your-domain.com /etc/nginx/sites-enabled/
+    
+    # Test for syntax errors
     sudo nginx -t
+    
+    # Restart Nginx to apply changes
     sudo systemctl restart nginx
     ```
 
-At this point, you should be able to access your site at `http://abexch.live`.
+Your site should now be accessible at `http://your-domain.com`.
 
-#### B. Adding SSL with Let's Encrypt (HTTPS)
+### Step 7: Secure with SSL (Let's Encrypt)
 
 1.  **Install Certbot:**
     ```bash
-    sudo apt update
     sudo apt install certbot python3-certbot-nginx -y
     ```
 
-2.  **Run Certbot.** It will automatically obtain a certificate and update your Nginx configuration for HTTPS.
+2.  **Run Certbot.** It will automatically obtain a certificate and update your Nginx configuration.
     ```bash
-    sudo certbot --nginx -d abexch.live -d www.abexch.live
+    sudo certbot --nginx -d your-domain.com -d www.your-domain.com
     ```
-    Follow the on-screen prompts, choosing to **redirect all HTTP traffic to HTTPS**. Your site will now be secure and accessible at `https://abexch.live`. Remember to update your `CORS_ORIGIN` in the `.env` file to use `https`.
+    Follow the on-screen prompts. When asked, choose the option to **redirect all HTTP traffic to HTTPS**.
 
-### 9. Seeding the Database (for Development)
+3.  **Final `.env` Update:**
+    Your site is now secure. The final step is to update the `.env` file to reflect this.
 
-After setting up the database schema, you can populate it with sample data for development and testing purposes. This script is idempotent, meaning you can run it multiple times without creating duplicate entries. It will insert or update an admin, a dealer, and a user.
+    ```bash
+    # Navigate to the backend directory
+    cd backend
+    nano .env
+    ```
+
+    Change `CORS_ORIGIN` to use `https`:
+    ```env
+    # Before: CORS_ORIGIN=http://your-domain.com
+    # After:
+    CORS_ORIGIN=https://your-domain.com
+    ```
+    Save the file, then restart the backend for the change to take effect:
+    ```bash
+    pm2 restart ababa-backend
+    ```
+
+**Deployment is complete!** You can now access your application at `https://your-domain.com`.
+
+### Optional: Seeding the Database
+
+For development or testing, you can populate the database with sample data.
 
 1.  **Ensure you are in the `backend` directory.**
-
 2.  **Run the seed script:**
     ```bash
     npm run db:seed
     ```
+    This adds a sample admin, dealer, and user.
 
-This will execute the `src/db/seed.ts` script, which populates the `users` table with the following sample accounts:
--   **Admin:** `seed_admin` / `Admin@123`
--   **Dealer:** `main_dealer` / `Admin@123`
--   **User:** `test_user` / `Pak@123` (assigned to `main_dealer`)
+### Managing the Application
 
-
-### 10. Managing the Application
-
-Here are some useful PM2 commands:
-
--   **List running processes:** `pm2 list`
+-   **List running apps:** `pm2 list`
 -   **View real-time logs:** `pm2 logs ababa-backend`
--   **Restart the application:** `pm2 restart ababa-backend`
--   **Stop the application:** `pm2 stop ababa-backend`
+-   **Restart the app:** `pm2 restart ababa-backend`
+-   **Stop the app:** `pm2 stop ababa-backend`
 
-### 11. Troubleshooting
+### Troubleshooting
 
-#### Diagnosing "Nothing Happens" or Data Not Loading
-
-If the application loads but data seems to be missing or actions don't work, follow these steps to find the problem.
-
-1.  **Check the Backend Logs First**
-    This is the most important step. Check if your backend is running and if it has any errors.
-    ```bash
-    pm2 logs ababa-backend
-    ```
-    Look for any red error messages, especially related to the database connection. If the logs say the app is crashing or in a restart loop, you must fix the error there first.
-
-2.  **Check the Browser's Developer Console**
-    -   Open your website in Chrome or Firefox.
-    -   Press `F12` to open the Developer Tools.
-    -   Click on the **"Console"** tab. Look for any red error messages.
-    -   Click on the **"Network"** tab. Refresh the page or try to log in. Look for any rows that are red. Click on them to see the error.
-        -   **CORS Error:** If you see an error about `Cross-Origin Request Blocked`, it means your `CORS_ORIGIN` in `backend/.env` is wrong. It must exactly match the URL in your browser bar (`https://abexch.live`). After changing it, you must restart the backend: `pm2 restart ababa-backend`.
-        -   **502 Bad Gateway:** This means Nginx cannot talk to your backend. This usually happens if the backend isn't running. Check the PM2 logs from step 1.
-        -   **404 Not Found:** This could mean your Nginx `location /api/` block is misconfigured.
-
-3.  **Check Nginx Logs**
-    If you suspect a problem with Nginx (like a 502 error), check its error log for more details:
-    ```bash
-    sudo tail -f /var/log/nginx/error.log
-    ```
-
-#### Error: `EADDRINUSE: address already in use :::3001`
-
-This common error means another process is already using port 3001.
-
-**Solution:**
-
-1.  First, ensure any existing PM2 process for the app is stopped and deleted to get a clean start:
-    ```bash
-    pm2 stop ababa-backend
-    pm2 delete ababa-backend
-    ```
-
-2.  Find the process that is still using the port:
-    ```bash
-    sudo lsof -i :3001
-    ```
-    This command will show you the process ID (PID) using the port.
-
-3.  Stop the process using its PID. Replace `<PID>` with the number from the previous command's output.
-    ```bash
-    sudo kill -9 <PID>
-    ```
-
-4.  Now, you can safely restart your backend application with PM2 from within the `backend` directory:
-    ```bash
-    pm2 start dist/server.js --name "ababa-backend"
-    pm2 save # Don't forget to save the process list
-    ```
+-   **502 Bad Gateway:** Your backend is likely not running. Check `pm2 logs ababa-backend` for errors.
+-   **Data Not Loading / CORS Error:** The `CORS_ORIGIN` in your `backend/.env` file does not exactly match the URL in your browser (`https://your-domain.com`). Remember to restart the backend with `pm2 restart ababa-backend` after changing it.
+-   **Database Connection Error:** Check the `DATABASE_URL` in `backend/.env`. Ensure the username, password, and database name are correct and that the PostgreSQL service is running (`sudo systemctl status postgresql`).

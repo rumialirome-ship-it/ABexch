@@ -1,9 +1,11 @@
 
 
-import * as express from 'express';
+
+
+import { Request, Response } from 'express';
 import { authService } from '../services/authService';
 
-export const handleLogin = async (req: express.Request, res: express.Response) => {
+export const handleLogin = async (req: Request, res: Response) => {
     const { role, username, pin } = req.body;
     const user = await authService.login(role, username, pin);
     res.status(200).json(user);

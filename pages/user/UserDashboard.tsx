@@ -1,12 +1,13 @@
 
 
 
+
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
-import { fetchTransactionHistory } from '../../services/api';
+import { fetchMyTransactionHistory } from '../../services/api';
 import { Transaction, TransactionType } from '../../types';
 
 const UserDashboard: React.FC = () => {
@@ -26,7 +27,7 @@ const UserDashboard: React.FC = () => {
     const getTodaySummary = async () => {
       setLoadingSummary(true);
       try {
-        const transactions = await fetchTransactionHistory(user.id);
+        const transactions = await fetchMyTransactionHistory(user);
         
         const summary = {
             deposit: 0,

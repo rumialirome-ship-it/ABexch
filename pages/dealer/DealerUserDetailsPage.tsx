@@ -1,10 +1,11 @@
 
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchUserById, fetchBetHistory, fetchTransactionHistory, addCreditToUser, updateUserBetLimit } from '../../services/api';
+import { fetchUserById, fetchBetsForUserByActor, fetchTransactionsForUserByActor, addCreditToUser, updateUserBetLimit } from '../../services/api';
 import { User, Bet, Transaction, UserRole } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import BetStatusBadge from '../../components/common/BetStatusBadge';
@@ -32,8 +33,8 @@ const DealerUserDetailsPage: React.FC = () => {
             setLoading(true);
             const [userData, betData, transactionData] = await Promise.all([
                 fetchUserById(dealer, userId),
-                fetchBetHistory(userId),
-                fetchTransactionHistory(userId)
+                fetchBetsForUserByActor(dealer, userId),
+                fetchTransactionsForUserByActor(dealer, userId)
             ]);
             
             if (dealer && userData.dealer_id !== dealer.id) {

@@ -1,12 +1,14 @@
 
 
-import * as express from 'express';
+
+
+import { Request, Response } from 'express';
 import { bettingService } from '../services/bettingService';
 import { transactionService } from '../services/transactionService';
 import { userService } from '../services/userService';
 import { ApiError } from '../middleware/errorHandler';
 
-export const handlePlaceBets = async (req: express.Request, res: express.Response) => {
+export const handlePlaceBets = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
@@ -21,7 +23,7 @@ export const handlePlaceBets = async (req: express.Request, res: express.Respons
     res.status(201).json(placedBets);
 };
 
-export const handleGetBetHistory = async (req: express.Request, res: express.Response) => {
+export const handleGetBetHistory = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
@@ -29,7 +31,7 @@ export const handleGetBetHistory = async (req: express.Request, res: express.Res
     res.status(200).json(bets);
 };
 
-export const handleGetTransactionHistory = async (req: express.Request, res: express.Response) => {
+export const handleGetTransactionHistory = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
 
@@ -37,7 +39,7 @@ export const handleGetTransactionHistory = async (req: express.Request, res: exp
     res.status(200).json(transactions);
 };
 
-export const handleGetUserById = async (req: express.Request, res: express.Response) => {
+export const handleGetUserById = async (req: Request, res: Response) => {
     // This is intended for a user to get their own profile data.
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');

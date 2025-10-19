@@ -18,6 +18,8 @@ import {
     handleGetPendingTopUps,
     handleApproveTopUp,
     handleDebitFunds,
+    handleGetBetsForUser,
+    handleGetTransactionsForUser,
 } from '../controllers/adminController';
 
 const router = Router();
@@ -30,6 +32,9 @@ router.get('/users', asyncHandler(handleGetAllSystemUsers));
 router.post('/users', asyncHandler(handleAdminAddUser));
 router.get('/users/:userId', asyncHandler(handleGetSystemUserById));
 router.post('/users/:userId/credit', asyncHandler(handleAdminAddCreditToUser));
+router.get('/users/:userId/bets', asyncHandler(handleGetBetsForUser));
+router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForUser));
+
 
 // --- Dealer Management ---
 router.get('/dealers', asyncHandler(handleGetAllDealers));

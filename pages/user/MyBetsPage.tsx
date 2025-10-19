@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { fetchBetHistory } from '../../services/api';
+import { fetchMyBetHistory } from '../../services/api';
 import { Bet, BetStatus } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useRealtime } from '../../contexts/RealtimeContext';
@@ -28,7 +28,7 @@ const MyBetsPage: React.FC = () => {
   const loadBets = useCallback(async () => {
     if (user) {
       try {
-        const data = await fetchBetHistory(user.id);
+        const data = await fetchMyBetHistory(user);
         setBets(data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
       } catch (error) {
         console.error("Failed to fetch bet history", error);

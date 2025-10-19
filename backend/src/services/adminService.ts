@@ -1,8 +1,9 @@
 import { db } from '../db';
-import { User, UserRole, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType } from '../types';
+import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
 import { stripPassword, stripPasswords, generateId } from '../utils/helpers';
 import { transactionService } from './transactionService';
+import { bettingService } from './bettingService';
 import { PoolClient } from 'pg';
 
 // --- Helper for Commission Calculation ---
@@ -381,5 +382,13 @@ export const adminService = {
         } finally {
             client.release();
         }
-    }
+    },
+    
+    async getBetsForUser(userId: string): Promise<Bet[]> {
+        return bettingService.getBetHistory(userId);
+    },
+
+    async getTransactionsForUser(userId: string): Promise<Transaction[]> {
+        return transactionService.getTransactionHistory(userId);
+    },
 };

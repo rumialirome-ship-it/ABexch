@@ -1,9 +1,10 @@
 import { db } from '../db';
-import { User, Bet, Commission, TopUpRequest, UserRole } from '../types';
+import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
 import { stripPassword, stripPasswords, generateId } from '../utils/helpers';
 import { userService } from './userService';
 import { transactionService } from './transactionService';
+import { bettingService } from './bettingService';
 
 export const dealerService = {
     /**
@@ -149,5 +150,15 @@ export const dealerService = {
             [dealerId]
         );
         return rows;
-    }
+    },
+
+    async getBetsForManagedUser(dealerId: string, userId: string): Promise<Bet[]> {
+        await this.getManagedUserById(dealerId, userId);
+        return bettingService.getBetHistory(userId);
+    },
+
+    async getTransactionsForManagedUser(dealerId: string, userId: string): Promise<Transaction[]> {
+        await this.getManagedUserById(dealerId, userId);
+        return transactionService.getTransactionHistory(userId);
+    },
 };
