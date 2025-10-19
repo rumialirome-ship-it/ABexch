@@ -1,15 +1,27 @@
 
-import { GoogleGenAI } from '@google/genai';
 import { Bet } from '../types';
 
-if (!process.env.API_KEY) {
-    // In a real app, you might want a more graceful fallback or logging.
-    console.error("API_KEY environment variable is not set for Gemini.");
-    throw new Error("API_KEY environment variable is not set.");
+const model = 'gemini-2.5-flash';
+
+// Lazily initialize the AI client to avoid errors on startup.
+let ai: any;
+
+async function getGenAIClient() {
+    if (ai) {
+        return ai;
+    }
+
+    if (!process.env.API_KEY) {
+        console.error("API_KEY environment variable is not set for Gemini.");
+        throw new Error("API_KEY environment variable is not set.");
+    }
+
+    // Dynamically import the ES Module. This is the fix for ERR_REQUIRE_ESM.
+    const { GoogleGenAI } = await import('@google/genai');
+    ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    return ai;
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const model = 'gemini-2.5-flash';
 
 const getSystemInstruction = (history: Bet[]): string => {
     const historyString = history.length > 0
@@ -31,9 +43,10 @@ ${historyString}
 
 export const geminiService = {
     async generateAssistantResponseStream(prompt: string, history: Bet[]) {
+        const client = await getGenAIClient();
         const systemInstruction = getSystemInstruction(history);
         
-        const responseStream = await ai.models.generateContentStream({
+        const responseStream = await client.models.generateContentStream({
             model: model,
             contents: prompt,
             config: {
