@@ -4,6 +4,9 @@ import { User, UserRole, Bet, BetStatus, DrawResult, Transaction, TransactionTyp
 // --- Database Connection ---
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // --- Helper Functions ---

@@ -1,7 +1,8 @@
 
 
 
-import express from 'express';
+
+import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { apiRouter } from './src/routes';
@@ -14,7 +15,7 @@ import './src/types';
 dotenv.config({ path: './backend/.env' });
 
 
-const app = express();
+const app: Express = express();
 const PORT = process.env.PORT || 3001;
 
 // --- Core Middleware ---
