@@ -23,8 +23,10 @@ const setupDatabase = async () => {
     console.log('🧱 Executing schema.sql within a single transaction...');
 
     await client.query('BEGIN');
-    // The 'SET search_path' command is no longer needed here as it's now handled
-    // globally for all connections in the db/index.ts pool configuration.
+    // FIX: Explicitly set the search_path for this transaction to guarantee
+    // that tables are created in the 'public' schema. This is a direct
+    // fix for the "no schema has been selected" error.
+    await client.query('SET search_path TO public;');
     await client.query(schemaSQL);
     await client.query('COMMIT');
 
