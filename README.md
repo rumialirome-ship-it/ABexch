@@ -40,21 +40,42 @@ npm install pm2 -g
 
 ### **Step 2: Set Up the Database**
 
-Here, we'll create a dedicated database and a user for the application.
+Here, we'll create the database, a user for the application, and install a required database extension.
 
-1.  **Log in to PostgreSQL:**
+1.  **Log in to PostgreSQL as the superuser:**
     ```bash
     sudo -i -u postgres
     psql
     ```
 
-2.  **Run the following SQL commands inside the `psql` shell.** Create a secure password and save it for Step 4.
+2.  **Run the following SQL commands inside the `psql` shell.**
+    *   This will create your database and user.
+    *   **Important:** Replace `your_strong_password_here` with a secure password and save it for Step 4.
 
     ```sql
+    -- 1. Create the database
     CREATE DATABASE ababa_db;
+
+    -- 2. Create a user for your application
     CREATE USER ababa_user WITH ENCRYPTED PASSWORD 'your_strong_password_here';
+
+    -- 3. Give the new user full control over the new database
     GRANT ALL PRIVILEGES ON DATABASE ababa_db TO ababa_user;
+
+    -- 4. Connect to the new database to perform the next step
+    \c ababa_db
+
+    -- 5. Install the required 'uuid-ossp' extension as the superuser
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    ```
+
+3.  **Exit PostgreSQL:**
+    Now, exit the `psql` shell and then the `postgres` user session.
+    ```bash
+    # Type \q and press Enter to exit psql
     \q
+
+    # Type exit and press Enter to return to your normal user
     exit
     ```
 
@@ -149,7 +170,7 @@ Configure Nginx to show your frontend to the world and securely communicate with
     sudo mkdir -p /var/www/abexch.live
     
     # Navigate back to the project's root directory
-    cd /var/www/html/ABexch/abexch # Adjust path if you cloned elsewhere
+    cd /path/to/your/cloned/repo/abexch # Adjust path if you cloned elsewhere
     
     # Copy the built frontend files to the live site directory
     sudo cp index.html /var/www/abexch.live/
@@ -221,7 +242,7 @@ We will use Let's Encrypt to get a free SSL certificate.
 
     ```bash
     # Navigate back to the backend directory
-    cd /var/www/html/ABexch/abexch/backend # Adjust path if needed
+    cd /path/to/your/cloned/repo/abexch/backend # Adjust path if needed
     nano .env
     ```
 
