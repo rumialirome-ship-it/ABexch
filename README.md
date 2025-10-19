@@ -8,10 +8,10 @@ This guide provides comprehensive instructions for deploying the application to 
 
 Understanding the application's structure is key to a successful deployment. This is a secure, standard setup for modern web applications.
 
-1.  **Frontend (React):** The user interface built with React. This code is compiled into static files (`index.html`, `bundle.js`) that run in the user's web browser. It makes API calls to its own server at relative paths (e.g., `/api/login`).
+1.  **Frontend (React):** The user interface built with React. This code is compiled into static files (`index.html`, `dist/bundle.js`) that run in the user's web browser. It makes API calls to its own server at relative paths (e.g., `/api/login`).
 
 2.  **Nginx (Web Server & Reverse Proxy):** Nginx serves two critical functions:
-    *   **Serves Static Files:** It delivers the frontend's `index.html` and `bundle.js` files to the user from `/var/www/html/ABexch`.
+    *   **Serves Static Files:** It delivers the frontend's `index.html` and `dist/bundle.js` files to the user from `/var/www/html/ABexch`.
     *   **Acts as a Gateway:** When it receives a request starting with `/api/`, it securely forwards (proxies) that request to the backend Node.js server, which is not exposed to the public internet.
 
 3.  **Backend (Node.js / Express):** The secure "engine" of the application.
@@ -210,7 +210,8 @@ Configure Nginx to serve the frontend from `/var/www/html/ABexch` and act as a r
     sudo mkdir -p /var/www/html/ABexch
     
     # Copy the built frontend files
-    sudo cp index.html dist/bundle.js /var/www/html/ABexch/
+    sudo cp index.html /var/www/html/ABexch/
+    sudo cp -r dist /var/www/html/ABexch/
     ```
 
 2.  **Create an Nginx Configuration File:**

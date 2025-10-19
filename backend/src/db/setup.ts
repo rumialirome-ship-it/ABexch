@@ -7,27 +7,19 @@ const setupDatabase = async () => {
     try {
         console.log('Successfully connected to the PostgreSQL database.');
         
+        // When using ts-node, __dirname resolves to the .ts file's location in src/
         const schemaPath = path.resolve(__dirname, 'schema.sql');
         console.log(`Reading database schema from: ${schemaPath}`);
         
         const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
 
-        // A more robust way to split statements, handling different line endings and whitespace.
-        const statements = schemaSQL.split(';').filter(statement => {
-            // Filter out empty statements and comments
-            const trimmed = statement.trim();
-            return trimmed.length > 0 && !trimmed.startsWith('--');
-        });
-
-        console.log(`Found ${statements.length} statements to execute.`);
-        console.log('Executing schema script within a transaction...');
+        console.log(`Executing schema script within a transaction...`);
 
         await client.query('BEGIN');
 
-        for (const statement of statements) {
-            // Re-add the semicolon to ensure each statement is correctly terminated.
-            await client.query(statement + ';');
-        }
+        // Execute the entire schema file as a single multi-statement query.
+        // This is more robust than splitting by ';', which can fail with complex SQL.
+        await client.query(schemaSQL);
 
         await client.query('COMMIT');
         
