@@ -1,6 +1,3 @@
-
-
-
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { realtimeService } from '../services/realtime';
 

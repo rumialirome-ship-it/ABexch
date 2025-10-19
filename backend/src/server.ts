@@ -1,16 +1,19 @@
 
 
 
-import express, { Express, ErrorRequestHandler } from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { apiRouter } from './routes';
 import { globalErrorHandler } from './middleware/errorHandler';
 
+// Import types for side-effects to enable Express.Request type augmentation
+import './types';
+
 // Load environment variables
 dotenv.config();
 
-const app: Express = express();
+const app = express();
 const PORT = process.env.PORT || 3001;
 
 // --- Core Middleware ---
@@ -27,7 +30,6 @@ app.use('/api', apiRouter);
 
 // --- Global Error Handler ---
 // This should be the last piece of middleware
-// FIX: Explicitly cast globalErrorHandler to ErrorRequestHandler to resolve type inference issue with app.use().
 app.use(globalErrorHandler);
 
 

@@ -1,4 +1,3 @@
-
 export const formatCurrency = (amount: number): string => {
   // Using a custom format to display "Rs" instead of "PKR" for brevity
   const formattedAmount = new Intl.NumberFormat('en-PK', {

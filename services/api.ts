@@ -1,6 +1,9 @@
 import { User, UserRole, Bet, DrawResult, Transaction, Commission, Prize, TopUpRequest } from '../types';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3001/api'
+    : '/api';
+
 
 // --- Helper for API requests ---
 async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
@@ -46,6 +49,51 @@ export const placeBets = (userId: string, betsToPlace: Omit<Bet, 'id' | 'created
         headers: { 'Content-Type': 'application/json', 'x-user-id': userId, 'x-user-role': UserRole.USER },
         body: JSON.stringify(betsToPlace)
     });
+};
+
+// --- AI Assistant ---
+export const streamGeminiResponse = async (
+    user: User,
+    prompt: string,
+    onChunk: (chunk: string) => void,
+    onError: (error: Error) => void,
+    onDone: () => void
+): Promise<void> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/assistant`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-user-id': user.id,
+                'x-user-role': user.role,
+            },
+            body: JSON.stringify({ prompt }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: `HTTP error! status: ${response.status}` }));
+            throw new Error(errorData.message);
+        }
+
+        if (!response.body) {
+            throw new Error("Response body is missing.");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                onDone();
+                break;
+            }
+            onChunk(decoder.decode(value, { stream: true }));
+        }
+    } catch (error) {
+        console.error('Gemini Stream Error:', error);
+        onError(error instanceof Error ? error : new Error('An unknown error occurred during streaming.'));
+    }
 };
 
 

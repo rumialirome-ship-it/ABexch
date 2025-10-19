@@ -1,7 +1,3 @@
-
-
-
-
 import React, { ReactNode, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -9,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
 import { fetchMyTransactionHistory } from '../../services/api';
 import { Transaction, TransactionType } from '../../types';
+import GeminiAssistant from '../../components/user/GeminiAssistant';
 
 const UserDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -156,6 +153,7 @@ const UserDashboard: React.FC = () => {
             icon={<IconTransactions />} 
         />
       </div>
+      <GeminiAssistant />
     </MainLayout>
   );
 };

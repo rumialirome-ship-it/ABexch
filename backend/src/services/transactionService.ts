@@ -1,5 +1,3 @@
-
-
 import { db } from '../db';
 import { Transaction, TransactionType } from '../types';
 import { PoolClient } from 'pg';

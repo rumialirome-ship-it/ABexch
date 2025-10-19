@@ -1,4 +1,3 @@
-
 import { fetchAllBetsState, fetchAllDrawsState, fetchAllUsersState } from './api';
 import { Bet, DrawResult, User } from '../types';
 

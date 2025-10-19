@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -14,7 +13,8 @@ import LoginPage from './pages/LoginPage';
 import ResultsPage from './pages/ResultsPage';
 // User pages
 import UserDashboard from './pages/user/UserDashboard';
-import BettingPage from './pages/user/BettingPage';
+// FIX: BettingPage does not have a default export, so we import it as a named export.
+import { BettingPage } from './pages/user/BettingPage';
 import MyBetsPage from './pages/user/MyBetsPage';
 import TransactionHistoryPage from './pages/user/TransactionHistoryPage';
 // Dealer pages
@@ -26,7 +26,6 @@ import AddUserPage from './pages/dealer/AddUserPage';
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsersPage from './pages/admin/ManageUsersPage';
-// Corrected import statement for ManageDealersPage. The component is a default export.
 import ManageDealersPage from './pages/admin/ManageDealersPage';
 import ManageDrawsPage from './pages/admin/ManageDrawsPage';
 import ApproveCommissionsPage from './pages/admin/ApproveCommissionsPage';

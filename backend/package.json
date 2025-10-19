@@ -7,9 +7,11 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "db:setup": "ts-node src/db/setup.ts",
     "db:seed": "ts-node src/db/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^0.15.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

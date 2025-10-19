@@ -1,12 +1,10 @@
 
-
-
 import React, { useState, ReactNode, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
-import { apiRequestTopUp, fetchTransactionHistory, fetchUsersByDealer, fetchPendingCommissionsForDealer, fetchBetsByDealer, addCreditToUser } from '../../services/api';
+import { apiRequestTopUp, fetchMyTransactionHistory, fetchUsersByDealer, fetchPendingCommissionsForDealer, fetchBetsByDealer, addCreditToUser } from '../../services/api';
 import { useNotification } from '../../contexts/NotificationContext';
 import { Transaction, TransactionType, User, UserRole } from '../../types';
 
@@ -158,7 +156,7 @@ const DealerDashboard: React.FC = () => {
         setLoading(true);
         try {
             const [transactionsData, usersData, commissionsData, betsData] = await Promise.all([
-                fetchTransactionHistory(user.id),
+                fetchMyTransactionHistory(user),
                 fetchUsersByDealer(user),
                 fetchPendingCommissionsForDealer(user),
                 fetchBetsByDealer(user),

@@ -1,7 +1,5 @@
 
-
-
-
+// FIX: Add explicit imports for Express types to resolve property access errors.
 import { Request, Response } from 'express';
 import { authService } from '../services/authService';
 

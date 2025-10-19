@@ -1,5 +1,4 @@
-
-// FIX: This file is updated to use module augmentation to add the 'user' property to the global Express.Request interface.
+// This file uses module augmentation to add the 'user' property to the global Express.Request interface.
 // This is the standard and most robust way to extend request types in an Express/TypeScript application,
 // resolving the issue where properties on the request object were not being recognized by the type checker.
 

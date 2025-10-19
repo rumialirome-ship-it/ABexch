@@ -1,10 +1,10 @@
 
-
-
-
+// FIX: Add explicit imports for Express types to resolve property access errors.
 import { Request, Response } from 'express';
 import { dealerService } from '../services/dealerService';
 import { ApiError } from '../middleware/errorHandler';
+// FIX: Import type augmentation for Express.Request to include the 'user' property.
+import '../types';
 
 export const handleGetManagedUsers = async (req: Request, res: Response) => {
     const dealerId = req.user?.id;

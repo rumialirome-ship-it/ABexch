@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, ReactNode, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -79,7 +80,7 @@ const ConfirmationDialog: React.FC<{
     );
 };
 
-const BettingPage: React.FC = () => {
+export const BettingPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const gameNameFromUrl = searchParams.get('game');
 
@@ -675,47 +676,44 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
         e?.preventDefault();
         if (!validate()) return;
         
+        if (selectedCombos.size === 0) {
+            setErrors(prev => ({ ...prev, selection: 'Please select at least one combination.' }));
+            return;
+        }
+        if (!stakeValue || stakeValue <= 0) {
+            setErrors(prev => ({...prev, stake: 'Stake must be a positive number.'}));
+            return;
+        }
+
         if (!user) {
             addNotification('You must be logged in to place a bet.', 'error');
             return;
         }
 
-        const stakeValue = parseFloat(stake);
-
-        if (uniqueDigits.length < 2 || !stakeValue || stakeValue <= 0) {
-            addNotification('Please enter unique digits and a valid stake.', 'error');
-            return;
-        }
-        
-        if (selectedCombos.size === 0) {
-            setErrors(prev => ({...prev, selection: 'Please select at least one combination to bet on.'}));
-            return;
-        }
-
-        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map(combo => ({
+        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map(num => ({
             user_id: user.id,
             draw_label: drawLabel,
             game_type: '2D',
-            number: combo,
+            number: num,
             stake: stakeValue,
         }));
         
         setBetsToConfirm(betsToPlace);
         setIsConfirming(true);
     };
-
+    
     const handleConfirmBet = async () => {
         if (!user) return;
         setIsLoading(true);
         try {
-            await placeBets(user.id, betsToConfirm);
-            addNotification(`Successfully placed ${betsToConfirm.length} combo bet(s).`, 'success');
+            const placedBets = await placeBets(user.id, betsToConfirm);
+            addNotification(`Successfully placed ${placedBets.length} combo bet(s).`, 'success');
             setInputDigits('');
             setStake('');
             setSelectedCombos(new Set());
             setErrors({});
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to place combo bets. Please try again.';
+            const errorMessage = error instanceof Error ? error.message : 'Failed to place combo bets.';
             addNotification(errorMessage, 'error');
         } finally {
             setIsLoading(false);
@@ -724,99 +722,113 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
         }
     };
 
-    const handleCancelBet = () => {
-        setIsConfirming(false);
-        setBetsToConfirm([]);
-    };
-    
     const handleClear = () => {
         setInputDigits('');
         setStake('');
         setSelectedCombos(new Set());
         setErrors({});
     };
-    
-    const isAllSelected = generatedCombos.length > 0 && selectedCombos.size === generatedCombos.length;
-    const isConfirmDisabled = isLoading || betCount === 0 || !(stakeValue > 0) || uniqueDigits.length < 2 || !!errors.inputDigits || !!errors.stake;
+
+    const isConfirmDisabled = isLoading || betCount === 0 || !stakeValue || Object.values(errors).some(e => !!e);
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto pb-32">
+            <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto pb-32">
                 <div>
                     <label className="block text-text-secondary mb-2" htmlFor="combo-digits">Enter 2 to 6 unique digits</label>
-                    <input id="combo-digits" type="text" value={inputDigits} onChange={e => setInputDigits(e.target.value)} onBlur={validate} className={getInputClass(!!errors.inputDigits)} placeholder="e.g., 14528" maxLength={6} />
-                    {errors.inputDigits && <p className="text-danger mt-1 text-sm">{errors.inputDigits}</p>}
-                    {uniqueDigits.length > 0 && <p className="text-text-secondary mt-1 text-sm">Using unique digits: {uniqueDigits.join(', ')}</p>}
+                    <input
+                        id="combo-digits"
+                        type="text"
+                        value={inputDigits}
+                        onChange={e => {
+                            setInputDigits(e.target.value.replace(/\D/g, ''));
+                            validate();
+                        }}
+                        onBlur={validate}
+                        className={getInputClass(!!errors.inputDigits)}
+                        placeholder="e.g., 1234"
+                        maxLength={10} // allow more to show error
+                        aria-invalid={!!errors.inputDigits}
+                        aria-describedby="digits-error"
+                    />
+                    {errors.inputDigits && <p id="digits-error" className="text-danger mt-1 text-sm">{errors.inputDigits}</p>}
                 </div>
-                
                 {generatedCombos.length > 0 && (
-                    <div className="space-y-4 p-4 bg-background-primary border border-border-color rounded-lg">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold text-text-primary">Generated Combinations ({generatedCombos.length})</h3>
-                            <div className="flex items-center">
-                                <input type="checkbox" id="select-all" checked={isAllSelected} onChange={handleSelectAll} className="h-4 w-4 rounded border-gray-300 text-accent-primary focus:ring-accent-primary bg-background-secondary"/>
-                                <label htmlFor="select-all" className="ml-2 block text-sm text-text-secondary">Select All</label>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 max-h-48 overflow-y-auto">
-                            {generatedCombos.map(combo => (
-                                <div key={combo} className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        id={`combo-${combo}`}
-                                        checked={selectedCombos.has(combo)}
-                                        onChange={() => handleSelectCombo(combo)}
-                                        className="h-4 w-4 rounded border-gray-300 text-accent-primary focus:ring-accent-primary bg-background-secondary"
-                                    />
-                                    <label htmlFor={`combo-${combo}`} className="ml-2 font-mono text-text-primary">{combo}</label>
-                                </div>
-                            ))}
-                        </div>
-                         {errors.selection && <p className="text-danger mt-1 text-sm">{errors.selection}</p>}
+                    <div>
+                        <label className="block text-text-secondary mb-2" htmlFor="combo-stake">Stake per Combination</label>
+                        <input
+                            id="combo-stake"
+                            type="number"
+                            value={stake}
+                            onChange={e => { setStake(e.target.value); validate(); }}
+                            onBlur={validate}
+                            className={getInputClass(!!errors.stake)}
+                            placeholder="e.g., 10"
+                            aria-invalid={!!errors.stake}
+                            aria-describedby="stake-error"
+                        />
+                        {errors.stake && <p id="stake-error" className="text-danger mt-1 text-sm">{errors.stake}</p>}
                     </div>
                 )}
-                
-                <div>
-                    <label className="block text-text-secondary mb-2" htmlFor="combo-stake">Stake per Combination</label>
-                    <input id="combo-stake" type="number" value={stake} onChange={e => setStake(e.target.value)} onBlur={validate} className={getInputClass(!!errors.stake)} placeholder="e.g., 10" />
-                    {errors.stake && <p className="text-danger mt-1 text-sm">{errors.stake}</p>}
-                </div>
-
-                <div className="text-right font-bold text-text-secondary">
-                    Total Bets: <span className="text-accent-primary">{selectedCombos.size}</span>
-                    <br />
-                    Total Stake: <span className="text-accent-primary">{formatCurrency(selectedCombos.size * (parseFloat(stake) || 0))}</span>
-                </div>
+                {generatedCombos.length > 0 && (
+                     <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="block text-text-secondary">Select Combinations ({generatedCombos.length} total)</label>
+                            <div className="flex items-center">
+                                <input
+                                    id="select-all-combos"
+                                    type="checkbox"
+                                    checked={selectedCombos.size > 0 && selectedCombos.size === generatedCombos.length}
+                                    onChange={handleSelectAll}
+                                    className="h-4 w-4 rounded border-gray-300 text-accent-primary focus:ring-accent-primary"
+                                />
+                                <label htmlFor="select-all-combos" className="ml-2 text-sm text-text-secondary">Select All</label>
+                            </div>
+                        </div>
+                         {errors.selection && <p className="text-danger mb-2 text-sm">{errors.selection}</p>}
+                        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 p-4 bg-background-primary border border-border-color rounded-lg">
+                            {generatedCombos.map(combo => (
+                                <button
+                                    type="button"
+                                    key={combo}
+                                    onClick={() => handleSelectCombo(combo)}
+                                    className={`p-2 rounded font-mono text-lg font-bold border transition-all duration-200 ${selectedCombos.has(combo) ? 'bg-accent-primary text-black border-accent-primary shadow-glow-accent' : 'bg-background-secondary border-border-color hover:border-accent-primary/50'}`}
+                                >
+                                    {combo}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </form>
             <BetSlipSummary
                 betCount={betCount}
                 totalStake={totalStake}
-                onConfirm={() => handleSubmit()}
+                onConfirm={handleSubmit}
                 onClear={handleClear}
                 isConfirmDisabled={isConfirmDisabled}
             />
             <ConfirmationDialog
                 isOpen={isConfirming}
                 onConfirm={handleConfirmBet}
-                onCancel={handleCancelBet}
+                onCancel={() => setIsConfirming(false)}
                 title="Confirm Your Combo Bet"
                 isLoading={isLoading}
             >
-                <p className="mb-4 text-text-secondary">You are placing <strong className="text-accent-primary">{betsToConfirm.length}</strong> bet(s) for <strong className="text-accent-primary">{drawLabel}</strong>. Please review:</p>
-                <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
-                    {betsToConfirm.map((bet, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                            <span><strong>2D</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
-                            <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
-                        </div>
-                    ))}
-                </div>
-                <div className="text-right mt-4 font-bold">
-                    Total Stake: <span className="text-accent-primary">{formatCurrency(betsToConfirm.reduce((acc, bet) => acc + bet.stake, 0))}</span>
-                </div>
+                 <p className="mb-4 text-text-secondary">Please review your combo bet details for <strong className="text-accent-primary">{drawLabel}</strong>:</p>
+                    <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
+                        {betsToConfirm.map((bet, index) => (
+                            <div key={index} className="flex justify-between items-center">
+                                <span><strong>2D</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
+                                <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="text-right mt-4 font-bold">
+                        Total Bets: <span className="text-accent-primary">{betCount}</span><br/>
+                        Total Stake: <span className="text-accent-primary">{formatCurrency(totalStake)}</span>
+                    </div>
             </ConfirmationDialog>
         </>
     );
 };
-
-export default BettingPage;

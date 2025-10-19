@@ -1,11 +1,11 @@
 
-
-
-
+// FIX: Add explicit imports for Express types to resolve property access errors.
 import { Request, Response } from 'express';
 import { UserRole } from '../types';
 import { adminService } from '../services/adminService';
 import { ApiError } from '../middleware/errorHandler';
+// FIX: Import type augmentation for Express.Request to include the 'user' property.
+import '../types';
 
 // --- User Management ---
 export const handleGetAllSystemUsers = async (req: Request, res: Response) => {

@@ -1,12 +1,10 @@
 
-
-
-
+// FIX: Add explicit imports for Express types to resolve property access errors.
 import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';
-// FIX: Force-include the global type augmentation for Express.Request
+// Force-include the global type augmentation for Express.Request
 import '../types';
 
 /**
