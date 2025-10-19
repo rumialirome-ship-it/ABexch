@@ -1,14 +1,13 @@
 
-
 // FIX: Add explicit imports for Express types to resolve property access errors.
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import { Request, Response } from 'express';
 import { ApiError } from '../middleware/errorHandler';
 import { bettingService } from '../services/bettingService';
 import { geminiService } from '../services/geminiService';
 // FIX: Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
 
-export const handleAssistantQuery = async (req: ExpressRequest, res: ExpressResponse) => {
+export const handleAssistantQuery = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
 

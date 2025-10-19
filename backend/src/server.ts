@@ -1,8 +1,5 @@
 
-
-
-
-import express, { Express, Request, Response, NextFunction, ErrorRequestHandler } from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { apiRouter } from './routes';

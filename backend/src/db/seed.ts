@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolConfig } from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
 import { UserRole } from '../types';
@@ -11,12 +11,19 @@ if (!process.env.DATABASE_URL) {
     process.exit(1);
 }
 
-const pool = new Pool({
+const poolConfig: PoolConfig = {
     connectionString: process.env.DATABASE_URL,
-    ssl: {
+};
+
+// Conditionally add SSL configuration for non-local databases, which are common in production.
+if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) {
+    poolConfig.ssl = {
         rejectUnauthorized: false
-    }
-});
+    };
+}
+
+const pool = new Pool(poolConfig);
+
 
 const seed = async () => {
     const client = await pool.connect();

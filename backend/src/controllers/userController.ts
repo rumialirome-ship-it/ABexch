@@ -1,7 +1,6 @@
 
-
 // FIX: Add explicit imports for Express types to resolve property access errors.
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import { Request, Response } from 'express';
 import { bettingService } from '../services/bettingService';
 import { transactionService } from '../services/transactionService';
 import { userService } from '../services/userService';
@@ -9,7 +8,7 @@ import { ApiError } from '../middleware/errorHandler';
 // FIX: Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
 
-export const handlePlaceBets = async (req: ExpressRequest, res: ExpressResponse) => {
+export const handlePlaceBets = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
@@ -24,7 +23,7 @@ export const handlePlaceBets = async (req: ExpressRequest, res: ExpressResponse)
     res.status(201).json(placedBets);
 };
 
-export const handleGetBetHistory = async (req: ExpressRequest, res: ExpressResponse) => {
+export const handleGetBetHistory = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
@@ -32,7 +31,7 @@ export const handleGetBetHistory = async (req: ExpressRequest, res: ExpressRespo
     res.status(200).json(bets);
 };
 
-export const handleGetTransactionHistory = async (req: ExpressRequest, res: ExpressResponse) => {
+export const handleGetTransactionHistory = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
 
@@ -40,7 +39,7 @@ export const handleGetTransactionHistory = async (req: ExpressRequest, res: Expr
     res.status(200).json(transactions);
 };
 
-export const handleGetUserById = async (req: ExpressRequest, res: ExpressResponse) => {
+export const handleGetUserById = async (req: Request, res: Response) => {
     // This is intended for a user to get their own profile data.
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');

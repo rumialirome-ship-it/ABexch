@@ -1,6 +1,6 @@
+
 // FIX: Add explicit imports for Express types to resolve property access errors.
-// FIX: Aliased Request and Response to avoid name collisions with global types.
-import { Request as ExpressRequest, Response as ExpressResponse, NextFunction, ErrorRequestHandler } from 'express';
+import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 
 /**
  * Custom error class for handling API-specific errors with status codes.
@@ -19,8 +19,8 @@ export class ApiError extends Error {
  * This avoids the need for try-catch blocks in every controller.
  * @param fn The async controller function.
  */
-export const asyncHandler = (fn: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => Promise<any>) => 
-    (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => 
+    (req: Request, res: Response, next: NextFunction) => {
         Promise.resolve(fn(req, res, next)).catch(next);
     };
 

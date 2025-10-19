@@ -1,10 +1,9 @@
 
-
 // FIX: Add explicit imports for Express types to resolve property access errors.
-import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
+import { Request, Response } from 'express';
 import { authService } from '../services/authService';
 
-export const handleLogin = async (req: ExpressRequest, res: ExpressResponse) => {
+export const handleLogin = async (req: Request, res: Response) => {
     const { role, username, pin } = req.body;
     const user = await authService.login(role, username, pin);
     res.status(200).json(user);

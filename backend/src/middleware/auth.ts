@@ -1,7 +1,6 @@
 
-
 // FIX: Add explicit imports for Express types to resolve property access errors.
-import { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';
@@ -16,7 +15,7 @@ import '../types';
  */
 export const requireAuth = (roles: UserRole[]) => {
     // FIX: Changed req type from AuthenticatedRequest to the augmented express.Request
-    return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         const id = req.headers['x-user-id'] as string;
         const role = req.headers['x-user-role'] as UserRole;
 

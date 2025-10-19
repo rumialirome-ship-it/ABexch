@@ -1,15 +1,22 @@
-import { Pool } from 'pg';
+import { Pool, PoolConfig } from 'pg';
 import dotenv from 'dotenv';
 import process from 'process';
 
 dotenv.config();
 
-const pool = new Pool({
+const poolConfig: PoolConfig = {
     connectionString: process.env.DATABASE_URL,
-    ssl: {
+};
+
+// Conditionally add SSL configuration for non-local databases, which are common in production.
+if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) {
+    poolConfig.ssl = {
         rejectUnauthorized: false
-    }
-});
+    };
+}
+
+const pool = new Pool(poolConfig);
+
 
 pool.on('error', (err, client) => {
     console.error('Unexpected error on idle client', err);
