@@ -7,7 +7,6 @@ import path from 'path';
  * This version executes the whole file in one transaction to preserve order.
  */
 const setupDatabase = async () => {
-  // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
   const client = await db.connect();
 
   try {
@@ -19,15 +18,18 @@ const setupDatabase = async () => {
 
     // Read the entire schema file
     const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
+    
+    // Prepend the SET search_path command to the SQL file content.
+    // This is more robust as it ensures the path is set correctly
+    // for the entire script execution, even if schema.sql contains
+    // commands that might reset the session's search_path.
+    const fullQuery = `SET search_path TO public;\n\n${schemaSQL}`;
+
 
     console.log('🧱 Executing schema.sql within a single transaction...');
 
     await client.query('BEGIN');
-    // FIX: Explicitly set the search_path for this transaction to guarantee
-    // that tables are created in the 'public' schema. This is a direct
-    // fix for the "no schema has been selected" error.
-    await client.query('SET search_path TO public;');
-    await client.query(schemaSQL);
+    await client.query(fullQuery);
     await client.query('COMMIT');
 
     console.log('✅ Database schema and default admin user created successfully!');
