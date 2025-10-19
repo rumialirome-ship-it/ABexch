@@ -184,7 +184,7 @@ Configure Nginx to show your frontend to the world and securely communicate with
     sudo mkdir -p /var/www/abexch.live
     
     # Navigate back to the project's root directory
-    cd /path/to/your/cloned/repo/abexch # Adjust path if you cloned elsewhere
+    cd .. # Assuming you are in /backend, this goes to the project root
     
     # Copy the built frontend files to the live site directory
     sudo cp index.html /var/www/abexch.live/
