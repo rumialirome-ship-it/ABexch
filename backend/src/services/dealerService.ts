@@ -25,7 +25,8 @@ export const dealerService = {
      * @throws ApiError if the dealer has insufficient funds for the initial deposit.
      */
     async addUser(dealerId: string, userData: Partial<User> & { username: string, initialDeposit: number }): Promise<Omit<User, 'password'>> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             
@@ -89,7 +90,8 @@ export const dealerService = {
     },
     
     async addCreditToUser(dealerId: string, userId: string, amount: number): Promise<void> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             

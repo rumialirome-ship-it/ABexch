@@ -3,7 +3,8 @@ import path from 'path';
 import { UserRole } from '../types';
 
 const seed = async () => {
-    const client = await db.getClient();
+    // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+    const client = await db.connect();
     try {
         console.log('Starting to seed the database...');
         await client.query('BEGIN');

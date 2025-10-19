@@ -7,7 +7,8 @@ import path from 'path';
  * This version executes the whole file in one transaction to preserve order.
  */
 const setupDatabase = async () => {
-  const client = await db.getClient();
+  // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+  const client = await db.connect();
 
   try {
     console.log('✅ Connected to PostgreSQL database.');
@@ -22,6 +23,8 @@ const setupDatabase = async () => {
     console.log('🧱 Executing schema.sql within a single transaction...');
 
     await client.query('BEGIN');
+    // The 'SET search_path' command is no longer needed here as it's now handled
+    // globally for all connections in the db/index.ts pool configuration.
     await client.query(schemaSQL);
     await client.query('COMMIT');
 

@@ -70,7 +70,8 @@ export const adminService = {
         const { rows: dealerRows } = await db.query('SELECT id FROM users WHERE id = $1 AND role = $2', [userData.dealerId, UserRole.DEALER]);
         if (dealerRows.length === 0) throw new ApiError(404, `Dealer with ID ${userData.dealerId} not found.`);
 
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             const userId = generateId('usr');
@@ -108,7 +109,8 @@ export const adminService = {
     },
 
     async addDealer(dealerData: Partial<User> & { username: string, initial_deposit: number, commission_rate?: number }): Promise<Omit<User, 'password'>> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             
@@ -141,7 +143,8 @@ export const adminService = {
 
     // ... Financial Actions ...
     async addCreditToUser(adminId: string, userId: string, amount: number): Promise<void> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             await transactionService.createSystemCreditTransaction(client, {
@@ -160,7 +163,8 @@ export const adminService = {
     },
 
     async addCreditToDealer(dealerId: string, amount: number): Promise<Omit<User, 'password'>> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             
@@ -183,7 +187,8 @@ export const adminService = {
     },
 
     async declareDraw(drawLabel: string, winningNumbers: { twoD?: string; oneDOpen?: string; oneDClose?: string; }): Promise<DrawResult> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             
@@ -276,7 +281,8 @@ export const adminService = {
     },
     
     async approveCommission(id: string): Promise<void> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             const { rows } = await client.query("UPDATE commissions SET status = 'approved' WHERE id = $1 AND status = 'pending' RETURNING *", [id]);
@@ -306,7 +312,8 @@ export const adminService = {
     },
 
     async approvePrize(id: string): Promise<void> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             const { rows } = await client.query("UPDATE prizes SET status = 'approved' WHERE id = $1 AND status = 'pending' RETURNING *", [id]);
@@ -336,7 +343,8 @@ export const adminService = {
     },
     
     async approveTopUp(requestId: string): Promise<void> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
             const { rows } = await client.query("UPDATE top_up_requests SET status = 'approved', approved_at = NOW() WHERE id = $1 AND status = 'pending' RETURNING *", [requestId]);
@@ -360,7 +368,8 @@ export const adminService = {
     },
 
     async debitFunds(adminId: string, targetUserId: string, amount: number): Promise<void> {
-        const client = await db.getClient();
+        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+        const client = await db.connect();
         try {
             await client.query('BEGIN');
 

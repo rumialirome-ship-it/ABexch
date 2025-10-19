@@ -1,4 +1,6 @@
--- Drop old tables
+CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION postgres;
+SET search_path TO public;
+
 DROP TABLE IF EXISTS "transactions" CASCADE;
 DROP TABLE IF EXISTS "prizes" CASCADE;
 DROP TABLE IF EXISTS "commissions" CASCADE;
