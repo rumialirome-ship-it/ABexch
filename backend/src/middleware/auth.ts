@@ -1,4 +1,4 @@
-import { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';
@@ -12,7 +12,7 @@ import '../types';
  * @param roles An array of UserRole enums that are allowed to access the route.
  */
 export const requireAuth = (roles: UserRole[]) => {
-    return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         const id = req.headers['x-user-id'] as string;
         const role = req.headers['x-user-role'] as UserRole;
 

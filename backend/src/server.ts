@@ -1,5 +1,6 @@
 
 
+
 import express, { Express } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -28,7 +29,8 @@ app.use('/api', apiRouter);
 
 
 // --- Global Error Handler ---
-// This should be the last piece of middleware
+// This should be the last piece of middleware.
+// NOTE: The `app.use` overload error is resolved by fixing the type definitions in the imported `globalErrorHandler`.
 app.use(globalErrorHandler);
 
 
