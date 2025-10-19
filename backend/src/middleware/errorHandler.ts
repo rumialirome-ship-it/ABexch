@@ -1,5 +1,6 @@
 
-import { Request, Response, NextFunction } from 'express';
+
+import * as express from 'express';
 
 /**
  * Custom error class for handling API-specific errors with status codes.
@@ -18,8 +19,8 @@ export class ApiError extends Error {
  * This avoids the need for try-catch blocks in every controller.
  * @param fn The async controller function.
  */
-export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => 
-    (req: Request, res: Response, next: NextFunction) => {
+export const asyncHandler = (fn: (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<any>) => 
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
         Promise.resolve(fn(req, res, next)).catch(next);
     };
 
@@ -27,7 +28,7 @@ export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunctio
  * Global error handling middleware. It catches all errors passed via `next(err)`
  * and formats them into a consistent JSON response.
  */
-export const globalErrorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+export const globalErrorHandler: express.ErrorRequestHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error(`[ERROR] ${new Date().toISOString()} - ${req.method} ${req.originalUrl}:`, err);
 
     if (err instanceof ApiError) {
@@ -35,7 +36,7 @@ export const globalErrorHandler = (err: Error, req: Request, res: Response, next
     }
 
     // Handle pg-promise unique constraint violation (code 23505)
-    if (err.message.includes('duplicate key value violates unique constraint')) {
+    if (err.code === '23505' || (err as Error).message.includes('duplicate key value violates unique constraint')) {
         return res.status(409).json({ message: 'A record with the given details already exists. Please use a unique value.' });
     }
     

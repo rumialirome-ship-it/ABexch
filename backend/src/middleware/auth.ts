@@ -1,8 +1,11 @@
 
-import { Request, Response, NextFunction } from 'express';
+
+import * as express from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';
+// FIX: Force-include the global type augmentation for Express.Request
+import '../types';
 
 /**
  * Middleware to protect routes based on user roles.
@@ -12,7 +15,7 @@ import { ApiError } from './errorHandler';
  */
 export const requireAuth = (roles: UserRole[]) => {
     // FIX: Changed req type from AuthenticatedRequest to the augmented express.Request
-    return async (req: Request, res: Response, next: NextFunction) => {
+    return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
         const id = req.headers['x-user-id'] as string;
         const role = req.headers['x-user-role'] as UserRole;
 
