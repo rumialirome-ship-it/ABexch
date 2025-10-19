@@ -2,44 +2,56 @@ import { db } from './index';
 import fs from 'fs';
 import path from 'path';
 
+/**
+ * Sets up the PostgreSQL database schema by reading and executing schema.sql.
+ * This version executes the whole file in one transaction to preserve order.
+ */
 const setupDatabase = async () => {
-    const client = await db.getClient();
+  const client = await db.getClient();
+
+  try {
+    console.log('✅ Connected to PostgreSQL database.');
+
+    // Resolve path to schema.sql
+    const schemaPath = path.resolve(__dirname, 'schema.sql');
+    console.log(`📄 Reading database schema from: ${schemaPath}`);
+
+    // Read the entire schema file
+    const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
+
+    console.log('🧱 Executing schema.sql within a single transaction...');
+
+    await client.query('BEGIN');
+    await client.query(schemaSQL);
+    await client.query('COMMIT');
+
+    console.log('✅ Database schema and default admin user created successfully!');
+  } catch (err) {
+    // Ensure rollback on error
     try {
-        console.log('Successfully connected to the PostgreSQL database.');
-        
-        // When using ts-node, __dirname resolves to the .ts file's location in src/
-        const schemaPath = path.resolve(__dirname, 'schema.sql');
-        console.log(`Reading database schema from: ${schemaPath}`);
-        
-        const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
-
-        console.log(`Executing schema script within a transaction...`);
-
-        await client.query('BEGIN');
-
-        // Execute the entire schema file as a single multi-statement query.
-        // This is more robust than splitting by ';', which can fail with complex SQL.
-        await client.query(schemaSQL);
-
-        await client.query('COMMIT');
-        
-        console.log('✅ Database schema and default admin user created successfully!');
-        
-    } catch (error) {
-        console.error('❌ Error setting up the database:', error);
-        // Attempt to roll back the transaction on error
-        try {
-            await client.query('ROLLBACK');
-            console.log('Transaction rolled back successfully.');
-        } catch (rollbackError) {
-            console.error('Failed to rollback transaction:', rollbackError);
-        }
-        process.exit(1);
-    } finally {
-        client.release();
-        await db.end();
-        console.log('Database connection closed.');
+      await client.query('ROLLBACK');
+      console.log('↩️ Transaction rolled back successfully.');
+    } catch (rollbackError) {
+      console.error('⚠️ Failed to rollback transaction:', rollbackError);
     }
+
+    const message =
+      err instanceof Error ? err.message : JSON.stringify(err, null, 2);
+    console.error('❌ Database setup failed:', message);
+
+    process.exit(1);
+  } finally {
+    client.release();
+  }
 };
 
-setupDatabase();
+// Run setup when this script is executed directly
+setupDatabase()
+  .then(() => {
+    console.log('🎉 Setup completed successfully.');
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error('🚨 Unexpected error during setup:', err);
+    process.exit(1);
+  });
