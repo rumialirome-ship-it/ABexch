@@ -1,4 +1,4 @@
-import * as express from 'express';
+import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 
 /**
  * Custom error class for API-specific errors, containing a status code.
@@ -16,8 +16,8 @@ export class ApiError extends Error {
  * This prevents unhandled promise rejections from crashing the server.
  * @param fn The async route handler function.
  */
-export const asyncHandler = (fn: (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<any>) => {
-    return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => {
+    return (req: Request, res: Response, next: NextFunction) => {
         fn(req, res, next).catch(next);
     };
 };
@@ -26,7 +26,8 @@ export const asyncHandler = (fn: (req: express.Request, res: express.Response, n
  * Global error handling middleware. This should be the last middleware added to the Express app.
  * It catches all errors passed via `next(error)` and sends a formatted JSON response.
  */
-export const globalErrorHandler = (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+// FIX: Explicitly type the handler as ErrorRequestHandler to resolve type inference issues.
+export const globalErrorHandler: ErrorRequestHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
     // Log the full error for debugging purposes, especially for non-ApiError types
     console.error(err);
 
