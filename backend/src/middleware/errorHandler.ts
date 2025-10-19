@@ -1,3 +1,4 @@
+// @google/genai-dev-tool: Fix: Add missing Express type imports.
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 
 /**
