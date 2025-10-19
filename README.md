@@ -38,50 +38,55 @@ npm install pm2 -g
 
 ---
 
-### **Step 2: Set Up the Database**
+### **Step 2: Create the Database and Application User**
 
-Here, we'll create the database, a user for the application, and install a required database extension.
+This step prepares your database by creating a dedicated database and a secure user for the application.
 
 1.  **Log in to PostgreSQL as the superuser:**
     ```bash
-    sudo -i -u postgres
-    psql
+    sudo -u postgres psql
     ```
 
-2.  **Run the following SQL commands inside the `psql` shell.**
-    *   This will create your database and user.
-    *   **Important:** Replace `your_strong_password_here` with a secure password and save it for Step 4.
+2.  **Create the Database and User:**
+    Run the following commands inside the `psql` shell. **Important:** Replace `your_strong_password_here` with a secure password and save it for Step 5.
 
     ```sql
-    -- 1. Create the database
     CREATE DATABASE ababa_db;
-
-    -- 2. Create a user for your application
     CREATE USER ababa_user WITH ENCRYPTED PASSWORD 'your_strong_password_here';
-
-    -- 3. Give the new user full control over the new database
     GRANT ALL PRIVILEGES ON DATABASE ababa_db TO ababa_user;
-
-    -- 4. Connect to the new database to perform the next step
-    \c ababa_db
-
-    -- 5. Install the required 'uuid-ossp' extension as the superuser
-    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
     ```
 
 3.  **Exit PostgreSQL:**
-    Now, exit the `psql` shell and then the `postgres` user session.
-    ```bash
-    # Type \q and press Enter to exit psql
+    ```sql
+    -- Type \q and press Enter to exit
     \q
-
-    # Type exit and press Enter to return to your normal user
-    exit
     ```
 
 ---
 
-### **Step 3: Deploy the Application Code**
+### **Step 3: Install Required Database Extension**
+
+You must install a required PostgreSQL extension **as the superuser (`postgres`)**. The application's own setup script will run as a less-privileged user and cannot perform this action, which causes the "must be member of role 'postgres'" error.
+
+1.  **Connect directly to your new database as the `postgres` user:**
+    ```bash
+    sudo -u postgres psql -d ababa_db
+    ```
+
+2.  **Install the `uuid-ossp` extension:**
+    ```sql
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    ```
+
+3.  **Exit PostgreSQL:**
+    ```sql
+    \q
+    ```
+The database is now fully prepared for the application.
+
+---
+
+### **Step 4: Deploy the Application Code**
 
 Clone the project from your repository and build the necessary files.
 
@@ -103,9 +108,9 @@ npm install
 
 ---
 
-### **Step 4: Configure the Backend**
+### **Step 5: Configure and Set Up the Backend**
 
-Create a `.env` file to securely store your application's secrets.
+Create a `.env` file for secrets and run the script to build your database tables.
 
 1.  **Create the `.env` file:**
     ```bash
@@ -132,16 +137,25 @@ Create a `.env` file to securely store your application's secrets.
     ```
     Save the file by pressing `CTRL+X`, then `Y`, then `Enter`.
 
-3.  **Set up the database tables:**
-    This command reads your new `.env` file to connect to the database and create all the necessary tables.
+3.  **(Critical) Set up the database tables:**
+    This command reads your `.env` file to connect to the database and create all necessary tables.
     ```bash
-    # This creates a default admin: (Username: admin, PIN: Admin@123)
     npm run db:setup
     ```
+    After running, you **must** see the success message: `✅ Database schema and default admin user created successfully!` If you see any errors, do not proceed.
+
+4.  **(Verification) Check that tables were created:**
+    This is the best way to confirm the previous step worked.
+    ```bash
+    sudo -u postgres psql -d ababa_db
+    -- Run this command inside psql:
+    \dt
+    ```
+    You should see a list of tables including `users`, `bets`, and `draw_results`. If you see "No relations found," the setup failed. Exit with `\q` and troubleshoot the error from `npm run db:setup`.
 
 ---
 
-### **Step 5: Run the Backend with PM2**
+### **Step 6: Run the Backend with PM2**
 
 Compile the backend's TypeScript code and start the server using PM2, which will keep it running continuously.
 
@@ -160,7 +174,7 @@ pm2 save
 
 ---
 
-### **Step 6: Configure the Nginx Web Server**
+### **Step 7: Configure the Nginx Web Server**
 
 Configure Nginx to show your frontend to the world and securely communicate with your backend.
 
@@ -222,7 +236,7 @@ Your site should now be accessible at `http://www.abexch.live`. The final step i
 
 ---
 
-### **Step 7: Secure with SSL (HTTPS)**
+### **Step 8: Secure with SSL (HTTPS)**
 
 We will use Let's Encrypt to get a free SSL certificate.
 
@@ -273,5 +287,6 @@ Use these PM2 commands to manage your running backend process.
 ### **Troubleshooting**
 
 -   **502 Bad Gateway:** Your backend is likely not running. Check `pm2 logs ababa-backend` for errors. A common error is an incorrect `DATABASE_URL` in the `.env` file.
+-   **500 Internal Server Error:** The application can't talk to the database correctly. The most common cause is that the `npm run db:setup` step failed and the tables do not exist. Use the verification step in Step 5 to confirm.
 -   **CORS Error in Browser Console:** The `CORS_ORIGIN` in your `backend/.env` file does not exactly match `https://www.abexch.live`. Remember to run `pm2 restart ababa-backend` after changing it.
 -   **404 Not Found on Page Refresh:** Your Nginx `location /` block is misconfigured. Ensure the `try_files $uri $uri/ /index.html;` line is present in `/etc/nginx/sites-available/abexch.live`.
