@@ -26,10 +26,6 @@ Ensure you have the following software installed on your server.
     ```bash
     sudo apt update && sudo apt install postgresql postgresql-contrib -y
     ```
--   **esbuild:** A fast JavaScript bundler for building the frontend.
-    ```bash
-    sudo npm install -g esbuild
-    ```
 
 ### 2. Clone the Repository
 
@@ -42,23 +38,19 @@ cd <your-project-directory>
 
 ### 3. Build the Frontend
 
-The React frontend needs to be compiled into static JavaScript files.
+The React frontend is built using a local version of `esbuild` managed by `npm`.
 
-1.  **Build the application:**
+1.  **Install frontend dependencies:**
+    From the project's root directory, run:
     ```bash
-    # This command bundles the frontend code into a single file
-    esbuild index.tsx --bundle --outfile=dist/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV='\"production\"' --minify
+    npm install
     ```
-    This creates a `dist/bundle.js` file.
 
-2.  **Update `index.html` to use the built file:**
-    Open the `index.html` file for editing.
+2.  **Build the application:**
     ```bash
-    nano index.html
+    npm run build
     ```
-    -   Find the line at the bottom: `<script type="module" src="/index.tsx"></script>`
-    -   **Replace it with:** `<script src="/bundle.js" defer></script>`
-    -   Save the file (in `nano`, press `CTRL+X`, then `Y`, then `Enter`).
+    This command bundles the frontend into a single file at `dist/bundle.js`. The `index.html` file is already configured to use this bundle, so no manual changes are needed.
 
 ### 4. Set Up the Backend Application
 
@@ -147,10 +139,8 @@ Your backend is now running. It's only accessible directly via port 3001. The ne
 #### A. Copy Frontend Files and Configure Nginx
 
 1.  **Create a web directory and copy frontend files:**
+    From your project's root directory:
     ```bash
-    # Go back to the project root
-    cd .. 
-    
     # Create a directory for your site
     sudo mkdir -p /var/www/your_domain.com
     
