@@ -1,31 +1,9 @@
-import { Pool, PoolConfig } from 'pg';
-import dotenv from 'dotenv';
+import { db } from './index';
 import fs from 'fs';
 import path from 'path';
 
-// Configure dotenv to find the .env file in the backend root
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-
-if (!process.env.DATABASE_URL) {
-    console.error("DATABASE_URL environment variable is not set. Please create a .env file in the 'backend' directory.");
-    process.exit(1);
-}
-
-const poolConfig: PoolConfig = {
-    connectionString: process.env.DATABASE_URL,
-};
-
-// Conditionally add SSL configuration for non-local databases, which are common in production.
-if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) {
-    poolConfig.ssl = {
-        rejectUnauthorized: false
-    };
-}
-
-const pool = new Pool(poolConfig);
-
 const setupDatabase = async () => {
-    const client = await pool.connect();
+    const client = await db.getClient();
     try {
         console.log('Successfully connected to the PostgreSQL database.');
         
@@ -33,18 +11,40 @@ const setupDatabase = async () => {
         console.log(`Reading database schema from: ${schemaPath}`);
         
         const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
-        
-        console.log('Executing schema script... This will drop existing tables and recreate them.');
-        await client.query(schemaSQL);
+
+        // Split the script into individual statements. This is more robust than a single query.
+        // We split by a semicolon that is followed by a newline character.
+        const statements = schemaSQL.split(/;\r?\n/).filter(s => s.trim().length > 0);
+
+        console.log(`Found ${statements.length} statements to execute.`);
+        console.log('Executing schema script within a transaction...');
+
+        await client.query('BEGIN');
+
+        for (const statement of statements) {
+            // Add a semicolon back if it's not just a comment
+            if (!statement.startsWith('--')) {
+                 await client.query(statement);
+            }
+        }
+
+        await client.query('COMMIT');
         
         console.log('✅ Database schema and default admin user created successfully!');
         
     } catch (error) {
         console.error('❌ Error setting up the database:', error);
-        process.exit(1); // Exit with an error code
+        // Attempt to roll back the transaction on error
+        try {
+            await client.query('ROLLBACK');
+            console.log('Transaction rolled back successfully.');
+        } catch (rollbackError) {
+            console.error('Failed to rollback transaction:', rollbackError);
+        }
+        process.exit(1);
     } finally {
-        await client.release();
-        await pool.end();
+        client.release();
+        await db.end();
         console.log('Database connection closed.');
     }
 };

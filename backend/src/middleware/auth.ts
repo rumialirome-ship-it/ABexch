@@ -1,6 +1,4 @@
-
-// FIX: Add explicit imports for Express types to resolve property access errors.
-import { Request, Response, NextFunction } from 'express';
+import { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError } from './errorHandler';
@@ -14,8 +12,7 @@ import '../types';
  * @param roles An array of UserRole enums that are allowed to access the route.
  */
 export const requireAuth = (roles: UserRole[]) => {
-    // FIX: Changed req type from AuthenticatedRequest to the augmented express.Request
-    return async (req: Request, res: Response, next: NextFunction) => {
+    return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
         const id = req.headers['x-user-id'] as string;
         const role = req.headers['x-user-role'] as UserRole;
 
@@ -38,6 +35,7 @@ export const requireAuth = (roles: UserRole[]) => {
             req.user = { id, role };
             next();
         } catch (error) {
+            console.error('Auth middleware error:', error);
             next(new ApiError(500, 'An error occurred during authentication.'));
         }
     };

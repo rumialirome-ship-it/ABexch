@@ -13,7 +13,6 @@ const model = 'gemini-2.5-flash';
 
 const getSystemInstruction = (history: Bet[]): string => {
     const historyString = history.length > 0
-        // FIX: Corrected property access from gameType to game_type to match the Bet interface.
         ? `Here is the user's recent betting history (last ${history.length} bets):\n${history.map(b => `- Bet on ${b.number} (${b.game_type}) with stake ${b.stake}, result: ${b.status}`).join('\n')}`
         : "The user has no betting history yet.";
 

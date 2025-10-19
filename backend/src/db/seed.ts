@@ -1,32 +1,9 @@
-import { Pool, PoolConfig } from 'pg';
-import dotenv from 'dotenv';
+import { db } from './index';
 import path from 'path';
 import { UserRole } from '../types';
 
-// Configure dotenv to find the .env file in the backend root
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-
-if (!process.env.DATABASE_URL) {
-    console.error("DATABASE_URL environment variable is not set. Please create a .env file in the 'backend' directory.");
-    process.exit(1);
-}
-
-const poolConfig: PoolConfig = {
-    connectionString: process.env.DATABASE_URL,
-};
-
-// Conditionally add SSL configuration for non-local databases, which are common in production.
-if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') && !process.env.DATABASE_URL.includes('127.0.0.1')) {
-    poolConfig.ssl = {
-        rejectUnauthorized: false
-    };
-}
-
-const pool = new Pool(poolConfig);
-
-
 const seed = async () => {
-    const client = await pool.connect();
+    const client = await db.getClient();
     try {
         console.log('Starting to seed the database...');
         await client.query('BEGIN');
@@ -92,7 +69,7 @@ const seed = async () => {
         process.exit(1);
     } finally {
         client.release();
-        await pool.end();
+        await db.end();
     }
 };
 

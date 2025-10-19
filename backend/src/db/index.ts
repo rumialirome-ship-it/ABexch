@@ -26,4 +26,5 @@ pool.on('error', (err, client) => {
 export const db = {
     query: (text: string, params?: any[]) => pool.query(text, params),
     getClient: () => pool.connect(),
+    end: () => pool.end(),
 };
