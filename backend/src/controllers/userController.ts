@@ -1,5 +1,4 @@
-// FIX: Changed namespace import to named imports for proper type resolution.
-import { Request, Response } from 'express';
+import * as express from 'express';
 import { bettingService } from '../services/bettingService';
 import { transactionService } from '../services/transactionService';
 import { userService } from '../services/userService';
@@ -7,7 +6,7 @@ import { ApiError } from '../middleware/errorHandler';
 // Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
 
-export const handlePlaceBets = async (req: Request, res: Response) => {
+export const handlePlaceBets = async (req: express.Request, res: express.Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
@@ -22,7 +21,7 @@ export const handlePlaceBets = async (req: Request, res: Response) => {
     res.status(201).json(placedBets);
 };
 
-export const handleGetBetHistory = async (req: Request, res: Response) => {
+export const handleGetBetHistory = async (req: express.Request, res: express.Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
     
@@ -30,7 +29,7 @@ export const handleGetBetHistory = async (req: Request, res: Response) => {
     res.status(200).json(bets);
 };
 
-export const handleGetTransactionHistory = async (req: Request, res: Response) => {
+export const handleGetTransactionHistory = async (req: express.Request, res: express.Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
 
@@ -38,7 +37,7 @@ export const handleGetTransactionHistory = async (req: Request, res: Response) =
     res.status(200).json(transactions);
 };
 
-export const handleGetUserById = async (req: Request, res: Response) => {
+export const handleGetUserById = async (req: express.Request, res: express.Response) => {
     // This is intended for a user to get their own profile data.
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');

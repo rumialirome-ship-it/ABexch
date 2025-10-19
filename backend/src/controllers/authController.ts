@@ -1,8 +1,7 @@
-// FIX: Changed namespace import to named imports for proper type resolution.
-import { Request, Response } from 'express';
+import * as express from 'express';
 import { authService } from '../services/authService';
 
-export const handleLogin = async (req: Request, res: Response) => {
+export const handleLogin = async (req: express.Request, res: express.Response) => {
     const { role, username, pin } = req.body;
     const user = await authService.login(role, username, pin);
     res.status(200).json(user);
