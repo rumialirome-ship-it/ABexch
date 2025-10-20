@@ -2,12 +2,12 @@ import { db } from './index';
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
-import { TransactionType } from '../types';
+import { TransactionType, UserRole } from '../types';
 
 /**
  * A self-healing database setup script.
- * It executes the main schema, then verifies and synchronizes the critical
- * `transaction_type` enum to ensure it perfectly matches the application code.
+ * It executes the main schema, then verifies and synchronizes critical ENUM types
+ * (`transaction_type` and `user_role`) to ensure they perfectly match the application code.
  */
 const setupDatabase = async () => {
   const client = await db.connect();
@@ -30,29 +30,46 @@ const setupDatabase = async () => {
     await client.query('COMMIT');
     console.log('✅ Schema executed successfully.');
 
-    // Step 2: Self-heal the `transaction_type` enum. This cannot be in a transaction.
+    // Step 2: Self-heal the ENUM types. This cannot be in a transaction.
+
+    // --- Synchronize `transaction_type` enum ---
     console.log('🔄 Checking and synchronizing transaction_type enum...');
-    const checkTypeExistsQuery = `SELECT 1 FROM pg_type WHERE typname = 'transaction_type'`;
-    const { rowCount } = await client.query(checkTypeExistsQuery);
+    const checkTransactionTypeExistsQuery = `SELECT 1 FROM pg_type WHERE typname = 'transaction_type'`;
+    const { rowCount: transactionTypeExists } = await client.query(checkTransactionTypeExistsQuery);
+    const allTransactionEnumValues = Object.values(TransactionType);
 
-    const allEnumValues = Object.values(TransactionType);
-
-    if (rowCount === 0) {
-      // The type is completely missing. Create it from scratch.
+    if (transactionTypeExists === 0) {
       console.log("    -> 'transaction_type' enum not found. Creating it now...");
-      const enumValuesString = allEnumValues.map(v => `'${v}'`).join(', ');
+      const enumValuesString = allTransactionEnumValues.map(v => `'${v}'`).join(', ');
       const createTypeQuery = `CREATE TYPE transaction_type AS ENUM (${enumValuesString});`;
       await client.query(createTypeQuery);
       console.log("🎉 Successfully created 'transaction_type' enum with all application values.");
     } else {
-      // The type exists. Add any values defined in the code that are missing in the DB.
       console.log("    -> 'transaction_type' enum exists. Verifying all values are present...");
-      for (const type of allEnumValues) {
-        // Using `ADD VALUE IF NOT EXISTS` is idempotent and safe to run multiple times.
-        // It's supported in modern PostgreSQL versions (10+).
+      for (const type of allTransactionEnumValues) {
         await client.query(`ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS '${type}'`);
       }
       console.log('✅ All transaction_type enum values are synchronized.');
+    }
+    
+    // --- Synchronize `user_role` enum ---
+    console.log('🔄 Checking and synchronizing user_role enum...');
+    const checkUserRoleExistsQuery = `SELECT 1 FROM pg_type WHERE typname = 'user_role'`;
+    const { rowCount: userRoleExists } = await client.query(checkUserRoleExistsQuery);
+    const allUserRoleEnumValues = Object.values(UserRole);
+
+    if (userRoleExists === 0) {
+      console.log("    -> 'user_role' enum not found. Creating it now...");
+      const enumValuesString = allUserRoleEnumValues.map(v => `'${v}'`).join(', ');
+      const createTypeQuery = `CREATE TYPE user_role AS ENUM (${enumValuesString});`;
+      await client.query(createTypeQuery);
+      console.log("🎉 Successfully created 'user_role' enum with all application values.");
+    } else {
+      console.log("    -> 'user_role' enum exists. Verifying all values are present...");
+      for (const role of allUserRoleEnumValues) {
+        await client.query(`ALTER TYPE user_role ADD VALUE IF NOT EXISTS '${role}'`);
+      }
+      console.log('✅ All user_role enum values are synchronized.');
     }
 
   } catch (err) {
