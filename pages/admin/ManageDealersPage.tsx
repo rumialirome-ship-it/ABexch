@@ -150,7 +150,7 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
             onDealerAdded();
             onClose();
         } catch (err) {
-            addNotification('Failed to create dealer. Phone may already exist.', 'error');
+            addNotification(err instanceof Error ? err.message : 'Failed to create dealer.', 'error');
         } finally {
             setIsLoading(false);
         }

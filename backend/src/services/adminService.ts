@@ -109,13 +109,27 @@ export const adminService = {
     },
 
     async addDealer(dealerData: Partial<User> & { username: string, initial_deposit: number, commission_rate?: number }): Promise<Omit<User, 'password'>> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
             
-            const dealerId = generateId('dlr');
             const { username, phone, password, city, initial_deposit, commission_rate } = dealerData;
+
+            // Check for existing username
+            const { rows: existingUser } = await client.query('SELECT id FROM users WHERE username = $1', [username]);
+            if (existingUser.length > 0) {
+                throw new ApiError(409, `Username '${username}' is already taken.`);
+            }
+
+            // Check for existing phone number, if provided
+            if (phone) {
+                 const { rows: existingPhone } = await client.query('SELECT id FROM users WHERE phone = $1', [phone]);
+                if (existingPhone.length > 0) {
+                    throw new ApiError(409, `Phone number '${phone}' is already in use.`);
+                }
+            }
+            
+            const dealerId = generateId('dlr');
             const newDealer: User = { id: dealerId, username, phone, role: UserRole.DEALER, wallet_balance: initial_deposit || 0, password, city, commission_rate: commission_rate };
             
             await client.query(
