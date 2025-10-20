@@ -108,7 +108,6 @@ export const adminService = {
         }
     },
 
-    // @google/genai-dev-tool: Fix: Added `initial_deposit` to the type signature to match its usage within the function.
     async addDealer(dealerData: Partial<User> & { username: string; initial_deposit?: number; }): Promise<Omit<User, 'password'>> {
         const client = await db.connect();
         try {
@@ -130,8 +129,8 @@ export const adminService = {
             const cleanUsername = username.trim();
             const cleanPhone = (phone && typeof phone === 'string' && phone.trim()) ? phone.trim() : null;
 
-            // 2. Duplicate Checks
-            const { rows: existingUser } = await client.query('SELECT id FROM users WHERE username = $1', [cleanUsername]);
+            // 2. Duplicate Checks (now case-insensitive for username)
+            const { rows: existingUser } = await client.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
             if (existingUser.length > 0) {
                 throw new ApiError(409, `Username '${cleanUsername}' is already taken.`);
             }
@@ -181,13 +180,27 @@ export const adminService = {
 
             await client.query('COMMIT');
             return stripPassword(newDealerRows[0]);
-        } catch (e) {
+        } catch (e: any) {
             await client.query('ROLLBACK');
-            // If it's already a controlled ApiError, rethrow it. Otherwise, wrap it for clarity.
+
+            // Handle specific PostgreSQL error codes for better feedback
+            if (e.code === '23505') { // unique_violation
+                if (e.constraint && e.constraint.includes('username')) {
+                    throw new ApiError(409, `Username '${dealerData.username}' is already taken.`);
+                }
+                if (e.constraint && e.constraint.includes('phone')) {
+                     throw new ApiError(409, `Phone number '${dealerData.phone}' is already in use.`);
+                }
+                throw new ApiError(409, "A unique value constraint was violated. Please check your input.");
+            }
+
+            // Re-throw our own controlled errors
             if (e instanceof ApiError) {
                 throw e;
             }
-            console.error("Database error in addDealer service:", e); // Log the original, low-level error for debugging
+
+            // Log the full unknown error and return a generic message
+            console.error("Database error in addDealer service:", e);
             throw new ApiError(500, "A database error occurred while creating the dealer.");
         } finally {
             client.release();
