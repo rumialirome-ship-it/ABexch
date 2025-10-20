@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useEffect, useMemo } from 'react';
 import MainLayout from '../../components/layout/MainLayout';
 import { declareDraw } from '../../services/api';
@@ -78,11 +77,11 @@ const ManageDrawsPage: React.FC = () => {
         }
     };
     
-    const inputClasses = "transition-all duration-300 w-full p-3 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-tertiary focus:border-transparent";
-    const readOnlyInputClasses = "w-full p-3 bg-background-secondary border border-border-color/50 rounded-lg text-text-secondary";
+    const inputClasses = "transition-all duration-300 w-full p-3 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent";
+    const readOnlyInputClasses = "w-full p-3 bg-bg-secondary border border-border-color/50 rounded-lg text-text-secondary";
 
     return (
-        <MainLayout title="Declare Draw Results" showBackButton titleClassName="text-accent-tertiary text-shadow-glow-tertiary">
+        <MainLayout title="Declare Draw Results" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
             <div className="max-w-lg mx-auto">
                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -154,7 +153,7 @@ const ManageDrawsPage: React.FC = () => {
                             </div>
                         </>
                     )}
-                    <button type="submit" disabled={isLoading} className="w-full bg-accent-tertiary text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-1 hover:shadow-glow-tertiary active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-tertiary focus:ring-offset-2 focus:ring-offset-primary disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
+                    <button type="submit" disabled={isLoading} className="w-full bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-primary disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
                         {isLoading ? 'Declaring...' : 'Declare and Settle Bets'}
                     </button>
                 </form>

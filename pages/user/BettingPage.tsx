@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, ReactNode, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -690,7 +691,8 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
             return;
         }
 
-        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map(num => ({
+        // @google/genai-dev-tool: Fix: Explicitly type 'num' as a string to resolve TypeScript inference error.
+        const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map((num: string) => ({
             user_id: user.id,
             draw_label: drawLabel,
             game_type: '2D',

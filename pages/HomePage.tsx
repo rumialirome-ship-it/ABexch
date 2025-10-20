@@ -1,7 +1,6 @@
 import React, { ReactNode, useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { UserRole, TIMING_GAMES, Game, DrawResult } from '../types';
-import { LOGO_FULL_BASE64 } from '../assets/logo';
 import { fetchAllResults } from '../services/api';
 import { formatDisplayTime } from '../utils/formatters';
 
@@ -14,13 +13,10 @@ const useGameCountdown = (time: string) => {
         const calculateTimeLeft = () => {
             const nowUtc = new Date();
             
-            // Parse HH:mm 24-hour format
             const [hourPkt, minutePkt] = time.split(':').map(Number);
             
-            // Convert Pakistan time to UTC (PKT is UTC+5)
             const hourUtc = (hourPkt - 5 + 24) % 24;
 
-            // Set the target time in UTC for today
             let targetTimeUtc = new Date(Date.UTC(
                 nowUtc.getUTCFullYear(),
                 nowUtc.getUTCMonth(),
@@ -30,7 +26,6 @@ const useGameCountdown = (time: string) => {
                 0, 0
             ));
 
-            // If the target time for today (in UTC) has already passed, set it for tomorrow
             if (nowUtc.getTime() > targetTimeUtc.getTime()) {
                 targetTimeUtc.setUTCDate(targetTimeUtc.getUTCDate() + 1);
             }
@@ -45,7 +40,6 @@ const useGameCountdown = (time: string) => {
                 setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
                 setIsClosed(false);
             } else {
-                // The time is up. The draw is closed for betting until it resets for the next day.
                 setTimeLeft('Draw Closed');
                 setIsClosed(true);
             }
@@ -60,51 +54,42 @@ const useGameCountdown = (time: string) => {
     return { timeLeft, isClosed };
 };
 
-const GameRow: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result }) => {
+const GameCard: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result }) => {
     const { timeLeft, isClosed } = useGameCountdown(game.time);
     const displayTime = useMemo(() => formatDisplayTime(game.time), [game.time]);
 
-    // Only determine the winning number if the draw is closed and a result is available
     let winningNumberToShow: string | undefined;
     if (isClosed && result) {
-        if (game.bet_type === 'open') {
-            winningNumberToShow = result.one_digit_open;
-        } else if (game.bet_type === 'close') {
-            winningNumberToShow = result.one_digit_close;
-        } else {
-            // For full games, show the 2D number
-            winningNumberToShow = result.two_digit;
-        }
+        if (game.bet_type === 'open') winningNumberToShow = result.one_digit_open;
+        else if (game.bet_type === 'close') winningNumberToShow = result.one_digit_close;
+        else winningNumberToShow = result.two_digit;
     }
 
-    const commonClasses = "grid grid-cols-3 gap-2 text-lg font-semibold rounded-md transition-all duration-300";
-    const linkClasses = "hover:bg-accent-primary/10 hover:shadow-glow-accent hover:-translate-y-1 group focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-background-secondary";
+    const commonClasses = "bg-bg-secondary rounded-lg p-4 flex flex-col items-center justify-center text-center border border-border-color transition-all duration-300 transform-gpu shadow-lg aspect-square";
+    const linkClasses = "hover:border-accent-violet/50 hover:shadow-glow-accent hover:scale-110";
     const disabledClasses = "opacity-60 cursor-not-allowed";
 
     const content = (
         <>
-            <div className={`bg-blue-900/70 text-white p-3 rounded-l-md border border-r-0 border-blue-500/50 flex items-center justify-center gap-2 transition-colors duration-300 ${!isClosed ? 'group-hover:bg-accent-primary/20' : ''}`}>
-                <span>{game.icon}</span>
-                <span>{game.name}</span>
-            </div>
-            <div className={`bg-gray-800/70 text-white p-3 border-y border-gray-700/50 flex items-center justify-center font-mono text-2xl tracking-widest ${winningNumberToShow ? 'text-accent-tertiary text-shadow-glow-tertiary animate-pulse' : 'text-text-secondary'}`}>
-                {winningNumberToShow || '--'}
-            </div>
-            <div className={`text-white p-3 rounded-r-md border border-l-0 font-mono transition-colors duration-300 flex items-center justify-center ${isClosed ? 'bg-gray-600/70 border-gray-500/50' : `bg-danger/70 border-danger/50 group-hover:bg-danger/90`}`}>
+            <h3 className="text-lg font-bold text-text-primary tracking-wide">{game.name}</h3>
+            <div className="my-3">
                 {isClosed ? (
-                    <span className="text-lg">{displayTime}</span>
+                     <span className={`font-mono text-4xl font-bold tracking-widest ${winningNumberToShow ? 'text-accent-yellow animate-pulse' : 'text-text-secondary'}`}>
+                        {winningNumberToShow || 'CLOSED'}
+                    </span>
                 ) : (
-                    <div className="flex flex-col items-center leading-tight">
-                        <span className="text-2xl">{timeLeft}</span>
-                        <span className="text-xs text-red-200">{displayTime}</span>
-                    </div>
+                    <span className="font-mono text-4xl font-bold tracking-widest bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent animate-flicker">
+                        {timeLeft}
+                    </span>
                 )}
+            </div>
+            <div className="text-sm font-semibold text-text-secondary uppercase tracking-wider">
+                Draw Time: {displayTime}
             </div>
         </>
     );
 
-    // If the market is open, it's a link to the betting page.
-    // If closed, it's just a div showing the result.
+
     if (isClosed) {
         return <div className={`${commonClasses} ${!winningNumberToShow ? disabledClasses : ''}`}>{content}</div>;
     }
@@ -119,18 +104,14 @@ const GameRow: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result }
     );
 };
 
+
 const TimingChart: React.FC<{ latestResults: Map<string, DrawResult> }> = ({ latestResults }) => {
   return (
-    <div className="bg-background-secondary/80 backdrop-blur-lg rounded-xl shadow-glow-accent shadow-glow-inset-accent border border-border-color p-6 md:p-8 w-full max-w-2xl text-center mt-4 mb-8 animate-fade-in" style={{animationDelay: '100ms'}}>
-      <h2 className="text-3xl font-bold text-accent-tertiary mb-6 text-shadow-glow-tertiary tracking-widest">LIVE TIMING & RESULTS</h2>
-      <div className="grid grid-cols-1 gap-3">
-        <div className="grid grid-cols-3 gap-2 text-sm font-bold text-text-secondary pb-2 border-b border-border-color">
-            <div className="text-center">GAME</div>
-            <div className="text-center">RESULT</div>
-            <div className="text-center">TIME LEFT</div>
-        </div>
+    <div className="w-full max-w-7xl mx-auto my-8 animate-fade-in" style={{animationDelay: '100ms'}}>
+      <h2 className="text-3xl font-bold mb-8 tracking-widest text-center bg-gradient-to-r from-accent-yellow via-accent-violet to-accent-cyan bg-clip-text text-transparent">LIVE DRAW COUNTDOWN</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {TIMING_GAMES.map((game) => (
-          <GameRow key={game.name} game={game} result={latestResults.get(game.name)} />
+          <GameCard key={game.name} game={game} result={latestResults.get(game.name)} />
         ))}
       </div>
     </div>
@@ -170,14 +151,16 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="text-center animate-fade-in-down animate-pulse-glow">
-            <img src={LOGO_FULL_BASE64} alt="A-BABA Exchange Logo" className="w-64 md:w-80 mx-auto" />
-            <p className="text-text-secondary text-lg -mt-4 animate-flicker" style={{ animationDelay: '1s' }}>Your premier online betting platform.</p>
+        <div className="text-center animate-fade-in-down">
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-wider bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+                A-BABA EXCHANGE
+            </h1>
+            <p className="text-text-secondary text-lg mt-2 animate-flicker" style={{ animationDelay: '1s' }}>Your premier online betting platform.</p>
         </div>
         
         <TimingChart latestResults={latestResultsMap} />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl animate-fade-in" style={{animationDelay: '200ms'}}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl animate-fade-in my-8" style={{animationDelay: '200ms'}}>
             <RoleCard 
                 role={UserRole.USER} 
                 title="User Login" 
@@ -197,33 +180,15 @@ const HomePage: React.FC = () => {
                 icon={<AdminIcon />}
             />
         </div>
-        <Link to="/results" className="mt-8 text-accent-primary/80 hover:text-accent-primary hover:underline transition-colors duration-300 animate-fade-in" style={{animationDelay: '300ms'}}>View All Recent Results</Link>
+        <Link to="/results" className="mt-8 text-accent-violet/80 hover:text-accent-violet hover:underline transition-colors duration-300 animate-fade-in" style={{animationDelay: '300ms'}}>View All Recent Results</Link>
     </div>
   );
 };
 
-const roleStyles: Record<UserRole, { iconColor: string; hoverBorder: string; hoverShadow: string; buttonBg: string; buttonHoverShadow: string; }> = {
-    [UserRole.USER]: {
-        iconColor: 'text-accent-primary',
-        hoverBorder: 'hover:border-accent-primary/60',
-        hoverShadow: 'hover:shadow-glow-accent',
-        buttonBg: 'bg-accent-primary',
-        buttonHoverShadow: 'group-hover:shadow-glow-accent',
-    },
-    [UserRole.DEALER]: {
-        iconColor: 'text-accent-secondary',
-        hoverBorder: 'hover:border-accent-secondary/60',
-        hoverShadow: 'hover:shadow-glow-secondary',
-        buttonBg: 'bg-accent-secondary',
-        buttonHoverShadow: 'group-hover:shadow-glow-secondary',
-    },
-    [UserRole.ADMIN]: {
-        iconColor: 'text-accent-tertiary',
-        hoverBorder: 'hover:border-accent-tertiary/60',
-        hoverShadow: 'hover:shadow-glow-tertiary',
-        buttonBg: 'bg-accent-tertiary',
-        buttonHoverShadow: 'group-hover:shadow-glow-tertiary',
-    },
+const roleCardStyles = {
+    iconColor: 'text-accent-violet',
+    hoverBorder: 'hover:border-accent-violet/60',
+    hoverShadow: 'hover:shadow-glow-accent',
 };
 
 interface RoleCardProps {
@@ -234,27 +199,41 @@ interface RoleCardProps {
 }
 
 const RoleCard: React.FC<RoleCardProps> = ({ role, title, description, icon }) => {
-    const styles = roleStyles[role];
+    const smallIcon = useMemo(() => {
+        switch (role) {
+            case UserRole.USER: return <SmallUserIcon />;
+            case UserRole.DEALER: return <SmallDealerIcon />;
+            case UserRole.ADMIN: return <SmallAdminIcon />;
+            default: return null;
+        }
+    }, [role]);
 
     return (
-        <div className={`bg-background-secondary/80 backdrop-blur-lg rounded-xl p-6 flex flex-col items-center text-center border border-border-color transition-all duration-300 group ${styles.hoverBorder} ${styles.hoverShadow} hover:shadow-glow-inset-accent hover:-translate-y-2`}>
-            <div className={`mb-4 transition-colors duration-300 ${styles.iconColor}`}>{icon}</div>
+        <div className={`bg-bg-secondary/80 backdrop-blur-lg rounded-xl p-6 flex flex-col items-center text-center border border-border-color transition-all duration-300 group ${roleCardStyles.hoverBorder} ${roleCardStyles.hoverShadow} hover:shadow-glow-inset-accent hover:-translate-y-2`}>
+            <div className={`mb-4 transition-colors duration-300 ${roleCardStyles.iconColor}`}>{icon}</div>
             <h3 className="text-2xl font-semibold text-text-primary mb-3">{title}</h3>
             <p className="text-text-secondary mb-6 flex-grow">{description}</p>
             <Link 
                 to={`/login/${role}`} 
-                className={`w-full ${styles.buttonBg} text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 transform-gpu group-hover:opacity-90 group-hover:-translate-y-1 ${styles.buttonHoverShadow} active:scale-95 focus:outline-none focus:ring-2 focus:ring-current focus:ring-offset-2 focus:ring-offset-background-primary`}
+                className={`w-full relative text-center bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 transform-gpu group-hover:saturate-150 group-hover:-translate-y-1 group-hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary`}
             >
-                Login as {role.charAt(0).toUpperCase() + role.slice(1)}
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-75">
+                    {smallIcon}
+                </span>
+                <span>Login as {role.charAt(0).toUpperCase() + role.slice(1)}</span>
             </Link>
         </div>
     );
 };
 
 
-const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
-const DealerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
-const AdminIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12 12 0 0012 21.054a12 12 0 008.618-4.016z" /></svg>;
+const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+const DealerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
+const AdminIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12 12 0 0012 21.054a12 12 0 008.618-4.016z" /></svg>;
+
+const SmallUserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+const SmallDealerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
+const SmallAdminIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12 12 0 0012 21.054a12 12 0 008.618-4.016z" /></svg>;
 
 
 export default HomePage;

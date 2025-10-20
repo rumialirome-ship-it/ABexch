@@ -127,7 +127,7 @@ const MyBetsPage: React.FC = () => {
   }, [bets, filters, sortBy]);
 
   return (
-    <MainLayout title="My Bet History" showBackButton titleClassName="text-accent-primary text-shadow-glow-primary">
+    <MainLayout title="My Bet History" showBackButton>
       <FilterControls
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -142,12 +142,12 @@ const MyBetsPage: React.FC = () => {
           <table className="min-w-full bg-transparent">
             <thead className="border-b-2 border-border-color">
               <tr>
-                <th className="py-3 px-4 text-left text-accent-primary font-semibold tracking-wider uppercase text-sm text-shadow-glow-primary">Draw</th>
-                <th className="py-3 px-4 text-left text-accent-primary font-semibold tracking-wider uppercase text-sm text-shadow-glow-primary">Game</th>
-                <th className="py-3 px-4 text-center text-accent-primary font-semibold tracking-wider uppercase text-sm text-shadow-glow-primary">Number</th>
-                <th className="py-3 px-4 text-right text-accent-primary font-semibold tracking-wider uppercase text-sm text-shadow-glow-primary">Stake</th>
-                <th className="py-3 px-4 text-center text-accent-primary font-semibold tracking-wider uppercase text-sm text-shadow-glow-primary">Status</th>
-                <th className="py-3 px-4 text-left text-accent-primary font-semibold tracking-wider uppercase text-sm text-shadow-glow-primary">Date</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Draw</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Game</th>
+                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Number</th>
+                <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Stake</th>
+                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Status</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -161,7 +161,7 @@ const MyBetsPage: React.FC = () => {
                 }
 
                 return (
-                    <tr key={bet.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-primary/5 transition-colors duration-300 ${highlightedRows.has(bet.id) ? 'animate-highlight' : ''}`}>
+                    <tr key={bet.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-violet/5 transition-colors duration-300 ${highlightedRows.has(bet.id) ? 'animate-highlight' : ''}`}>
                       <td className="py-4 px-4">{bet.draw_label}</td>
                       <td className="py-4 px-4">{bet.game_type}</td>
                       <td className="py-4 px-4 text-center font-bold text-xl text-text-primary font-mono">{bet.number}</td>

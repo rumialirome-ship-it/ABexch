@@ -1,3 +1,4 @@
+
 import { User, UserRole, Bet, DrawResult, Transaction, Commission, Prize, TopUpRequest } from '../types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'development'
@@ -10,8 +11,30 @@ async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T>
     try {
         const response = await fetch(`${API_BASE_URL}${url}`, options);
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            // Attempt to get a more meaningful error message from the response body.
+            // The backend is supposed to send JSON, but proxies or crashes can result in text/html.
+            let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`; // Default error
+            const errorBody = await response.text();
+
+            if (errorBody) {
+                try {
+                    // Attempt to parse as JSON to get the 'message' property from our standard error format
+                    const errorJson = JSON.parse(errorBody);
+                    if (errorJson.message) {
+                        errorMessage = errorJson.message;
+                    } else {
+                        // It's JSON but not our format, so stringify it
+                        errorMessage = JSON.stringify(errorJson);
+                    }
+                } catch (parseError) {
+                    // If not JSON, the raw text is the best we have.
+                    // Strip HTML tags for better readability in notifications, but keep a reasonable length.
+                    const cleanText = errorBody.replace(/<[^>]*>?/gm, '').trim();
+                    errorMessage = cleanText.substring(0, 200) + (cleanText.length > 200 ? '...' : '');
+                }
+            }
+            
+            throw new Error(errorMessage);
         }
         // Handle cases with no response body (e.g., 204 No Content)
         if (response.status === 204) {
@@ -20,6 +43,13 @@ async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<T>
         return await response.json() as T;
     } catch (error) {
         console.error('API Request Error:', error);
+        
+        // Enhance generic network errors with a more user-friendly message.
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+             throw new Error('Network request failed. Please check your connection or if the server is running.');
+        }
+        
+        // Re-throw other errors (including the one we created above) for the caller to handle.
         throw error;
     }
 }

@@ -1,6 +1,14 @@
 import { db } from './index';
 import fs from 'fs';
 import path from 'path';
+// @google/genai-dev-tool: Fix: Import 'process' module to get correct types for process.exit.
+import process from 'process';
+// @google/genai-dev-tool: Fix: Polyfill __dirname for ES Module compatibility since it's not a global in that context.
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 /**
  * Sets up the PostgreSQL database schema by reading and executing schema.sql.

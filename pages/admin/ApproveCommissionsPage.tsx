@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingCommissions, approveCommission } from '../../services/api';
@@ -43,7 +42,7 @@ const ApproveCommissionsPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="Approve Commissions" showBackButton titleClassName="text-accent-tertiary text-shadow-glow-tertiary">
+        <MainLayout title="Approve Commissions" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
             <div className="flex justify-end mb-4">
                 <button 
                   onClick={handleApproveAll} 
@@ -60,22 +59,22 @@ const ApproveCommissionsPage: React.FC = () => {
                     <table className="min-w-full bg-transparent rounded-lg">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Recipient ID</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Type</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Draw</th>
-                                <th className="py-3 px-4 text-right text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Amount</th>
-                                <th className="py-3 px-4 text-center text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Action</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Recipient ID</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Type</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Draw</th>
+                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Amount</th>
+                                <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {commissions.map((c) => (
-                                <tr key={c.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-tertiary/5 transition-colors duration-300">
+                                <tr key={c.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
                                     <td className="py-3 px-4 font-mono">{c.recipient_id}</td>
                                     <td className="py-3 px-4 capitalize">{c.recipient_type}</td>
                                     <td className="py-3 px-4">{c.draw_label}</td>
                                     <td className="py-3 px-4 text-right font-mono">{formatCurrency(c.amount)}</td>
                                     <td className="py-3 px-4 text-center">
-                                        <button onClick={() => handleApprove(c.id)} className="bg-accent-primary/80 text-black font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-primary hover:-translate-y-0.5 active:scale-95">
+                                        <button onClick={() => handleApprove(c.id)} className="bg-accent-violet/80 text-white font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-violet hover:-translate-y-0.5 active:scale-95">
                                             Approve
                                         </button>
                                     </td>

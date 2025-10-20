@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingTopUps, approveTopUp } from '../../services/api';
@@ -53,7 +52,7 @@ const ApproveTopUpsPage: React.FC = () => {
     };
     
     return (
-        <MainLayout title="Approve Dealer Top-Ups" showBackButton titleClassName="text-accent-tertiary text-shadow-glow-tertiary">
+        <MainLayout title="Approve Dealer Top-Ups" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
              {loading ? (
                 <LoadingSpinner />
             ) : (
@@ -61,37 +60,39 @@ const ApproveTopUpsPage: React.FC = () => {
                     <table className="min-w-full bg-transparent rounded-lg">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Dealer</th>
-                                <th className="py-3 px-4 text-right text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Amount</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Reference</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Date</th>
-                                <th className="py-3 px-4 text-center text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Action</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Dealer</th>
+                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Amount</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Reference</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Date</th>
+                                <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {requests.map((r) => (
-                                <tr key={r.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-tertiary/5 transition-colors duration-300">
+                            {requests.map((req) => (
+                                <tr key={req.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
                                     <td className="py-3 px-4">
-                                        {r.dealer_username} <span className="text-text-secondary font-mono text-xs">({r.dealer_id})</span>
+                                        {req.dealer_username}
+                                        <span className="block text-xs font-mono text-text-secondary">{req.dealer_id}</span>
                                     </td>
-                                    <td className="py-3 px-4 text-right font-mono">{formatCurrency(r.amount)}</td>
-                                    <td className="py-3 px-4">{r.reference}</td>
-                                    <td className="py-3 px-4 text-sm text-text-secondary">{new Date(r.created_at).toLocaleString()}</td>
+                                    <td className="py-3 px-4 text-right font-mono">{formatCurrency(req.amount)}</td>
+                                    <td className="py-3 px-4">{req.reference}</td>
+                                    <td className="py-3 px-4 text-sm text-text-secondary whitespace-nowrap">{new Date(req.created_at).toLocaleString()}</td>
                                     <td className="py-3 px-4 text-center">
-                                        <button 
-                                            onClick={() => handleApprove(r.id, r.dealer_username, r.amount)} 
-                                            disabled={approving.has(r.id)}
-                                            className="bg-accent-primary/80 text-black font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-primary hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
-                                            {approving.has(r.id) ? 'Approving...' : 'Approve'}
+                                        <button
+                                            onClick={() => handleApprove(req.id, req.dealer_username, req.amount)}
+                                            disabled={approving.has(req.id)}
+                                            className="bg-accent-violet/80 text-white font-bold py-1 px-3 rounded text-sm transition-all duration-300 hover:bg-accent-violet hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-wait"
+                                        >
+                                            {approving.has(req.id) ? 'Approving...' : 'Approve'}
                                         </button>
                                     </td>
                                 </tr>
                             ))}
-                             {requests.length === 0 && (
+                            {requests.length === 0 && (
                                 <tr>
                                     <td colSpan={5} className="text-center py-8 text-text-secondary">No pending top-up requests.</td>
                                 </tr>
-                             )}
+                            )}
                         </tbody>
                     </table>
                 </div>

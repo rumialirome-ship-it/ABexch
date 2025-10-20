@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -62,7 +60,7 @@ const ManageUsersPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="Manage Users" showBackButton titleClassName="text-accent-tertiary text-shadow-glow-tertiary">
+        <MainLayout title="Manage Users" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div className="relative w-full md:w-1/3">
                     <input
@@ -73,13 +71,13 @@ const ManageUsersPage: React.FC = () => {
                             setSearchQuery(e.target.value);
                             setCurrentPage(1); // Reset to first page on search
                         }}
-                        className="transition-all duration-300 w-full p-2 pl-10 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-tertiary focus:border-transparent"
+                        className="transition-all duration-300 w-full p-2 pl-10 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent"
                     />
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                 </div>
-                <button onClick={() => setShowModal(true)} className="w-full md:w-auto bg-accent-tertiary text-black font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-1 hover:shadow-glow-tertiary active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-tertiary focus:ring-offset-2 focus:ring-offset-background-secondary">
+                <button onClick={() => setShowModal(true)} className="w-full md:w-auto bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-secondary">
                     Add New User
                 </button>
             </div>
@@ -91,24 +89,24 @@ const ManageUsersPage: React.FC = () => {
                     <table className="min-w-full bg-transparent">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">User ID</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Username</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Phone</th>
-                                <th className="py-3 px-4 text-left text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Dealer ID</th>
-                                <th className="py-3 px-4 text-right text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Balance</th>
-                                <th className="py-3 px-4 text-center text-accent-tertiary font-semibold tracking-wider uppercase text-sm text-shadow-glow-tertiary">Actions</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">User ID</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Username</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Phone</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Dealer ID</th>
+                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {paginatedUsers.map((user) => (
-                                <tr key={user.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-tertiary/5 transition-colors duration-300">
+                                <tr key={user.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
                                     <td className="py-4 px-4 font-mono">{user.id}</td>
                                     <td className="py-4 px-4">{user.username}</td>
                                     <td className="py-4 px-4">{user.phone}</td>
                                     <td className="py-4 px-4 font-mono">{user.dealer_id || 'N/A'}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(user.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center">
-                                        <Link to={`/admin/users/${user.id}`} className="text-accent-tertiary hover:underline text-sm font-semibold">
+                                        <Link to={`/admin/users/${user.id}`} className="text-accent-yellow hover:underline text-sm font-semibold">
                                             View Details
                                         </Link>
                                     </td>
@@ -126,11 +124,11 @@ const ManageUsersPage: React.FC = () => {
                 </div>
                 {totalPages > 1 && (
                     <div className="flex justify-center items-center mt-6 space-x-2">
-                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 rounded-lg bg-background-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&laquo;</button>
+                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 rounded-lg bg-bg-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&laquo;</button>
                         {[...Array(totalPages)].map((_, i) => (
-                            <button key={i} onClick={() => handlePageChange(i + 1)} className={`px-3 py-1 rounded-lg border transition-colors ${currentPage === i + 1 ? 'bg-accent-tertiary text-black border-accent-tertiary' : 'bg-background-primary border-border-color hover:bg-border-color'}`}>{i + 1}</button>
+                            <button key={i} onClick={() => handlePageChange(i + 1)} className={`px-3 py-1 rounded-lg border transition-colors ${currentPage === i + 1 ? 'bg-accent-yellow text-black border-accent-yellow' : 'bg-bg-primary border-border-color hover:bg-border-color'}`}>{i + 1}</button>
                         ))}
-                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 rounded-lg bg-background-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&raquo;</button>
+                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 rounded-lg bg-bg-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&raquo;</button>
                     </div>
                 )}
                 </>
@@ -171,12 +169,12 @@ const AddUserModal: React.FC<{dealers: User[], onClose: () => void, onUserAdded:
         }
     };
     
-    const inputClasses = "transition-all duration-300 w-full p-2 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-tertiary focus:border-transparent";
+    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent";
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-background-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color animate-fade-in-down">
-                <h2 className="text-2xl text-accent-tertiary font-bold mb-4 text-shadow-glow-tertiary">Add New User</h2>
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color animate-fade-in-down">
+                <h2 className="text-2xl text-accent-yellow font-bold mb-4">Add New User</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                      <div>
                         <label className="block text-text-secondary mb-1">Username</label>
@@ -195,7 +193,7 @@ const AddUserModal: React.FC<{dealers: User[], onClose: () => void, onUserAdded:
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
-                        <button type="submit" disabled={isLoading || dealers.length === 0} className="bg-accent-tertiary text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 hover:shadow-glow-tertiary active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add User'}</button>
+                        <button type="submit" disabled={isLoading || dealers.length === 0} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add User'}</button>
                     </div>
                 </form>
             </div>

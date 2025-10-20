@@ -6,7 +6,7 @@ import { Transaction, TransactionType } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import TransactionTypeBadge from '../../components/common/TransactionTypeBadge';
 
-const selectClasses = "transition-all duration-300 w-full p-2 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-text-primary text-sm";
+const selectClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-text-primary text-sm";
 
 const formatTypeName = (type: TransactionType): string => {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -73,7 +73,7 @@ const TransactionHistoryPage: React.FC = () => {
         <LoadingSpinner />
       ) : (
         <>
-            <div className="bg-background-primary/50 p-4 rounded-lg border border-border-color mb-6 space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 md:items-end">
+            <div className="bg-bg-primary/50 p-4 rounded-lg border border-border-color mb-6 space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 md:items-end">
                 {/* Filter by Type */}
                 <div>
                     <label htmlFor="type-filter" className="block text-text-secondary text-sm mb-1">Transaction Type</label>
@@ -119,14 +119,14 @@ const TransactionHistoryPage: React.FC = () => {
               <table className="min-w-full bg-transparent">
                 <thead className="border-b-2 border-border-color">
                   <tr>
-                    <th className="py-3 px-4 text-left text-accent-primary font-semibold tracking-wider uppercase text-sm">Date</th>
-                    <th className="py-3 px-4 text-left text-accent-primary font-semibold tracking-wider uppercase text-sm">Description</th>
-                    <th className="py-3 px-4 text-right text-accent-primary font-semibold tracking-wider uppercase text-sm">Amount</th>
+                    <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Date</th>
+                    <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Description</th>
+                    <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredAndSortedTransactions.map((t) => (
-                    <tr key={t.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-primary/5">
+                    <tr key={t.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-violet/5">
                       <td className="py-4 px-4 text-sm text-text-secondary whitespace-nowrap">{new Date(t.created_at).toLocaleString()}</td>
                       <td className="py-4 px-4"><TransactionTypeBadge type={t.type} /></td>
                       <td className={`py-4 px-4 text-right font-mono font-bold ${t.balance_change > 0 ? 'text-success' : 'text-danger'}`}>

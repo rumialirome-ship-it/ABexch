@@ -4,17 +4,17 @@ import { Notification, NotificationType } from '../../contexts/NotificationConte
 const ICONS: Record<NotificationType, React.ReactNode> = {
   success: (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
   error: (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
   info: (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
 };
@@ -31,15 +31,14 @@ const TYPE_CLASSES: Record<NotificationType, { bg: string, text: string, border:
     border: 'border-danger/30'
   },
   info: {
-    bg: 'bg-accent-primary',
-    text: 'text-background-primary',
-    border: 'border-accent-primary/30'
+    bg: 'bg-gradient-to-r from-accent-blue to-accent-violet',
+    text: 'text-white',
+    border: 'border-accent-violet/30'
   }
 };
 
 const NotificationItem: React.FC<{ notification: Notification; onDismiss: (id: number) => void; }> = ({ notification, onDismiss }) => {
   const { bg, text, border } = TYPE_CLASSES[notification.type];
-  const isInfo = notification.type === 'info';
 
   return (
     <div className={`w-full max-w-sm rounded-lg shadow-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden border ${border} ${bg} backdrop-blur-md animate-fade-in-down`}>
@@ -49,12 +48,12 @@ const NotificationItem: React.FC<{ notification: Notification; onDismiss: (id: n
             {ICONS[notification.type]}
           </div>
           <div className="ml-3 w-0 flex-1 pt-0.5">
-            <p className={`text-sm font-medium ${isInfo ? text : 'text-text-primary'}`}>{notification.message}</p>
+            <p className={`text-sm font-medium ${text}`}>{notification.message}</p>
           </div>
           <div className="ml-4 flex-shrink-0 flex">
             <button
               onClick={() => onDismiss(notification.id)}
-              className={`inline-flex rounded-md ${isInfo ? 'text-background-primary/70 hover:text-background-primary' : 'text-text-secondary hover:text-text-primary'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-secondary`}
+              className={`inline-flex rounded-md ${notification.type === 'info' ? 'text-white/70 hover:text-white' : 'text-text-secondary hover:text-text-primary'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-violet`}
             >
               <span className="sr-only">Close</span>
               <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

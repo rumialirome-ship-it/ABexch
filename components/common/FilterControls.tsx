@@ -14,8 +14,8 @@ interface FilterControlsProps {
   onResetFilters: () => void;
 }
 
-const selectClasses = "transition-all duration-300 w-full p-2 bg-background-primary border border-border-color rounded focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-text-primary text-sm";
-const inputClasses = "transition-all duration-300 w-full p-2 bg-background-primary border border-border-color rounded focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-text-primary text-sm";
+const selectClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-text-primary text-sm";
+const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-text-primary text-sm";
 
 const sortOptions = [
     { value: 'createdAt_desc', label: 'Date: Newest First' },
@@ -34,7 +34,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   onResetFilters
 }) => {
   return (
-    <div className="bg-background-primary/50 p-4 rounded-lg border border-border-color mb-6 space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-6 md:gap-4 md:items-end">
+    <div className="bg-bg-primary/50 p-4 rounded-lg border border-border-color mb-6 space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-6 md:gap-4 md:items-end">
       
       {/* Game Type Filter */}
       <div>

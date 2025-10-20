@@ -5,8 +5,8 @@ import { useNotification } from '../../contexts/NotificationContext';
 
 // Icons
 const SparklesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.25a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75zM12 18a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 0112 18zM5.25 12a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75zM15 12a.75.75 0 01.75-.75h3a.75.75 0 010 1.5h-3a.75.75 0 01-.75-.75zM7.06 7.06a.75.75 0 011.06 0l2.122 2.121a.75.75 0 11-1.061 1.06L7.06 8.12a.75.75 0 010-1.06zM14.828 14.828a.75.75 0 011.06 0l2.122 2.121a.75.75 0 11-1.061 1.06l-2.121-2.12a.75.75 0 010-1.061zM7.06 16.94a.75.75 0 010-1.06l2.121-2.122a.75.75 0 011.061 1.061l-2.12 2.12a.75.75 0 01-1.061 0zM14.828 9.172a.75.75 0 010-1.06l2.121-2.122a.75.75 0 011.061 1.061l-2.12 2.12a.75.75 0 01-1.061 0z"/></svg>;
-const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
-const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>;
+const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>;
+const SendIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>;
 
 interface Message {
     id: number;
@@ -65,7 +65,7 @@ const GeminiAssistant: React.FC = () => {
             {/* FAB */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-4 right-4 z-40 h-16 w-16 bg-accent-primary rounded-full text-white flex items-center justify-center shadow-lg animate-pulse-glow transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-primary focus:ring-offset-2 focus:ring-offset-background-primary"
+                className="fixed bottom-4 right-4 z-40 h-16 w-16 bg-gradient-to-br from-accent-blue via-accent-violet to-accent-orange rounded-full text-white flex items-center justify-center shadow-lg animate-pulse-glow transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary"
                 aria-label="Open AI Assistant"
             >
                 <SparklesIcon />
@@ -74,12 +74,12 @@ const GeminiAssistant: React.FC = () => {
             {/* Modal */}
             {isOpen && (
                 <div 
-                    className={`fixed bottom-4 right-4 z-50 w-full max-w-md bg-background-secondary/90 backdrop-blur-lg rounded-xl shadow-glow-hard border border-border-highlight flex flex-col transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                    className={`fixed bottom-4 right-4 z-50 w-full max-w-md bg-bg-secondary/90 backdrop-blur-lg rounded-xl shadow-glow-hard border border-border-highlight flex flex-col transition-all duration-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
                     style={{ height: '70vh', maxHeight: '600px' }}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-border-color">
-                        <h3 className="text-lg font-bold text-accent-primary text-shadow-glow-primary">AI Betting Assistant</h3>
+                        <h3 className="text-lg font-bold bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">AI Betting Assistant</h3>
                         <button onClick={() => setIsOpen(false)} className="text-text-secondary hover:text-white">
                             <CloseIcon />
                         </button>
@@ -89,7 +89,7 @@ const GeminiAssistant: React.FC = () => {
                     <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                         {messages.map((msg) => (
                             <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-xs md:max-w-sm rounded-lg px-4 py-2 ${msg.sender === 'user' ? 'bg-accent-primary text-black' : 'bg-background-primary'}`}>
+                                <div className={`max-w-xs md:max-w-sm rounded-lg px-4 py-2 ${msg.sender === 'user' ? 'bg-gradient-to-r from-accent-blue to-accent-violet text-white' : 'bg-bg-primary'}`}>
                                     {msg.text === '' && msg.sender === 'ai' ? (
                                         <div className="flex items-center space-x-1 py-2">
                                             <div className="h-2 w-2 bg-text-secondary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
@@ -115,9 +115,9 @@ const GeminiAssistant: React.FC = () => {
                                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                                 placeholder="Ask me anything..."
                                 disabled={isLoading}
-                                className="w-full bg-background-primary border border-border-color rounded-full py-3 pl-4 pr-14 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+                                className="w-full bg-bg-primary border border-border-color rounded-full py-3 pl-4 pr-14 text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-violet"
                             />
-                            <button onClick={handleSend} disabled={isLoading || !input.trim()} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-accent-primary text-black disabled:bg-border-color disabled:text-text-secondary disabled:opacity-50 transition-colors">
+                            <button onClick={handleSend} disabled={isLoading || !input.trim()} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-accent-violet text-white disabled:bg-border-color disabled:text-text-secondary disabled:opacity-50 transition-colors">
                                 <SendIcon />
                             </button>
                         </div>

@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -50,7 +48,7 @@ const DealerManageUsersPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="Manage Your Users" showBackButton titleClassName="text-accent-secondary text-shadow-glow-secondary">
+        <MainLayout title="Manage Your Users" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div className="relative w-full md:w-1/3">
                     <input
@@ -61,13 +59,13 @@ const DealerManageUsersPage: React.FC = () => {
                             setSearchQuery(e.target.value);
                             setCurrentPage(1); // Reset to first page on search
                         }}
-                        className="transition-all duration-300 w-full p-2 pl-10 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-secondary focus:border-transparent"
+                        className="transition-all duration-300 w-full p-2 pl-10 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent"
                     />
                     <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                 </div>
-                <Link to="/dealer/add-user" className="w-full md:w-auto bg-accent-secondary text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-1 hover:shadow-glow-secondary active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-secondary focus:ring-offset-2 focus:ring-offset-background-secondary">
+                <Link to="/dealer/add-user" className="w-full md:w-auto bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary">
                     Add New User
                 </Link>
             </div>
@@ -79,22 +77,22 @@ const DealerManageUsersPage: React.FC = () => {
                     <table className="min-w-full bg-transparent">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-secondary font-semibold tracking-wider uppercase text-sm text-shadow-glow-secondary">User ID</th>
-                                <th className="py-3 px-4 text-left text-accent-secondary font-semibold tracking-wider uppercase text-sm text-shadow-glow-secondary">Username</th>
-                                <th className="py-3 px-4 text-left text-accent-secondary font-semibold tracking-wider uppercase text-sm text-shadow-glow-secondary">Phone</th>
-                                <th className="py-3 px-4 text-right text-accent-secondary font-semibold tracking-wider uppercase text-sm text-shadow-glow-secondary">Balance</th>
-                                <th className="py-3 px-4 text-center text-accent-secondary font-semibold tracking-wider uppercase text-sm text-shadow-glow-secondary">Actions</th>
+                                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">User ID</th>
+                                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">Username</th>
+                                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">Phone</th>
+                                <th className="py-3 px-4 text-right text-accent-cyan font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-center text-accent-cyan font-semibold tracking-wider uppercase text-sm">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {paginatedUsers.map((user) => (
-                                <tr key={user.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-secondary/5 transition-colors duration-300">
+                                <tr key={user.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-cyan/5 transition-colors duration-300">
                                     <td className="py-4 px-4 font-mono">{user.id}</td>
                                     <td className="py-4 px-4">{user.username}</td>
                                     <td className="py-4 px-4">{user.phone}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(user.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center">
-                                        <Link to={`/dealer/users/${user.id}`} className="text-accent-secondary hover:underline text-sm font-semibold">
+                                        <Link to={`/dealer/users/${user.id}`} className="text-accent-cyan hover:underline text-sm font-semibold">
                                             View Details
                                         </Link>
                                     </td>
@@ -112,11 +110,11 @@ const DealerManageUsersPage: React.FC = () => {
                 </div>
                 {totalPages > 1 && (
                     <div className="flex justify-center items-center mt-6 space-x-2">
-                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 rounded-lg bg-background-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&laquo;</button>
+                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 rounded-lg bg-bg-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&laquo;</button>
                         {[...Array(totalPages)].map((_, i) => (
-                            <button key={i} onClick={() => handlePageChange(i + 1)} className={`px-3 py-1 rounded-lg border transition-colors ${currentPage === i + 1 ? 'bg-accent-secondary text-white border-accent-secondary' : 'bg-background-primary border-border-color hover:bg-border-color'}`}>{i + 1}</button>
+                            <button key={i} onClick={() => handlePageChange(i + 1)} className={`px-3 py-1 rounded-lg border transition-colors ${currentPage === i + 1 ? 'bg-accent-cyan text-black border-accent-cyan' : 'bg-bg-primary border-border-color hover:bg-border-color'}`}>{i + 1}</button>
                         ))}
-                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 rounded-lg bg-background-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&raquo;</button>
+                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 rounded-lg bg-bg-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&raquo;</button>
                     </div>
                 )}
                 </>

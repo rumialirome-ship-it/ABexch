@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -50,7 +51,7 @@ const App: React.FC = () => {
 
 const AppRoutes: React.FC = () => {
     return (
-        <div className="bg-background-primary text-text-primary">
+        <div className="bg-bg-primary text-text-primary">
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login/:role" element={<LoginPage />} />

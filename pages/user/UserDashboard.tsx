@@ -82,8 +82,8 @@ const UserDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         
         {/* Today's Wallet Card (made more prominent) */}
-        <div className="lg:col-span-2 bg-background-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-primary/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
-             <h3 className="text-xl font-semibold text-accent-primary mb-4 text-shadow-glow-primary">Today's Wallet Summary</h3>
+        <div className="lg:col-span-2 bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
+             <h3 className="text-xl font-semibold text-accent-violet mb-4">Today's Wallet Summary</h3>
              {loadingSummary ? <LoadingSpinner /> : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Add Section */}
@@ -116,8 +116,8 @@ const UserDashboard: React.FC = () => {
         </div>
 
         {/* Wallet Balance & Limits Card */}
-        <div className="bg-background-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-primary/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
-            <h3 className="text-xl font-semibold text-accent-primary mb-4 text-shadow-glow-primary">Wallet Details</h3>
+        <div className="bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
+            <h3 className="text-xl font-semibold text-accent-violet mb-4">Wallet Details</h3>
             <div className="space-y-3">
                 <div className="flex justify-between items-center text-lg">
                     <span className="text-text-secondary">Current Balance:</span>
@@ -125,7 +125,7 @@ const UserDashboard: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center text-base pt-3 border-t border-border-color/30">
                     <span className="text-text-secondary">Bet Limit / Draw:</span>
-                    <span className="font-bold text-accent-primary font-mono">
+                    <span className="font-bold text-accent-violet font-mono">
                          {user.bet_limit_per_draw != null ? formatCurrency(user.bet_limit_per_draw) : 'No Limit'}
                     </span>
                 </div>
@@ -166,19 +166,19 @@ interface DashboardLinkProps {
 }
 
 const DashboardLink: React.FC<DashboardLinkProps> = ({ to, title, description, icon }) => (
-    <Link to={to} className="group block bg-background-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-primary/50 hover:shadow-glow-accent hover:shadow-glow-inset-accent hover:-translate-y-1.5">
+    <Link to={to} className="group block bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/50 hover:shadow-glow-accent hover:shadow-glow-inset-accent hover:-translate-y-1.5">
         <div className="flex items-start gap-4">
-            <div className="text-accent-secondary transition-colors duration-300 group-hover:text-accent-primary">{icon}</div>
+            <div className="text-accent-cyan transition-colors duration-300 group-hover:text-accent-violet">{icon}</div>
             <div>
-                <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-primary group-hover:text-shadow-glow-primary">{title}</h3>
+                <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-violet">{title}</h3>
                 <p className="text-text-secondary mt-1">{description}</p>
             </div>
         </div>
   </Link>
 );
 
-const IconPlaceBet = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.835 2.126a.5.5 0 01.63.63l-1.5 6a.5.5 0 01-.63-.63l1.5-6zm-3.5 1.5a.5.5 0 01.63.63l-1.5 6a.5.5 0 01-.63-.63l1.5-6z" /></svg>;
-const IconBetHistory = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
-const IconTransactions = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h5M7 9l-3 3m13-3v5h-5m2-5l3 3M4 15v5h5m-2-5l-3 3m13 3v-5h-5m2 5l3-3" /></svg>;
+const IconPlaceBet = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>;
+const IconBetHistory = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
+const IconTransactions = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5M7 9l-3 3m13-3v5h-5m2-5l3 3M4 15v5h5m-2-5l-3 3m13 3v-5h-5m2 5l3-3" /></svg>;
 
 export default UserDashboard;
