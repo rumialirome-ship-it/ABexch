@@ -4,8 +4,8 @@
   "description": "Frontend for A-BABA Exchange",
   "private": true,
   "scripts": {
-    "build": "esbuild index.tsx --bundle --outfile=dist/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV='\"production\"' --minify",
-    "dev": "esbuild index.tsx --bundle --outfile=dist/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV='\"development\"' --watch"
+    "build": "esbuild index.tsx --bundle --outdir=dist --splitting --format=esm --loader:.tsx=tsx --define:process.env.NODE_ENV='\"production\"' --minify",
+    "dev": "esbuild index.tsx --bundle --outdir=dist --splitting --format=esm --loader:.tsx=tsx --define:process.env.NODE_ENV='\"development\"' --watch"
   },
   "dependencies": {
     "react": "^18.3.1",
