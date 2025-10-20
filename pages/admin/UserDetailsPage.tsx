@@ -99,7 +99,7 @@ const UserDetailsPage: React.FC = () => {
                     <h3 className="text-xl font-semibold text-accent-tertiary mb-4 text-shadow-glow-tertiary">Bet History ({bets.length})</h3>
                     <div className="overflow-auto max-h-96 rounded-lg border border-border-color">
                         <table className="min-w-full bg-transparent text-sm">
-                            <thead className="border-b-2 border-border-color sticky top-0 bg-background-secondary/80 backdrop-blur-sm z-10">
+                            <thead className="border-b-2 border-border-color sticky top-0 bg-bg-secondary/80 backdrop-blur-sm z-10">
                                 <tr>
                                     <th className="py-2 px-3 text-left text-accent-tertiary/80 font-semibold tracking-wider uppercase text-shadow-glow-tertiary">Draw</th>
                                     <th className="py-2 px-3 text-center text-accent-tertiary/80 font-semibold tracking-wider uppercase text-shadow-glow-tertiary">#</th>
@@ -125,7 +125,7 @@ const UserDetailsPage: React.FC = () => {
                     <h3 className="text-xl font-semibold text-accent-tertiary mb-4 text-shadow-glow-tertiary">Transaction History ({transactions.length})</h3>
                      <div className="overflow-auto max-h-96 rounded-lg border border-border-color">
                         <table className="min-w-full bg-transparent text-sm">
-                             <thead className="border-b-2 border-border-color sticky top-0 bg-background-secondary/80 backdrop-blur-sm z-10">
+                             <thead className="border-b-2 border-border-color sticky top-0 bg-bg-secondary/80 backdrop-blur-sm z-10">
                                 <tr>
                                     <th className="py-2 px-3 text-left text-accent-tertiary/80 font-semibold tracking-wider uppercase text-shadow-glow-tertiary">Date</th>
                                     <th className="py-2 px-3 text-left text-accent-tertiary/80 font-semibold tracking-wider uppercase text-shadow-glow-tertiary">Type</th>
@@ -197,8 +197,8 @@ const AddCreditModal: React.FC<{user: User, onClose: () => void, onSuccess: () =
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-background-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color animate-fade-in-down">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-tertiary font-bold mb-2 text-shadow-glow-tertiary">Add Credit</h2>
                 <p className="text-text-secondary mb-4">Adding credit to <span className="font-bold text-text-primary">{user.username}</span></p>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -265,8 +265,8 @@ const DebitFundsModal: React.FC<{user: User, onClose: () => void, onSuccess: () 
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-background-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-danger/30 animate-fade-in-down">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-danger/30 my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-danger font-bold mb-2 text-shadow-glow-danger">Debit Funds</h2>
                 <p className="text-text-secondary mb-4">Transferring funds from <span className="font-bold text-text-primary">{user.username}</span></p>
                 <form onSubmit={handleSubmit} className="space-y-4">

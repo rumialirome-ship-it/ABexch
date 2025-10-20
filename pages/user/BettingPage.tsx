@@ -62,8 +62,8 @@ const ConfirmationDialog: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-background-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color animate-fade-in-down">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-primary font-bold mb-4 text-shadow-glow-primary">{title}</h2>
                 <div className="text-text-primary mb-6">
                     {children}

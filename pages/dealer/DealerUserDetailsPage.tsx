@@ -182,8 +182,8 @@ const AddCreditModal: React.FC<{user: User, dealer: User | null, onClose: () => 
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color animate-fade-in-down">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-violet font-bold mb-2">Add Credit</h2>
                 <p className="text-text-secondary mb-4">Adding credit to <span className="font-bold text-text-primary">{user.username}</span></p>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -262,8 +262,8 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
 
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color animate-fade-in-down">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-cyan font-bold mb-2">Set Bet Limit</h2>
                 <p className="text-text-secondary mb-4">For user <span className="font-bold text-text-primary">{user.username}</span></p>
                 <form onSubmit={handleSave} className="space-y-4">
