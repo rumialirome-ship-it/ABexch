@@ -44,8 +44,8 @@ const AddUserPage: React.FC = () => {
                 city: formData.cityArea,
                 initial_deposit: parseFloat(formData.initialDeposit) || 0,
                 commission_rate: parseFloat(formData.commissionRate) || 0,
-                prize_rate_2d: parseFloat(formData.prizeRate2D) || 85,
-                prize_rate_1d: parseFloat(formData.prizeRate1D) || 9.5,
+                prize_rate_2d: formData.prizeRate2D ? parseFloat(formData.prizeRate2D) : undefined,
+                prize_rate_1d: formData.prizeRate1D ? parseFloat(formData.prizeRate1D) : undefined,
                 bet_limit_2d: formData.betLimit2D ? parseFloat(formData.betLimit2D) : undefined,
                 bet_limit_1d: formData.betLimit1D ? parseFloat(formData.betLimit1D) : undefined,
             });
@@ -59,33 +59,43 @@ const AddUserPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="New Member Registration Form" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
-            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                    {/* Left Column */}
-                    <div className="space-y-6">
-                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" />
+        <MainLayout title="New Member Registration" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+            <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-8">
+                 <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                    <legend className="text-lg text-accent-cyan px-2 font-semibold">Account Details</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Name" name="name" value={formData.name} onChange={handleChange} required />
                         <InputGroup label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleChange} required />
+                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" placeholder="Default: Pak@123"/>
                         <InputGroup label="City / Area" name="cityArea" value={formData.cityArea} onChange={handleChange} />
+                    </div>
+                </fieldset>
+
+                 <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                    <legend className="text-lg text-accent-cyan px-2 font-semibold">Financial Setup</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Initial Deposit (Rs.)" name="initialDeposit" value={formData.initialDeposit} onChange={handleChange} type="number" required />
-                    </div>
-                    {/* Right Column */}
-                    <div className="space-y-6">
                         <InputGroup label="Commission Rate (%)" name="commissionRate" value={formData.commissionRate} onChange={handleChange} type="number" placeholder="e.g., 5" />
-                        <InputGroup label="Prize Rate on 2-Digits (Double)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" placeholder="e.g., 85 (for 1 gets 85)" />
-                        <InputGroup label="Prize Rate on 1-Digit (Open / Close)" name="prizeRate1D" value={formData.prizeRate1D} onChange={handleChange} type="number" placeholder="e.g., 9.5 (for 1 gets 9.5)" />
-                        <InputGroup label="BET Limit on 2-Digits (Double) (Rs.)" name="betLimit2D" value={formData.betLimit2D} onChange={handleChange} type="number" placeholder="No limit if blank"/>
-                        <InputGroup label="BET Limit on 1-Digit (Open / Close) (Rs.)" name="betLimit1D" value={formData.betLimit1D} onChange={handleChange} type="number" placeholder="No limit if blank"/>
                     </div>
-                </div>
+                </fieldset>
+
+                <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                    <legend className="text-lg text-accent-cyan px-2 font-semibold">Betting Rules (Optional)</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
+                        <InputGroup label="Prize Rate (2-Digit)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" placeholder="Default: 85" />
+                        <InputGroup label="Prize Rate (1-Digit)" name="prizeRate1D" value={formData.prizeRate1D} onChange={handleChange} type="number" placeholder="Default: 9.5" />
+                        <InputGroup label="Bet Limit (2-Digit) (Rs.)" name="betLimit2D" value={formData.betLimit2D} onChange={handleChange} type="number" placeholder="No limit if blank"/>
+                        <InputGroup label="Bet Limit (1-Digit) (Rs.)" name="betLimit1D" value={formData.betLimit1D} onChange={handleChange} type="number" placeholder="No limit if blank"/>
+                    </div>
+                </fieldset>
+
                 <div className="mt-8 pt-6 border-t border-border-color/50 text-center space-y-4">
                     <button
                         type="submit"
                         disabled={isLoading}
                         className="w-full max-w-sm bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50"
                     >
-                        {isLoading ? 'Registering...' : 'Submit for Register & Generate ID'}
+                        {isLoading ? 'Registering...' : 'Submit & Generate ID'}
                     </button>
                     <Link to="/dealer/dashboard" className="block text-accent-cyan/80 hover:text-accent-cyan transition-colors">
                         &larr; Back to Dashboard

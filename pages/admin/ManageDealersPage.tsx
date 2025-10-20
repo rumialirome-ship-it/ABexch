@@ -156,48 +156,50 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
         }
     };
     
-    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent";
+    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-sm";
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
-            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
-                <h2 className="text-2xl text-accent-yellow font-bold mb-4">Add New Dealer</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                     <div>
-                        <label className="block text-text-secondary mb-1">Username</label>
-                        <input type="text" value={username} onChange={e => setUsername(e.target.value)} className={inputClasses} required />
-                    </div>
-                     <div>
-                        <label className="block text-text-secondary mb-1">Phone</label>
-                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClasses} required />
-                    </div>
-                     <div>
-                        <label className="block text-text-secondary mb-1">Password</label>
-                        <div className="relative">
-                            <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} className={`${inputClasses} pr-10`} placeholder="Optional"/>
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300"
-                                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                            >
-                                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                            </button>
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
+                <h2 className="text-2xl text-accent-yellow font-bold mb-6">Add New Dealer</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Username</label>
+                            <input type="text" value={username} onChange={e => setUsername(e.target.value)} className={inputClasses} required />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Phone</label>
+                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClasses} required />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Password</label>
+                            <div className="relative">
+                                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} className={`${inputClasses} pr-10`} placeholder="Default: Admin@123"/>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                >
+                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">City / Area</label>
+                            <input type="text" value={city} onChange={e => setCity(e.target.value)} className={inputClasses} />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Initial Deposit</label>
+                            <input type="number" value={initialDeposit} onChange={e => setInitialDeposit(e.target.value)} className={inputClasses} placeholder="0"/>
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Commission Rate (%)</label>
+                            <input type="number" value={commissionRate} onChange={e => setCommissionRate(e.target.value)} className={inputClasses} placeholder="e.g., 2"/>
                         </div>
                     </div>
-                     <div>
-                        <label className="block text-text-secondary mb-1">City / Area</label>
-                        <input type="text" value={city} onChange={e => setCity(e.target.value)} className={inputClasses} />
-                    </div>
-                    <div>
-                        <label className="block text-text-secondary mb-1">Initial Deposit</label>
-                        <input type="number" value={initialDeposit} onChange={e => setInitialDeposit(e.target.value)} className={inputClasses} placeholder="0"/>
-                    </div>
-                     <div>
-                        <label className="block text-text-secondary mb-1">Commission Rate (%)</label>
-                        <input type="number" value={commissionRate} onChange={e => setCommissionRate(e.target.value)} className={inputClasses} placeholder="e.g., 2"/>
-                    </div>
-                    <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
+                    <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
                         <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add Dealer'}</button>
                     </div>

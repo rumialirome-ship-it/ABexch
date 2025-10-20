@@ -176,13 +176,15 @@ const AddUserModal: React.FC<{dealers: User[], onClose: () => void, onUserAdded:
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-yellow font-bold mb-4">Add New User</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                     <div>
-                        <label className="block text-text-secondary mb-1">Username</label>
-                        <input type="text" value={username} onChange={e => setUsername(e.target.value)} className={inputClasses} required />
-                    </div>
-                     <div>
-                        <label className="block text-text-secondary mb-1">Phone</label>
-                        <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClasses} required />
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-text-secondary mb-1">Username</label>
+                            <input type="text" value={username} onChange={e => setUsername(e.target.value)} className={inputClasses} required />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1">Phone</label>
+                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClasses} required />
+                        </div>
                     </div>
                      <div>
                         <label className="block text-text-secondary mb-1">Assign to Dealer</label>
