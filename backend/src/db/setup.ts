@@ -14,8 +14,8 @@ const setupDatabase = async () => {
   try {
     console.log('✅ Connected to PostgreSQL database.');
 
-    // @google/genai-dev-tool: Fix: Replaced `__dirname` with a path relative to the project root. This resolves a TypeScript error where `__dirname` is not defined and assumes the setup script is run from the project's root directory.
-    const schemaPath = path.resolve('backend/src/db/schema.sql');
+    // The script is run from the `backend` directory, so the path should be relative to it.
+    const schemaPath = path.resolve('src/db/schema.sql');
     console.log(`📄 Reading database schema from: ${schemaPath}`);
 
     // Read the entire schema file
