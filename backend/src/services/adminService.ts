@@ -108,59 +108,87 @@ export const adminService = {
         }
     },
 
-    async addDealer(dealerData: Partial<User> & { username: string, initial_deposit: number, commission_rate?: number }): Promise<Omit<User, 'password'>> {
+    // @google/genai-dev-tool: Fix: Added `initial_deposit` to the type signature to match its usage within the function.
+    async addDealer(dealerData: Partial<User> & { username: string; initial_deposit?: number; }): Promise<Omit<User, 'password'>> {
         const client = await db.connect();
         try {
             await client.query('BEGIN');
-            
-            const { username, phone, password, city, initial_deposit, commission_rate } = dealerData;
 
-            // Check for existing username
-            const { rows: existingUser } = await client.query('SELECT id FROM users WHERE username = $1', [username]);
-            if (existingUser.length > 0) {
-                throw new ApiError(409, `Username '${username}' is already taken.`);
+            const {
+                username,
+                phone,
+                password,
+                city,
+                initial_deposit,
+                commission_rate
+            } = dealerData;
+
+            // 1. Data Validation and Sanitization
+            if (!username || !username.trim()) {
+                throw new ApiError(400, "Username is required.");
             }
+            const cleanUsername = username.trim();
+            const cleanPhone = (phone && typeof phone === 'string' && phone.trim()) ? phone.trim() : null;
 
-            // Check for existing phone number, if provided and not empty
-            if (phone && phone.trim()) {
-                 const { rows: existingPhone } = await client.query('SELECT id FROM users WHERE phone = $1', [phone.trim()]);
+            // 2. Duplicate Checks
+            const { rows: existingUser } = await client.query('SELECT id FROM users WHERE username = $1', [cleanUsername]);
+            if (existingUser.length > 0) {
+                throw new ApiError(409, `Username '${cleanUsername}' is already taken.`);
+            }
+            if (cleanPhone) {
+                const { rows: existingPhone } = await client.query('SELECT id FROM users WHERE phone = $1', [cleanPhone]);
                 if (existingPhone.length > 0) {
-                    throw new ApiError(409, `Phone number '${phone.trim()}' is already in use.`);
+                    throw new ApiError(409, `Phone number '${cleanPhone}' is already in use.`);
                 }
             }
-            
+
+            // 3. Prepare data for insertion (handle types defensively)
             const dealerId = generateId('dlr');
-            const walletBalance = initial_deposit || 0;
-            
+            const walletBalance = (typeof initial_deposit === 'number' && !isNaN(initial_deposit)) ? initial_deposit : 0;
+            const finalPassword = (password && typeof password === 'string' && password.trim()) ? password.trim() : null;
+            const finalCity = (city && typeof city === 'string' && city.trim()) ? city.trim() : null;
+            const finalCommission = (typeof commission_rate === 'number' && !isNaN(commission_rate)) ? commission_rate : null;
+
+            // 4. Insert into DB
             await client.query(
                 'INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
                 [
-                    dealerId, 
-                    username, 
-                    password || null, 
-                    (phone && phone.trim()) ? phone.trim() : null, // Store NULL if phone is empty
-                    UserRole.DEALER, 
-                    walletBalance, 
-                    city || null, 
-                    commission_rate ?? null // Allow 0, but convert undefined to NULL
+                    dealerId,
+                    cleanUsername,
+                    finalPassword,
+                    cleanPhone,
+                    UserRole.DEALER,
+                    walletBalance,
+                    finalCity,
+                    finalCommission
                 ]
             );
-            
+
+            // 5. Create initial transaction if needed
             if (walletBalance > 0) {
-                 await transactionService.createSystemCreditTransaction(client, {
+                await transactionService.createSystemCreditTransaction(client, {
                     toUserId: dealerId,
                     amount: walletBalance,
                     type: 'ADMIN_CREDIT'
                 });
             }
 
+            // 6. Fetch the newly created record to return it
             const { rows: newDealerRows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);
-            
+            if (newDealerRows.length === 0) {
+                throw new ApiError(500, "Failed to create dealer record after insertion.");
+            }
+
             await client.query('COMMIT');
             return stripPassword(newDealerRows[0]);
-        } catch(e) {
+        } catch (e) {
             await client.query('ROLLBACK');
-            throw e;
+            // If it's already a controlled ApiError, rethrow it. Otherwise, wrap it for clarity.
+            if (e instanceof ApiError) {
+                throw e;
+            }
+            console.error("Database error in addDealer service:", e); // Log the original, low-level error for debugging
+            throw new ApiError(500, "A database error occurred while creating the dealer.");
         } finally {
             client.release();
         }
