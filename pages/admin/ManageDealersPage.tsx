@@ -159,7 +159,7 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
     const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-sm";
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-yellow font-bold mb-6">Add New Dealer</h2>
                 <form onSubmit={handleSubmit}>
@@ -243,7 +243,7 @@ const AddCreditModal: React.FC<{dealer: User; onClose: () => void; onSuccess: ()
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-yellow font-bold mb-2">Add Credit</h2>
                 <p className="text-text-secondary mb-4">Adding credit to <span className="font-bold text-text-primary">{dealer.username}</span> ({dealer.id})</p>
@@ -311,7 +311,7 @@ const DebitFundsModal: React.FC<{dealer: User; onClose: () => void; onSuccess: (
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-danger/30 my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-danger font-bold mb-2">Debit Funds</h2>
                 <p className="text-text-secondary mb-4">Transferring funds from <span className="font-bold text-text-primary">{dealer.username}</span></p>

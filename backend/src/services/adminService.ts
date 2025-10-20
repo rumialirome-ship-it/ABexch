@@ -66,9 +66,9 @@ export const adminService = {
         return stripPassword(rows[0]);
     },
 
-    async addUser(userData: Partial<User> & { username: string, dealerId: string, initialDeposit?: number }): Promise<Omit<User, 'password'>> {
-        const { rows: dealerRows } = await db.query('SELECT id FROM users WHERE id = $1 AND role = $2', [userData.dealerId, UserRole.DEALER]);
-        if (dealerRows.length === 0) throw new ApiError(404, `Dealer with ID ${userData.dealerId} not found.`);
+    async addUser(userData: Partial<User> & { username: string, dealer_id: string, initialDeposit?: number }): Promise<Omit<User, 'password'>> {
+        const { rows: dealerRows } = await db.query('SELECT id FROM users WHERE id = $1 AND role = $2', [userData.dealer_id, UserRole.DEALER]);
+        if (dealerRows.length === 0) throw new ApiError(404, `Dealer with ID ${userData.dealer_id} not found.`);
 
         // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
@@ -81,7 +81,7 @@ export const adminService = {
                 phone: userData.phone, 
                 role: UserRole.USER, 
                 wallet_balance: userData.initialDeposit || 0, 
-                dealer_id: userData.dealerId
+                dealer_id: userData.dealer_id
             };
             
             await client.query(
