@@ -3,12 +3,6 @@ import fs from 'fs';
 import path from 'path';
 // @google/genai-dev-tool: Fix: Import 'process' module to get correct types for process.exit.
 import process from 'process';
-// @google/genai-dev-tool: Fix: Polyfill __dirname for ES Module compatibility since it's not a global in that context.
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 
 /**
  * Sets up the PostgreSQL database schema by reading and executing schema.sql.
@@ -20,8 +14,8 @@ const setupDatabase = async () => {
   try {
     console.log('✅ Connected to PostgreSQL database.');
 
-    // Resolve path to schema.sql
-    const schemaPath = path.resolve(__dirname, 'schema.sql');
+    // @google/genai-dev-tool: Fix: Replaced `__dirname` with a path relative to the project root. This resolves a TypeScript error where `__dirname` is not defined and assumes the setup script is run from the project's root directory.
+    const schemaPath = path.resolve('backend/src/db/schema.sql');
     console.log(`📄 Reading database schema from: ${schemaPath}`);
 
     // Read the entire schema file
