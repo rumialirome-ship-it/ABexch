@@ -121,32 +121,43 @@ export const adminService = {
                 throw new ApiError(409, `Username '${username}' is already taken.`);
             }
 
-            // Check for existing phone number, if provided
-            if (phone) {
-                 const { rows: existingPhone } = await client.query('SELECT id FROM users WHERE phone = $1', [phone]);
+            // Check for existing phone number, if provided and not empty
+            if (phone && phone.trim()) {
+                 const { rows: existingPhone } = await client.query('SELECT id FROM users WHERE phone = $1', [phone.trim()]);
                 if (existingPhone.length > 0) {
-                    throw new ApiError(409, `Phone number '${phone}' is already in use.`);
+                    throw new ApiError(409, `Phone number '${phone.trim()}' is already in use.`);
                 }
             }
             
             const dealerId = generateId('dlr');
-            const newDealer: User = { id: dealerId, username, phone, role: UserRole.DEALER, wallet_balance: initial_deposit || 0, password, city, commission_rate: commission_rate };
+            const walletBalance = initial_deposit || 0;
             
             await client.query(
                 'INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
-                [dealerId, username, password, phone, UserRole.DEALER, newDealer.wallet_balance, city, commission_rate]
+                [
+                    dealerId, 
+                    username, 
+                    password || null, 
+                    (phone && phone.trim()) ? phone.trim() : null, // Store NULL if phone is empty
+                    UserRole.DEALER, 
+                    walletBalance, 
+                    city || null, 
+                    commission_rate ?? null // Allow 0, but convert undefined to NULL
+                ]
             );
             
-            if (newDealer.wallet_balance > 0) {
+            if (walletBalance > 0) {
                  await transactionService.createSystemCreditTransaction(client, {
                     toUserId: dealerId,
-                    amount: newDealer.wallet_balance,
+                    amount: walletBalance,
                     type: 'ADMIN_CREDIT'
                 });
             }
+
+            const { rows: newDealerRows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);
             
             await client.query('COMMIT');
-            return stripPassword(newDealer);
+            return stripPassword(newDealerRows[0]);
         } catch(e) {
             await client.query('ROLLBACK');
             throw e;
