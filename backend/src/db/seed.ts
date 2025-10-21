@@ -1,8 +1,8 @@
 import { db } from './index';
 import path from 'path';
 import { UserRole } from '../types';
-// @google/genai-dev-tool: Fix: Import 'process' module to get correct types for process.exit.
-import process from 'process';
+// @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
+import * as process from 'process';
 
 const seed = async () => {
     // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.

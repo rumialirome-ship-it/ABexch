@@ -1,13 +1,14 @@
 import { db } from './index';
 import fs from 'fs';
 import path from 'path';
-import process from 'process';
+// @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
+import * as process from 'process';
 import { TransactionType, UserRole } from '../types';
 
 /**
  * A self-healing database setup script.
- * It executes the main schema, then verifies and synchronizes critical ENUM types
- * (`transaction_type` and `user_role`) to ensure they perfectly match the application code.
+ * It first verifies and synchronizes critical ENUM types (`transaction_type` and `user_role`)
+ * to ensure they exist before being referenced, then executes the main schema.
  */
 const setupDatabase = async () => {
   const client = await db.connect();
@@ -15,22 +16,8 @@ const setupDatabase = async () => {
   try {
     console.log('✅ Connected to PostgreSQL database.');
 
-    // Step 1: Execute the main schema file within a transaction.
-    const schemaPath = path.resolve('src/db/schema.sql');
-    if (!fs.existsSync(schemaPath)) {
-        throw new Error(`Schema file not found at ${schemaPath}. Please ensure src/db/schema.sql exists.`);
-    }
-    console.log(`📄 Reading database schema from: ${schemaPath}`);
-    const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
-    const fullQuery = `SET search_path TO public;\n\n${schemaSQL}`;
-
-    console.log('🧱 Executing schema.sql within a transaction...');
-    await client.query('BEGIN');
-    await client.query(fullQuery);
-    await client.query('COMMIT');
-    console.log('✅ Schema executed successfully.');
-
-    // Step 2: Self-heal the ENUM types. This cannot be in a transaction.
+    // Step 1: Self-heal the ENUM types. This MUST be done first and cannot be in a transaction.
+    // This ensures the custom types exist before the schema tries to use them.
 
     // --- Synchronize `transaction_type` enum ---
     console.log('🔄 Checking and synchronizing transaction_type enum...');
@@ -71,6 +58,22 @@ const setupDatabase = async () => {
       }
       console.log('✅ All user_role enum values are synchronized.');
     }
+
+
+    // Step 2: Execute the main schema file within a transaction.
+    const schemaPath = path.resolve('src/db/schema.sql');
+    if (!fs.existsSync(schemaPath)) {
+        throw new Error(`Schema file not found at ${schemaPath}. Please ensure src/db/schema.sql exists.`);
+    }
+    console.log(`📄 Reading database schema from: ${schemaPath}`);
+    const schemaSQL = fs.readFileSync(schemaPath, 'utf-8');
+    const fullQuery = `SET search_path TO public;\n\n${schemaSQL}`;
+
+    console.log('🧱 Executing schema.sql within a transaction...');
+    await client.query('BEGIN');
+    await client.query(fullQuery);
+    await client.query('COMMIT');
+    console.log('✅ Schema executed successfully.');
 
   } catch (err) {
     try {
