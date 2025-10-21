@@ -186,6 +186,21 @@ export const debitFundsByAdmin = (admin: User, targetUserId: string, amount: num
         body: JSON.stringify({ targetUserId, amount })
     });
 };
+export const updateUserByAdmin = (admin: User, userId: string, userData: Partial<User>): Promise<User> => {
+    return apiRequest(`/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': admin.id, 'x-user-role': admin.role },
+        body: JSON.stringify(userData)
+    });
+};
+
+export const updateDealerByAdmin = (admin: User, dealerId: string, dealerData: Partial<User>): Promise<User> => {
+    return apiRequest(`/admin/dealers/${dealerId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': admin.id, 'x-user-role': admin.role },
+        body: JSON.stringify(dealerData)
+    });
+};
 
 // --- Dealer-Specific Actions ---
 export const fetchUsersByDealer = (dealer: User): Promise<User[]> => {

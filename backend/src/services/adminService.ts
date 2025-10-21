@@ -1,3 +1,5 @@
+
+
 import { db } from '../db';
 import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -107,6 +109,38 @@ export const adminService = {
             client.release();
         }
     },
+    
+    async updateUser(userId: string, userData: Partial<User>): Promise<Omit<User, 'password'>> {
+        const { username, password, phone, dealer_id } = userData;
+        const updates: { [key: string]: any } = {};
+
+        if (username !== undefined) updates.username = username;
+        if (password) updates.password = password; // Only update if a new one is provided
+        if (phone !== undefined) updates.phone = phone;
+        if (dealer_id !== undefined) updates.dealer_id = dealer_id;
+
+        if (Object.keys(updates).length === 0) {
+            throw new ApiError(400, "No update data provided.");
+        }
+        
+        if (dealer_id) {
+            const { rows: dealerRows } = await db.query('SELECT id FROM users WHERE id = $1 AND role = $2', [dealer_id, UserRole.DEALER]);
+            if (dealerRows.length === 0) throw new ApiError(404, `Dealer with ID ${dealer_id} not found.`);
+        }
+
+        const setClause = Object.keys(updates).map((key, index) => `"${key}" = $${index + 2}`).join(', ');
+        const values = [userId, ...Object.values(updates)];
+
+        const query = `UPDATE users SET ${setClause} WHERE id = $1 RETURNING *`;
+        
+        const { rows } = await db.query(query, values);
+
+        if (rows.length === 0) {
+            throw new ApiError(404, 'User not found.');
+        }
+
+        return stripPassword(rows[0]);
+    },
 
     async addDealer(dealerData: Partial<User> & { username: string; initial_deposit?: number; }): Promise<Omit<User, 'password'>> {
         const client = await db.connect();
@@ -205,6 +239,35 @@ export const adminService = {
         } finally {
             client.release();
         }
+    },
+
+    async updateDealer(dealerId: string, dealerData: Partial<User>): Promise<Omit<User, 'password'>> {
+        const { username, password, phone, city } = dealerData;
+        const updates: { [key: string]: any } = {};
+
+        if (username !== undefined) updates.username = username;
+        if (password) updates.password = password;
+        if (phone !== undefined) updates.phone = phone;
+        if (city !== undefined) updates.city = city;
+        // @google/genai-dev-tool: Fix: Corrected faulty type comparison by checking the raw dealerData property.
+        if (dealerData.commission_rate !== undefined) updates.commission_rate = dealerData.commission_rate === null || dealerData.commission_rate === '' ? null : dealerData.commission_rate;
+
+        if (Object.keys(updates).length === 0) {
+            throw new ApiError(400, "No update data provided.");
+        }
+
+        const setClause = Object.keys(updates).map((key, index) => `"${key}" = $${index + 2}`).join(', ');
+        const values = [dealerId, ...Object.values(updates)];
+
+        const query = `UPDATE users SET ${setClause} WHERE id = $1 AND role = 'dealer' RETURNING *`;
+        
+        const { rows } = await db.query(query, values);
+
+        if (rows.length === 0) {
+            throw new ApiError(404, 'Dealer not found.');
+        }
+
+        return stripPassword(rows[0]);
     },
 
     // ... Financial Actions ...

@@ -1,3 +1,4 @@
+
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { requireAuth } from '../middleware/auth';
@@ -20,6 +21,8 @@ import {
     handleDebitFunds,
     handleGetBetsForUser,
     handleGetTransactionsForUser,
+    handleUpdateUser,
+    handleUpdateDealer
 } from '../controllers/adminController';
 
 const router = Router();
@@ -31,6 +34,7 @@ router.use(requireAuth([UserRole.ADMIN]));
 router.get('/users', asyncHandler(handleGetAllSystemUsers));
 router.post('/users', asyncHandler(handleAdminAddUser));
 router.get('/users/:userId', asyncHandler(handleGetSystemUserById));
+router.put('/users/:userId', asyncHandler(handleUpdateUser));
 router.post('/users/:userId/credit', asyncHandler(handleAdminAddCreditToUser));
 router.get('/users/:userId/bets', asyncHandler(handleGetBetsForUser));
 router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForUser));
@@ -39,6 +43,7 @@ router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForU
 // --- Dealer Management ---
 router.get('/dealers', asyncHandler(handleGetAllDealers));
 router.post('/dealers', asyncHandler(handleAddDealer));
+router.put('/dealers/:dealerId', asyncHandler(handleUpdateDealer));
 router.post('/dealers/:dealerId/credit', asyncHandler(handleAddCreditToDealer));
 
 // --- Draw & Bet Management ---

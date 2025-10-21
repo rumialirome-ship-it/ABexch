@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchAllDealers, addDealer, addCreditToDealer, debitFundsByAdmin } from '../../services/api';
+import { fetchAllDealers, addDealer, addCreditToDealer, debitFundsByAdmin, updateDealerByAdmin } from '../../services/api';
 import { User } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useNotification } from '../../contexts/NotificationContext';
@@ -11,6 +12,7 @@ const ManageDealersPage: React.FC = () => {
     const [dealers, setDealers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddDealerModal, setShowAddDealerModal] = useState(false);
+    const [showEditDealerModal, setShowEditDealerModal] = useState(false);
     const [showAddCreditModal, setShowAddCreditModal] = useState(false);
     const [showDebitFundsModal, setShowDebitFundsModal] = useState(false);
     const [selectedDealer, setSelectedDealer] = useState<User | null>(null);
@@ -42,10 +44,16 @@ const ManageDealersPage: React.FC = () => {
         setShowDebitFundsModal(true);
     };
 
+    const handleOpenEdit = (dealer: User) => {
+        setSelectedDealer(dealer);
+        setShowEditDealerModal(true);
+    };
+
     const handleCloseModals = () => {
         setSelectedDealer(null);
         setShowAddCreditModal(false);
         setShowDebitFundsModal(false);
+        setShowEditDealerModal(false);
     };
 
     return (
@@ -79,7 +87,13 @@ const ManageDealersPage: React.FC = () => {
                                     <td className="py-4 px-4">{dealer.username}</td>
                                     <td className="py-4 px-4">{dealer.phone}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.wallet_balance)}</td>
-                                    <td className="py-4 px-4 text-center space-x-2">
+                                    <td className="py-4 px-4 text-center space-x-2 whitespace-nowrap">
+                                        <button 
+                                            onClick={() => handleOpenEdit(dealer)}
+                                            className="border border-accent-cyan/50 text-accent-cyan font-bold py-1 px-3 rounded-lg text-sm transition-all duration-300 hover:bg-accent-cyan hover:text-black active:scale-95"
+                                        >
+                                            Edit
+                                        </button>
                                         <button 
                                             onClick={() => handleOpenDebitFunds(dealer)}
                                             className="border border-danger/50 text-danger font-bold py-1 px-3 rounded-lg text-sm transition-all duration-300 hover:bg-danger hover:text-white hover:shadow-glow-danger active:scale-95"
@@ -100,6 +114,13 @@ const ManageDealersPage: React.FC = () => {
                 </div>
             )}
             {showAddDealerModal && <AddDealerModal onClose={() => setShowAddDealerModal(false)} onDealerAdded={loadDealers} />}
+            {showEditDealerModal && selectedDealer && (
+                <EditDealerModal 
+                    dealer={selectedDealer} 
+                    onClose={handleCloseModals} 
+                    onSuccess={loadDealers} 
+                />
+            )}
             {showAddCreditModal && selectedDealer && (
                 <AddCreditModal 
                     dealer={selectedDealer} 
@@ -202,6 +223,95 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                     <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
                         <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add Dealer'}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: () => void}> = ({dealer, onClose, onSuccess}) => {
+    const { addNotification } = useNotification();
+    const { user: admin } = useAuth();
+    const [formData, setFormData] = useState({
+        username: dealer.username || '',
+        phone: dealer.phone || '',
+        password: '',
+        city: dealer.city || '',
+        commission_rate: dealer.commission_rate?.toString() || '',
+    });
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!admin) return;
+        
+        const updateData: Partial<User> = {
+            username: formData.username,
+            phone: formData.phone,
+            city: formData.city,
+            commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined
+        };
+        if (formData.password) {
+            updateData.password = formData.password;
+        }
+
+        setIsLoading(true);
+        try {
+            await updateDealerByAdmin(admin, dealer.id, updateData);
+            addNotification(`Dealer ${formData.username} updated successfully.`, 'success');
+            onSuccess();
+            onClose();
+        } catch (err) {
+            addNotification(err instanceof Error ? err.message : 'Failed to update dealer.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-sm";
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
+                <h2 className="text-2xl text-accent-yellow font-bold mb-6">Edit Dealer: {dealer.username}</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Username</label>
+                            <input type="text" name="username" value={formData.username} onChange={handleChange} className={inputClasses} required />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Phone</label>
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputClasses} required />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">New Password</label>
+                            <div className="relative">
+                                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} className={`${inputClasses} pr-10`} placeholder="Leave blank to keep unchanged"/>
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">City / Area</label>
+                            <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClasses} />
+                        </div>
+                        <div>
+                            <label className="block text-text-secondary mb-1 text-sm">Commission Rate (%)</label>
+                            <input type="number" name="commission_rate" value={formData.commission_rate} onChange={handleChange} className={inputClasses} placeholder="e.g., 2"/>
+                        </div>
+                    </div>
+                    <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
+                        <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
+                        <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Saving...' : 'Save Changes'}</button>
                     </div>
                 </form>
             </div>
