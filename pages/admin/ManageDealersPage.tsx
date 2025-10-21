@@ -195,40 +195,33 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-2xl border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-yellow font-bold mb-6">Add New Dealer</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <fieldset className="border border-border-color p-4 rounded-lg">
-                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Account Details</legend>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                            <Input name="username" label="Username" value={formData.username} onChange={handleChange} required />
-                            <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleChange} required />
-                            <Input name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder="Default: Admin@123" />
-                            <Input name="city" label="City / Area" value={formData.city} onChange={handleChange} />
-                        </div>
-                    </fieldset>
-                    
-                    <fieldset className="border border-border-color p-4 rounded-lg">
-                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Financials & Commissions</legend>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                            <Input name="initial_deposit" label="Wallet Balance (Initial Deposit)" type="number" value={formData.initial_deposit} onChange={handleChange} placeholder="0" />
-                            <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
-                        </div>
-                    </fieldset>
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                        <Input name="username" label="Username" value={formData.username} onChange={handleChange} required />
+                        <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleChange} required />
+                        <Input name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder="Default: Admin@123" />
+                        <Input name="city" label="City / Area" value={formData.city} onChange={handleChange} />
+                        <Input name="initial_deposit" label="Initial Deposit" type="number" value={formData.initial_deposit} onChange={handleChange} placeholder="0" />
+                        <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
+                    </div>
 
-                    <fieldset className="border border-border-color p-4 rounded-lg">
-                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Betting Rules (Optional)</legend>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                    <div>
+                        <h3 className="text-lg font-semibold text-accent-yellow mb-4 pt-4 border-t border-border-color/50">
+                            Default Betting Rules for Dealer's Users (Optional)
+                        </h3>
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
                             <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
                             <Input name="bet_limit_2d" label="Bet Limit (2D)" type="number" value={formData.bet_limit_2d} onChange={handleChange} placeholder="No limit" />
                             <Input name="bet_limit_1d" label="Bet Limit (1D)" type="number" value={formData.bet_limit_1d} onChange={handleChange} placeholder="No limit" />
                             <Input name="bet_limit_per_draw" label="Bet Limit / Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="No limit" />
                         </div>
-                    </fieldset>
+                    </div>
                     
-                    <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
+                    <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-8">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
                         <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add Dealer'}</button>
                     </div>
