@@ -64,6 +64,40 @@ const seed = async () => {
         `, [userId, UserRole.USER, dealerId]);
         console.log(`- Upserted user: ${userId} (test_user), assigned to dealer ${dealerId}`);
 
+        // --- New Dealer (as per user request) ---
+        const newDealerId = 'dlr_adb_01';
+        await client.query(`
+            INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate)
+            VALUES ($1, 'ADB-01', 'Pak@123', '03010000001', $2, 25000, 'Islamabad', 5)
+            ON CONFLICT (id) DO UPDATE SET
+                username = EXCLUDED.username,
+                password = EXCLUDED.password,
+                phone = EXCLUDED.phone,
+                role = EXCLUDED.role,
+                wallet_balance = EXCLUDED.wallet_balance,
+                city = EXCLUDED.city,
+                commission_rate = EXCLUDED.commission_rate;
+        `, [newDealerId, UserRole.DEALER]);
+        console.log(`- Upserted dealer: ${newDealerId} (ADB-01)`);
+
+        // --- New User (as per user request) ---
+        const newUserId = 'usr_adnan_01';
+        await client.query(`
+            INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d)
+            VALUES ($1, 'Adnan', 'Pak@123', '03020000002', $2, 5000, $3, 'Rawalpindi', 85, 9.5)
+            ON CONFLICT (id) DO UPDATE SET
+                username = EXCLUDED.username,
+                password = EXCLUDED.password,
+                phone = EXCLUDED.phone,
+                role = EXCLUDED.role,
+                wallet_balance = EXCLUDED.wallet_balance,
+                dealer_id = EXCLUDED.dealer_id,
+                city = EXCLUDED.city,
+                prize_rate_2d = EXCLUDED.prize_rate_2d,
+                prize_rate_1d = EXCLUDED.prize_rate_1d;
+        `, [newUserId, UserRole.USER, newDealerId]);
+        console.log(`- Upserted user: ${newUserId} (Adnan), assigned to dealer ${newDealerId}`);
+
         await client.query('COMMIT');
         console.log('Database seeding completed successfully.');
     } catch (error) {
