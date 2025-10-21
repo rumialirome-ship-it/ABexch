@@ -142,14 +142,23 @@ const ManageDealersPage: React.FC = () => {
 const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}> = ({onClose, onDealerAdded}) => {
     const { addNotification } = useNotification();
     const { user: admin } = useAuth();
-    const [username, setUsername] = useState('');
-    const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [city, setCity] = useState('');
-    const [initialDeposit, setInitialDeposit] = useState('');
-    const [commissionRate, setCommissionRate] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        username: '',
+        phone: '',
+        password: '',
+        city: '',
+        initial_deposit: '',
+        commission_rate: '',
+        prize_rate_2d: '',
+        prize_rate_1d: '',
+        bet_limit_per_draw: '',
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -160,14 +169,17 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
         setIsLoading(true);
         try {
             await addDealer(admin, {
-                username,
-                phone,
-                password: password || undefined, // Send undefined if empty to allow default password
-                city,
-                initial_deposit: parseFloat(initialDeposit) || 0,
-                commission_rate: parseFloat(commissionRate) || 0,
+                username: formData.username,
+                phone: formData.phone,
+                password: formData.password || undefined,
+                city: formData.city,
+                initial_deposit: formData.initial_deposit ? parseFloat(formData.initial_deposit) : 0,
+                commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined,
+                prize_rate_2d: formData.prize_rate_2d ? parseFloat(formData.prize_rate_2d) : undefined,
+                prize_rate_1d: formData.prize_rate_1d ? parseFloat(formData.prize_rate_1d) : undefined,
+                bet_limit_per_draw: formData.bet_limit_per_draw ? parseFloat(formData.bet_limit_per_draw) : undefined,
             });
-            addNotification(`Dealer ${username} added successfully. Default PIN is 'Admin@123' if no password is set.`, 'success');
+            addNotification(`Dealer ${formData.username} added successfully. Default PIN is 'Admin@123' if no password is set.`, 'success');
             onDealerAdded();
             onClose();
         } catch (err) {
@@ -176,50 +188,39 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
             setIsLoading(false);
         }
     };
-    
-    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-sm";
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
-            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-2xl border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-yellow font-bold mb-6">Add New Dealer</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Username</label>
-                            <input type="text" value={username} onChange={e => setUsername(e.target.value)} className={inputClasses} required />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <fieldset className="border border-border-color p-4 rounded-lg">
+                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Account Details</legend>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <Input name="username" label="Username" value={formData.username} onChange={handleChange} required />
+                            <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleChange} required />
+                            <Input name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder="Default: Admin@123" />
+                            <Input name="city" label="City / Area" value={formData.city} onChange={handleChange} />
                         </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Phone</label>
-                            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClasses} required />
+                    </fieldset>
+                    
+                    <fieldset className="border border-border-color p-4 rounded-lg">
+                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Financials & Commissions</legend>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <Input name="initial_deposit" label="Wallet Balance (Initial Deposit)" type="number" value={formData.initial_deposit} onChange={handleChange} placeholder="0" />
+                            <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
                         </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Password</label>
-                            <div className="relative">
-                                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} className={`${inputClasses} pr-10`} placeholder="Default: Admin@123"/>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                >
-                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                                </button>
-                            </div>
+                    </fieldset>
+
+                    <fieldset className="border border-border-color p-4 rounded-lg">
+                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Betting Rules (Optional)</legend>
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                            <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
+                            <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
+                            <Input name="bet_limit_per_draw" label="Bet Limit / Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="No limit" />
                         </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">City / Area</label>
-                            <input type="text" value={city} onChange={e => setCity(e.target.value)} className={inputClasses} />
-                        </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Initial Deposit</label>
-                            <input type="number" value={initialDeposit} onChange={e => setInitialDeposit(e.target.value)} className={inputClasses} placeholder="0"/>
-                        </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Commission Rate (%)</label>
-                            <input type="number" value={commissionRate} onChange={e => setCommissionRate(e.target.value)} className={inputClasses} placeholder="e.g., 2"/>
-                        </div>
-                    </div>
+                    </fieldset>
+                    
                     <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
                         <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Adding...' : 'Add Dealer'}</button>
@@ -233,15 +234,17 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
 const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: () => void}> = ({dealer, onClose, onSuccess}) => {
     const { addNotification } = useNotification();
     const { user: admin } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         username: dealer.username || '',
         phone: dealer.phone || '',
         password: '',
         city: dealer.city || '',
         commission_rate: dealer.commission_rate?.toString() || '',
+        prize_rate_2d: dealer.prize_rate_2d?.toString() || '',
+        prize_rate_1d: dealer.prize_rate_1d?.toString() || '',
+        bet_limit_per_draw: dealer.bet_limit_per_draw?.toString() || '',
     });
-    const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -252,19 +255,24 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
         e.preventDefault();
         if (!admin) return;
         
-        const updateData: Partial<User> = {
+        // Backend service handles string-to-number conversion and empty strings becoming null.
+        const updateData: Record<string, any> = {
             username: formData.username,
             phone: formData.phone,
             city: formData.city,
-            commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined
+            commission_rate: formData.commission_rate,
+            prize_rate_2d: formData.prize_rate_2d,
+            prize_rate_1d: formData.prize_rate_1d,
+            bet_limit_per_draw: formData.bet_limit_per_draw,
         };
+
         if (formData.password) {
             updateData.password = formData.password;
         }
 
         setIsLoading(true);
         try {
-            await updateDealerByAdmin(admin, dealer.id, updateData);
+            await updateDealerByAdmin(admin, dealer.id, updateData as Partial<User>);
             addNotification(`Dealer ${formData.username} updated successfully.`, 'success');
             onSuccess();
             onClose();
@@ -275,40 +283,37 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
         }
     };
     
-    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-sm";
-
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
-            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-2xl border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-yellow font-bold mb-6">Edit Dealer: {dealer.username}</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4">
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Username</label>
-                            <input type="text" name="username" value={formData.username} onChange={handleChange} className={inputClasses} required />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <fieldset className="border border-border-color p-4 rounded-lg">
+                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Account Details</legend>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <Input name="username" label="Username" value={formData.username} onChange={handleChange} required />
+                            <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleChange} required />
+                            <Input name="password" label="New Password" type="password" value={formData.password} onChange={handleChange} placeholder="Leave blank to keep unchanged" />
+                            <Input name="city" label="City / Area" value={formData.city} onChange={handleChange} />
                         </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Phone</label>
-                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className={inputClasses} required />
+                    </fieldset>
+                    
+                    <fieldset className="border border-border-color p-4 rounded-lg">
+                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Financials & Commissions</legend>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                           <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
                         </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">New Password</label>
-                            <div className="relative">
-                                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} className={`${inputClasses} pr-10`} placeholder="Leave blank to keep unchanged"/>
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300" aria-label={showPassword ? 'Hide password' : 'Show password'}>
-                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                                </button>
-                            </div>
+                    </fieldset>
+
+                    <fieldset className="border border-border-color p-4 rounded-lg">
+                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Betting Rules</legend>
+                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                            <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
+                            <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
+                            <Input name="bet_limit_per_draw" label="Bet Limit / Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="Leave blank for no limit" />
                         </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">City / Area</label>
-                            <input type="text" name="city" value={formData.city} onChange={handleChange} className={inputClasses} />
-                        </div>
-                        <div>
-                            <label className="block text-text-secondary mb-1 text-sm">Commission Rate (%)</label>
-                            <input type="number" name="commission_rate" value={formData.commission_rate} onChange={handleChange} className={inputClasses} placeholder="e.g., 2"/>
-                        </div>
-                    </div>
+                    </fieldset>
+                    
                     <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
                         <button type="button" onClick={onClose} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
                         <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Saving...' : 'Save Changes'}</button>
@@ -452,6 +457,42 @@ const DebitFundsModal: React.FC<{dealer: User; onClose: () => void; onSuccess: (
     );
 };
 
+const Input: React.FC<{name: string, label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean, placeholder?: string}> = 
+({ name, label, value, onChange, type = 'text', required, placeholder }) => {
+    const [showPassword, setShowPassword] = useState(false);
+    const inputType = type === 'password' && showPassword ? 'text' : type;
+    const inputClasses = "transition-all duration-300 w-full p-2 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-sm";
+    
+    return (
+        <div>
+            <label htmlFor={name} className="block text-text-secondary mb-1 text-sm">{label}{required && <span className="text-danger">*</span>}</label>
+            <div className="relative">
+                <input
+                    id={name}
+                    name={name}
+                    type={inputType}
+                    value={value}
+                    onChange={onChange}
+                    required={required}
+                    placeholder={placeholder}
+                    className={inputClasses}
+                    step={type === 'number' ? 'any' : undefined}
+                    min={type === 'number' ? '0' : undefined}
+                />
+                 {type === 'password' && (
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
 const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;

@@ -1,3 +1,4 @@
+
 import { db } from '../db';
 import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -22,44 +23,52 @@ export const dealerService = {
      * @param dealerId The ID of the dealer creating the user.
      * @param userData The data for the new user.
      * @returns The newly created user object without the password.
-     * @throws ApiError if the dealer has insufficient funds for the initial deposit.
+     * @throws ApiError if the dealer has insufficient funds or if username/phone exists.
      */
-    async addUser(dealerId: string, userData: Partial<User> & { username: string, initialDeposit: number }): Promise<Omit<User, 'password'>> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+    async addUser(dealerId: string, userData: Partial<User> & { initial_deposit?: number }): Promise<Omit<User, 'password'>> {
         const client = await db.connect();
         try {
             await client.query('BEGIN');
+
+            const { username, password, phone } = userData;
+            if (!username || !password || !phone) {
+                throw new ApiError(400, "Username, password, and phone are required.");
+            }
+
+            // Check for duplicates before attempting insert for better error feedback
+            const { rows: existingUsers } = await client.query('SELECT username, phone FROM users WHERE username = $1 OR phone = $2', [username, phone]);
+            if (existingUsers.length > 0) {
+                if (existingUsers[0].username === username) {
+                    throw new ApiError(409, "Username already exists.");
+                }
+                if (existingUsers[0].phone === phone) {
+                    throw new ApiError(409, "Phone number already exists.");
+                }
+            }
             
             const { rows: dealerRows } = await client.query('SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE', [dealerId]);
             const dealer = dealerRows[0];
             if (!dealer) throw new ApiError(404, "Dealer not found.");
             
-            const initialDeposit = userData.initialDeposit || 0;
+            const initialDeposit = userData.initial_deposit || 0;
             if (dealer.wallet_balance < initialDeposit) {
                 throw new ApiError(400, "Dealer has insufficient funds for the initial deposit.");
             }
             
             const userId = generateId('usr');
-            const newUser: User = { 
-                id: userId, 
-                username: userData.username, 
-                phone: userData.phone, 
-                role: UserRole.USER, 
-                wallet_balance: initialDeposit, 
-                dealer_id: dealerId, 
-                password: userData.password, 
-                city: userData.city, 
-                commission_rate: userData.commission_rate, 
-                prize_rate_2d: userData.prize_rate_2d, 
-                prize_rate_1d: userData.prize_rate_1d, 
-                bet_limit_2d: userData.bet_limit_2d, 
-                bet_limit_1d: userData.bet_limit_1d 
-            };
             
             await client.query(
-                `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d) 
+                `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-                [userId, newUser.username, newUser.password, newUser.phone, UserRole.USER, newUser.wallet_balance, newUser.dealer_id, newUser.city, newUser.commission_rate, newUser.prize_rate_2d, newUser.prize_rate_1d, newUser.bet_limit_2d, newUser.bet_limit_1d]
+                [
+                    userId, username, password, phone, UserRole.USER, initialDeposit, dealerId,
+                    userData.city || null,
+                    userData.prize_rate_2d || 85,
+                    userData.prize_rate_1d || 9.5,
+                    userData.bet_limit_2d || null,
+                    userData.bet_limit_1d || null,
+                    userData.bet_limit_per_draw || null,
+                ]
             );
             
             if (initialDeposit > 0) {
@@ -72,9 +81,16 @@ export const dealerService = {
             }
             
             await client.query('COMMIT');
-            return stripPassword(newUser);
+
+            const { rows: createdUser } = await db.query('SELECT * FROM users WHERE id = $1', [userId]);
+            return stripPassword(createdUser[0]);
         } catch (e) {
             await client.query('ROLLBACK');
+            if (e instanceof ApiError) throw e;
+            // Catch potential race conditions where unique constraint is violated
+            if ((e as any).code === '23505') {
+                 throw new ApiError(409, "Username or phone number already exists.");
+            }
             throw e;
         } finally {
             client.release();

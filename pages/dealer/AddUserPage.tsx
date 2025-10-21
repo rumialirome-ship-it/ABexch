@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -12,16 +13,16 @@ const AddUserPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
+        username: '',
         password: '',
-        name: '',
-        contactNumber: '',
-        cityArea: '',
-        initialDeposit: '',
-        commissionRate: '',
-        prizeRate2D: '',
-        prizeRate1D: '',
+        phone: '',
+        city: '',
+        walletBalance: '0',
+        prizeRate2D: '85',
+        prizeRate1D: '9.5',
         betLimit2D: '',
         betLimit1D: '',
+        betLimitPerDraw: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,21 +36,27 @@ const AddUserPage: React.FC = () => {
             addNotification('Dealer not logged in.', 'error');
             return;
         }
+
+        if (!formData.username || !formData.password || !formData.phone) {
+             addNotification('Username, Password, and Phone Number are required.', 'error');
+             return;
+        }
+
         setIsLoading(true);
         try {
             const newUser = await addUser(dealer, {
-                username: formData.name,
-                password: formData.password || undefined, // Send undefined if empty to allow default password
-                phone: formData.contactNumber,
-                city: formData.cityArea,
-                initial_deposit: parseFloat(formData.initialDeposit) || 0,
-                commission_rate: parseFloat(formData.commissionRate) || 0,
+                username: formData.username,
+                password: formData.password,
+                phone: formData.phone,
+                city: formData.city || undefined,
+                initial_deposit: parseFloat(formData.walletBalance) || 0,
                 prize_rate_2d: formData.prizeRate2D ? parseFloat(formData.prizeRate2D) : undefined,
                 prize_rate_1d: formData.prizeRate1D ? parseFloat(formData.prizeRate1D) : undefined,
                 bet_limit_2d: formData.betLimit2D ? parseFloat(formData.betLimit2D) : undefined,
                 bet_limit_1d: formData.betLimit1D ? parseFloat(formData.betLimit1D) : undefined,
+                bet_limit_per_draw: formData.betLimitPerDraw ? parseFloat(formData.betLimitPerDraw) : undefined,
             });
-            addNotification(`User ${newUser.username} created! ID: ${newUser.id}. Default PIN is 'Pak@123' if no password set.`, 'success');
+            addNotification(`User ${newUser.username} added successfully!`, 'success');
             navigate('/dealer/manage-users');
         } catch (error) {
             addNotification(error instanceof Error ? error.message : 'Failed to create user.', 'error');
@@ -59,33 +66,30 @@ const AddUserPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="New Member Registration" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title="Create New User" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
             <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-8">
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <legend className="text-lg text-accent-cyan px-2 font-semibold">Account Details</legend>
+                    <legend className="text-lg text-accent-cyan px-2 font-semibold">User Information</legend>
+                    <div className="p-2 text-sm text-text-secondary">
+                        A unique User ID (e.g., USR-2025-001) will be auto-generated upon creation.
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
-                        <InputGroup label="Name" name="name" value={formData.name} onChange={handleChange} required />
-                        <InputGroup label="Contact Number" name="contactNumber" value={formData.contactNumber} onChange={handleChange} required />
-                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" placeholder="Default: Pak@123"/>
-                        <InputGroup label="City / Area" name="cityArea" value={formData.cityArea} onChange={handleChange} />
+                        <InputGroup label="Username" name="username" value={formData.username} onChange={handleChange} required />
+                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" required />
+                        <InputGroup label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} icon={<PhoneIcon/>} required />
+                        <InputGroup label="City" name="city" value={formData.city} onChange={handleChange} placeholder="Optional"/>
                     </div>
                 </fieldset>
 
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    <legend className="text-lg text-accent-cyan px-2 font-semibold">Financial Setup</legend>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
-                        <InputGroup label="Initial Deposit (Rs.)" name="initialDeposit" value={formData.initialDeposit} onChange={handleChange} type="number" required />
-                        <InputGroup label="Commission Rate (%)" name="commissionRate" value={formData.commissionRate} onChange={handleChange} type="number" placeholder="e.g., 5" />
-                    </div>
-                </fieldset>
-
-                <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                    <legend className="text-lg text-accent-cyan px-2 font-semibold">Betting Rules (Optional)</legend>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
-                        <InputGroup label="Prize Rate (2-Digit)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" placeholder="Default: 85" />
-                        <InputGroup label="Prize Rate (1-Digit)" name="prizeRate1D" value={formData.prizeRate1D} onChange={handleChange} type="number" placeholder="Default: 9.5" />
-                        <InputGroup label="Bet Limit (2-Digit) (Rs.)" name="betLimit2D" value={formData.betLimit2D} onChange={handleChange} type="number" placeholder="No limit if blank"/>
-                        <InputGroup label="Bet Limit (1-Digit) (Rs.)" name="betLimit1D" value={formData.betLimit1D} onChange={handleChange} type="number" placeholder="No limit if blank"/>
+                    <legend className="text-lg text-accent-cyan px-2 font-semibold">💰 Account Settings</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 pt-2">
+                        <InputGroup label="Wallet Balance" name="walletBalance" value={formData.walletBalance} onChange={handleChange} type="number" placeholder="0.00" />
+                        <InputGroup label="Prize Rate (2D)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" placeholder="Default: 85" />
+                        <InputGroup label="Prize Rate (1D)" name="prizeRate1D" value={formData.prizeRate1D} onChange={handleChange} type="number" placeholder="Default: 9.5" />
+                        <InputGroup label="Bet Limit (2D)" name="betLimit2D" value={formData.betLimit2D} onChange={handleChange} type="number" placeholder="Optional" />
+                        <InputGroup label="Bet Limit (1D)" name="betLimit1D" value={formData.betLimit1D} onChange={handleChange} type="number" placeholder="Optional" />
+                        <InputGroup label="Bet Limit per Draw" name="betLimitPerDraw" value={formData.betLimitPerDraw} onChange={handleChange} type="number" placeholder="Optional"/>
                     </div>
                 </fieldset>
 
@@ -95,7 +99,7 @@ const AddUserPage: React.FC = () => {
                         disabled={isLoading}
                         className="w-full max-w-sm bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50"
                     >
-                        {isLoading ? 'Registering...' : 'Submit & Generate ID'}
+                        {isLoading ? 'Creating User...' : 'Create User'}
                     </button>
                     <Link to="/dealer/dashboard" className="block text-accent-cyan/80 hover:text-accent-cyan transition-colors">
                         &larr; Back to Dashboard
@@ -106,8 +110,8 @@ const AddUserPage: React.FC = () => {
     );
 };
 
-const InputGroup: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean, placeholder?: string}> = 
-({ label, name, value, onChange, type = 'text', required = false, placeholder }) => {
+const InputGroup: React.FC<{label: string, name: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean, placeholder?: string, icon?: React.ReactNode}> = 
+({ label, name, value, onChange, type = 'text', required = false, placeholder, icon }) => {
     const [showPassword, setShowPassword] = useState(false);
     const inputType = type === 'password' && showPassword ? 'text' : type;
     const inputClasses = "transition-all duration-300 w-full p-3 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent";
@@ -116,6 +120,7 @@ const InputGroup: React.FC<{label: string, name: string, value: string, onChange
         <div>
             <label htmlFor={name} className="block text-text-secondary mb-2">{label}{required && <span className="text-danger">*</span>}</label>
             <div className="relative">
+                 {icon && <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-text-secondary pointer-events-none">{icon}</span>}
                 <input
                     type={inputType}
                     id={name}
@@ -123,7 +128,7 @@ const InputGroup: React.FC<{label: string, name: string, value: string, onChange
                     value={value}
                     onChange={onChange}
                     required={required}
-                    className={inputClasses}
+                    className={`${inputClasses} ${icon ? 'pl-10' : ''}`}
                     placeholder={placeholder}
                     step={type === 'number' ? 'any' : undefined}
                     min={type === 'number' ? '0' : undefined}
@@ -143,6 +148,7 @@ const InputGroup: React.FC<{label: string, name: string, value: string, onChange
     );
 };
 
+const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>;
 const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
 const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
 

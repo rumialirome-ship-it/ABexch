@@ -1,5 +1,3 @@
-
-
 // @google/genai-dev-tool: Fix: Add missing Express type imports.
 import { Request, Response } from 'express';
 import { UserRole } from '../types';

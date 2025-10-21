@@ -146,24 +146,25 @@ export const adminService = {
         const client = await db.connect();
         try {
             await client.query('BEGIN');
-
+    
             const {
                 username,
                 phone,
                 password,
                 city,
                 initial_deposit,
-                commission_rate
+                commission_rate,
+                prize_rate_2d,
+                prize_rate_1d,
+                bet_limit_per_draw,
             } = dealerData;
-
-            // 1. Data Validation and Sanitization
+    
             if (!username || !username.trim()) {
                 throw new ApiError(400, "Username is required.");
             }
             const cleanUsername = username.trim();
             const cleanPhone = (phone && typeof phone === 'string' && phone.trim()) ? phone.trim() : null;
-
-            // 2. Duplicate Checks (now case-insensitive for username)
+    
             const { rows: existingUser } = await client.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
             if (existingUser.length > 0) {
                 throw new ApiError(409, `Username '${cleanUsername}' is already taken.`);
@@ -174,30 +175,26 @@ export const adminService = {
                     throw new ApiError(409, `Phone number '${cleanPhone}' is already in use.`);
                 }
             }
-
-            // 3. Prepare data for insertion (handle types defensively)
+    
             const dealerId = generateId('dlr');
             const walletBalance = (typeof initial_deposit === 'number' && !isNaN(initial_deposit)) ? initial_deposit : 0;
             const finalPassword = (password && typeof password === 'string' && password.trim()) ? password.trim() : null;
             const finalCity = (city && typeof city === 'string' && city.trim()) ? city.trim() : null;
             const finalCommission = (typeof commission_rate === 'number' && !isNaN(commission_rate)) ? commission_rate : null;
-
-            // 4. Insert into DB
+            const finalPrizeRate2D = (typeof prize_rate_2d === 'number' && !isNaN(prize_rate_2d)) ? prize_rate_2d : null;
+            const finalPrizeRate1D = (typeof prize_rate_1d === 'number' && !isNaN(prize_rate_1d)) ? prize_rate_1d : null;
+            const finalBetLimit = (typeof bet_limit_per_draw === 'number' && !isNaN(bet_limit_per_draw)) ? bet_limit_per_draw : null;
+    
             await client.query(
-                'INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+                `INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_per_draw) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
                 [
-                    dealerId,
-                    cleanUsername,
-                    finalPassword,
-                    cleanPhone,
-                    UserRole.DEALER,
-                    walletBalance,
-                    finalCity,
-                    finalCommission
+                    dealerId, cleanUsername, finalPassword, cleanPhone, UserRole.DEALER,
+                    walletBalance, finalCity, finalCommission, finalPrizeRate2D,
+                    finalPrizeRate1D, finalBetLimit
                 ]
             );
-
-            // 5. Create initial transaction if needed
+    
             if (walletBalance > 0) {
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: dealerId,
@@ -205,20 +202,18 @@ export const adminService = {
                     type: TransactionType.ADMIN_CREDIT
                 });
             }
-
-            // 6. Fetch the newly created record to return it
+    
             const { rows: newDealerRows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);
             if (newDealerRows.length === 0) {
                 throw new ApiError(500, "Failed to create dealer record after insertion.");
             }
-
+    
             await client.query('COMMIT');
             return stripPassword(newDealerRows[0]);
         } catch (e: any) {
             await client.query('ROLLBACK');
-
-            // Handle specific PostgreSQL error codes for better feedback
-            if (e.code === '23505') { // unique_violation
+    
+            if (e.code === '23505') {
                 if (e.constraint && e.constraint.includes('username')) {
                     throw new ApiError(409, `Username '${dealerData.username}' is already taken.`);
                 }
@@ -227,13 +222,9 @@ export const adminService = {
                 }
                 throw new ApiError(409, "A unique value constraint was violated. Please check your input.");
             }
-
-            // Re-throw our own controlled errors
-            if (e instanceof ApiError) {
-                throw e;
-            }
-
-            // Log the full unknown error and return a generic message
+    
+            if (e instanceof ApiError) throw e;
+    
             console.error("Database error in addDealer service:", e);
             throw new ApiError(500, "A database error occurred while creating the dealer.");
         } finally {
@@ -250,15 +241,21 @@ export const adminService = {
         if (phone !== undefined) updates.phone = phone;
         if (city !== undefined) updates.city = city;
         
-        // Handle commission_rate which might come as an empty string from the frontend.
-        // We must check the raw value before TypeScript enforces the 'number' type.
-        if (Object.prototype.hasOwnProperty.call(dealerData, 'commission_rate')) {
-            const rawRate = (dealerData as any).commission_rate;
-            updates.commission_rate = (rawRate === '' || rawRate === null) ? null : parseFloat(rawRate);
-            if (updates.commission_rate !== null && isNaN(updates.commission_rate)) {
-                throw new ApiError(400, "Commission rate must be a valid number.");
+        const handleOptionalNumber = (fieldName: keyof User) => {
+            if (Object.prototype.hasOwnProperty.call(dealerData, fieldName)) {
+                const rawValue = (dealerData as any)[fieldName];
+                const parsedValue = (rawValue === '' || rawValue === null) ? null : parseFloat(rawValue);
+                if (parsedValue !== null && isNaN(parsedValue)) {
+                    throw new ApiError(400, `${fieldName.replace(/_/g, ' ')} must be a valid number.`);
+                }
+                updates[fieldName] = parsedValue;
             }
-        }
+        };
+
+        handleOptionalNumber('commission_rate');
+        handleOptionalNumber('prize_rate_2d');
+        handleOptionalNumber('prize_rate_1d');
+        handleOptionalNumber('bet_limit_per_draw');
 
         if (Object.keys(updates).length === 0) {
             throw new ApiError(400, "No update data provided.");
