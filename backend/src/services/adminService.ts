@@ -249,8 +249,16 @@ export const adminService = {
         if (password) updates.password = password;
         if (phone !== undefined) updates.phone = phone;
         if (city !== undefined) updates.city = city;
-        // @google/genai-dev-tool: Fix: Corrected faulty type comparison by checking the raw dealerData property.
-        if (dealerData.commission_rate !== undefined) updates.commission_rate = dealerData.commission_rate === null || dealerData.commission_rate === '' ? null : dealerData.commission_rate;
+        
+        // Handle commission_rate which might come as an empty string from the frontend.
+        // We must check the raw value before TypeScript enforces the 'number' type.
+        if (Object.prototype.hasOwnProperty.call(dealerData, 'commission_rate')) {
+            const rawRate = (dealerData as any).commission_rate;
+            updates.commission_rate = (rawRate === '' || rawRate === null) ? null : parseFloat(rawRate);
+            if (updates.commission_rate !== null && isNaN(updates.commission_rate)) {
+                throw new ApiError(400, "Commission rate must be a valid number.");
+            }
+        }
 
         if (Object.keys(updates).length === 0) {
             throw new ApiError(400, "No update data provided.");
