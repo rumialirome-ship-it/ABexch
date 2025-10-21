@@ -4,11 +4,13 @@ import path from 'path';
 // @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
 import * as process from 'process';
 import { TransactionType, UserRole } from '../types';
+import { PoolClient } from 'pg';
 
 /**
  * A self-healing database setup script.
- * It first verifies and synchronizes critical ENUM types (`transaction_type` and `user_role`)
- * to ensure they exist before being referenced, then executes the main schema.
+ * It first executes the main schema to establish a baseline, then immediately
+ * synchronizes critical ENUM types (`transaction_type` and `user_role`) to
+ * ensure they match the application code, adding any missing values.
  */
 const setupDatabase = async () => {
   const client = await db.connect();
@@ -16,51 +18,8 @@ const setupDatabase = async () => {
   try {
     console.log('✅ Connected to PostgreSQL database.');
 
-    // Step 1: Self-heal the ENUM types. This MUST be done first and cannot be in a transaction.
-    // This ensures the custom types exist before the schema tries to use them.
-
-    // --- Synchronize `transaction_type` enum ---
-    console.log('🔄 Checking and synchronizing transaction_type enum...');
-    const checkTransactionTypeExistsQuery = `SELECT 1 FROM pg_type WHERE typname = 'transaction_type'`;
-    const { rowCount: transactionTypeExists } = await client.query(checkTransactionTypeExistsQuery);
-    const allTransactionEnumValues = Object.values(TransactionType);
-
-    if (transactionTypeExists === 0) {
-      console.log("    -> 'transaction_type' enum not found. Creating it now...");
-      const enumValuesString = allTransactionEnumValues.map(v => `'${v}'`).join(', ');
-      const createTypeQuery = `CREATE TYPE transaction_type AS ENUM (${enumValuesString});`;
-      await client.query(createTypeQuery);
-      console.log("🎉 Successfully created 'transaction_type' enum with all application values.");
-    } else {
-      console.log("    -> 'transaction_type' enum exists. Verifying all values are present...");
-      for (const type of allTransactionEnumValues) {
-        await client.query(`ALTER TYPE transaction_type ADD VALUE IF NOT EXISTS '${type}'`);
-      }
-      console.log('✅ All transaction_type enum values are synchronized.');
-    }
-    
-    // --- Synchronize `user_role` enum ---
-    console.log('🔄 Checking and synchronizing user_role enum...');
-    const checkUserRoleExistsQuery = `SELECT 1 FROM pg_type WHERE typname = 'user_role'`;
-    const { rowCount: userRoleExists } = await client.query(checkUserRoleExistsQuery);
-    const allUserRoleEnumValues = Object.values(UserRole);
-
-    if (userRoleExists === 0) {
-      console.log("    -> 'user_role' enum not found. Creating it now...");
-      const enumValuesString = allUserRoleEnumValues.map(v => `'${v}'`).join(', ');
-      const createTypeQuery = `CREATE TYPE user_role AS ENUM (${enumValuesString});`;
-      await client.query(createTypeQuery);
-      console.log("🎉 Successfully created 'user_role' enum with all application values.");
-    } else {
-      console.log("    -> 'user_role' enum exists. Verifying all values are present...");
-      for (const role of allUserRoleEnumValues) {
-        await client.query(`ALTER TYPE user_role ADD VALUE IF NOT EXISTS '${role}'`);
-      }
-      console.log('✅ All user_role enum values are synchronized.');
-    }
-
-
-    // Step 2: Execute the main schema file within a transaction.
+    // Step 1: Execute the main schema file first.
+    // This establishes the tables and baseline ENUM types. It runs in a transaction.
     const schemaPath = path.resolve('src/db/schema.sql');
     if (!fs.existsSync(schemaPath)) {
         throw new Error(`Schema file not found at ${schemaPath}. Please ensure src/db/schema.sql exists.`);
@@ -73,10 +32,44 @@ const setupDatabase = async () => {
     await client.query('BEGIN');
     await client.query(fullQuery);
     await client.query('COMMIT');
-    console.log('✅ Schema executed successfully.');
+    console.log('✅ Base schema executed successfully.');
+
+    // Step 2: Now, synchronize the ENUM types. This MUST run AFTER the schema
+    // and cannot be in a transaction. This ensures any new enum values from
+    // the code are added to the types created by the schema.
+
+    // --- Helper function for clarity ---
+    const synchronizeEnum = async (client: PoolClient, typeName: string, enumValues: string[]) => {
+      console.log(`🔄 Synchronizing ${typeName} enum...`);
+      const checkExistsQuery = `SELECT 1 FROM pg_type WHERE typname = '${typeName}'`;
+      const { rowCount: enumExists } = await client.query(checkExistsQuery);
+
+      if (enumExists === 0) {
+        // This case should ideally not be hit if schema.sql defines the types,
+        // but it's a good safeguard.
+        console.log(`    -> '${typeName}' enum not found. Creating it now...`);
+        const valuesString = enumValues.map(v => `'${v}'`).join(', ');
+        const createQuery = `CREATE TYPE ${typeName} AS ENUM (${valuesString});`;
+        await client.query(createQuery);
+        console.log(`🎉 Successfully created '${typeName}' enum.`);
+      } else {
+        console.log(`    -> '${typeName}' enum exists. Adding any missing values...`);
+        for (const value of enumValues) {
+          // This query is safe from SQL injection because `value` comes from our internal enum definition.
+          await client.query(`ALTER TYPE ${typeName} ADD VALUE IF NOT EXISTS '${value}'`);
+        }
+        console.log(`✅ All ${typeName} enum values are synchronized.`);
+      }
+    };
+
+    // --- Synchronize both enums ---
+    await synchronizeEnum(client, 'transaction_type', Object.values(TransactionType));
+    await synchronizeEnum(client, 'user_role', Object.values(UserRole));
+
 
   } catch (err) {
     try {
+      // This will catch errors from the schema transaction
       await client.query('ROLLBACK');
       console.log('↩️ Transaction rolled back due to error.');
     } catch (rollbackError) {
