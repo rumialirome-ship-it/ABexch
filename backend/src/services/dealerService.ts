@@ -1,3 +1,4 @@
+
 import { db } from '../db';
 import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -30,8 +31,8 @@ export const dealerService = {
             await client.query('BEGIN');
 
             const { username, password, phone } = userData;
-            if (!username || !password || !phone) {
-                throw new ApiError(400, "Username, password, and phone are required.");
+            if (!username || !phone) {
+                throw new ApiError(400, "Username and phone are required.");
             }
 
             // Check for duplicates before attempting insert for better error feedback
@@ -55,15 +56,16 @@ export const dealerService = {
             }
             
             const userId = generateId('usr');
+            const finalPassword = (password && password.trim()) ? password.trim() : null;
             
             await client.query(
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    userId, username, password, phone, UserRole.USER, initialDeposit, dealerId,
+                    userId, username, finalPassword, phone, UserRole.USER, initialDeposit, dealerId,
                     userData.city || null,
-                    userData.prize_rate_2d || 85,
-                    userData.prize_rate_1d || 9.5,
+                    userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
+                    userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
                     userData.bet_limit_2d || null,
                     userData.bet_limit_1d || null,
                     userData.bet_limit_per_draw || null,
@@ -105,7 +107,6 @@ export const dealerService = {
     },
     
     async addCreditToUser(dealerId: string, userId: string, amount: number): Promise<void> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');

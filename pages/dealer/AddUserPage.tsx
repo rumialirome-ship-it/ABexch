@@ -71,7 +71,7 @@ const AddUserPage: React.FC = () => {
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                     <legend className="text-lg text-accent-cyan px-2 font-semibold">User Information</legend>
                     <div className="p-2 text-sm text-text-secondary">
-                        A unique User ID (e.g., USR-2025-001) will be auto-generated upon creation.
+                        A unique User ID will be auto-generated upon creation.
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Username" name="username" value={formData.username} onChange={handleChange} required />
@@ -93,16 +93,16 @@ const AddUserPage: React.FC = () => {
                     </div>
                 </fieldset>
 
-                <div className="mt-8 pt-6 border-t border-border-color/50 text-center space-y-4">
+                <div className="mt-8 pt-6 border-t border-border-color/50 flex flex-col sm:flex-row-reverse items-center justify-center sm:justify-start gap-4">
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full max-w-sm bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50"
+                        className="w-full sm:w-auto bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50"
                     >
                         {isLoading ? 'Creating User...' : 'Create User'}
                     </button>
-                    <Link to="/dealer/dashboard" className="block text-accent-cyan/80 hover:text-accent-cyan transition-colors">
-                        &larr; Back to Dashboard
+                    <Link to="/dealer/manage-users" className="w-full sm:w-auto text-center border border-border-color text-text-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">
+                        Cancel
                     </Link>
                 </div>
             </form>
