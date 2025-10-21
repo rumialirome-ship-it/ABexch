@@ -1,5 +1,3 @@
-
-
 import { db } from '../db';
 import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -68,42 +66,62 @@ export const adminService = {
         return stripPassword(rows[0]);
     },
 
-    async addUser(userData: Partial<User> & { username: string, dealer_id: string, initialDeposit?: number }): Promise<Omit<User, 'password'>> {
+    async addUser(userData: Partial<User> & { username: string; dealer_id: string; initial_deposit?: number }): Promise<Omit<User, 'password'>> {
         const { rows: dealerRows } = await db.query('SELECT id FROM users WHERE id = $1 AND role = $2', [userData.dealer_id, UserRole.DEALER]);
         if (dealerRows.length === 0) throw new ApiError(404, `Dealer with ID ${userData.dealer_id} not found.`);
-
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
+    
         const client = await db.connect();
         try {
             await client.query('BEGIN');
+    
+            const { username, phone, password } = userData;
+            if (!username || !phone) {
+                throw new ApiError(400, "Username and phone are required.");
+            }
+            const { rows: existingUsers } = await client.query('SELECT username, phone FROM users WHERE username = $1 OR phone = $2', [username, phone]);
+            if (existingUsers.length > 0) {
+                if (existingUsers[0].username === username) throw new ApiError(409, "Username already exists.");
+                if (existingUsers[0].phone === phone) throw new ApiError(409, "Phone number already exists.");
+            }
+    
             const userId = generateId('usr');
-            const newUser: User = { 
-                id: userId, 
-                username: userData.username, 
-                phone: userData.phone, 
-                role: UserRole.USER, 
-                wallet_balance: userData.initialDeposit || 0, 
-                dealer_id: userData.dealer_id
-            };
-            
+            const initialDeposit = userData.initial_deposit || 0;
+    
+            const finalPassword = (password && password.trim()) ? password.trim() : null; // Default PIN is handled by DB default
+    
             await client.query(
-                `INSERT INTO users (id, username, phone, role, wallet_balance, dealer_id) VALUES ($1, $2, $3, $4, $5, $6)`,
-                [userId, newUser.username, newUser.phone, UserRole.USER, newUser.wallet_balance, newUser.dealer_id]
+                `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                [
+                    userId, username, finalPassword, phone, UserRole.USER, initialDeposit, userData.dealer_id,
+                    userData.city || null,
+                    userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
+                    userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
+                    userData.bet_limit_2d || null,
+                    userData.bet_limit_1d || null,
+                    userData.bet_limit_per_draw || null,
+                ]
             );
-
-            if (newUser.wallet_balance > 0) {
+    
+            if (initialDeposit > 0) {
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: userId,
-                    amount: newUser.wallet_balance,
+                    amount: initialDeposit,
                     type: TransactionType.ADMIN_CREDIT,
-                    relatedEntityId: newUser.dealer_id,
+                    relatedEntityId: 'admin_setup',
                 });
             }
             
             await client.query('COMMIT');
-            return stripPassword(newUser);
+            
+            const { rows: newUserRows } = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+            return stripPassword(newUserRows[0]);
         } catch (e) {
             await client.query('ROLLBACK');
+            if (e instanceof ApiError) throw e;
+            if ((e as any).code === '23505') {
+                 throw new ApiError(409, "Username or phone number already exists.");
+            }
             throw e;
         } finally {
             client.release();
@@ -156,6 +174,8 @@ export const adminService = {
                 commission_rate,
                 prize_rate_2d,
                 prize_rate_1d,
+                bet_limit_2d,
+                bet_limit_1d,
                 bet_limit_per_draw,
             } = dealerData;
     
@@ -183,15 +203,17 @@ export const adminService = {
             const finalCommission = (typeof commission_rate === 'number' && !isNaN(commission_rate)) ? commission_rate : null;
             const finalPrizeRate2D = (typeof prize_rate_2d === 'number' && !isNaN(prize_rate_2d)) ? prize_rate_2d : null;
             const finalPrizeRate1D = (typeof prize_rate_1d === 'number' && !isNaN(prize_rate_1d)) ? prize_rate_1d : null;
+            const finalBetLimit2D = (typeof bet_limit_2d === 'number' && !isNaN(bet_limit_2d)) ? bet_limit_2d : null;
+            const finalBetLimit1D = (typeof bet_limit_1d === 'number' && !isNaN(bet_limit_1d)) ? bet_limit_1d : null;
             const finalBetLimit = (typeof bet_limit_per_draw === 'number' && !isNaN(bet_limit_per_draw)) ? bet_limit_per_draw : null;
     
             await client.query(
-                `INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_per_draw) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                `INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
                     dealerId, cleanUsername, finalPassword, cleanPhone, UserRole.DEALER,
                     walletBalance, finalCity, finalCommission, finalPrizeRate2D,
-                    finalPrizeRate1D, finalBetLimit
+                    finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]
             );
     
@@ -255,6 +277,8 @@ export const adminService = {
         handleOptionalNumber('commission_rate');
         handleOptionalNumber('prize_rate_2d');
         handleOptionalNumber('prize_rate_1d');
+        handleOptionalNumber('bet_limit_2d');
+        handleOptionalNumber('bet_limit_1d');
         handleOptionalNumber('bet_limit_per_draw');
 
         if (Object.keys(updates).length === 0) {
@@ -320,7 +344,7 @@ export const adminService = {
         }
     },
 
-    async declareDraw(drawLabel: string, winningNumbers: { twoD?: string; oneDOpen?: string; oneDClose?: string; }): Promise<DrawResult> {
+    async declareDraw(drawLabel: string, winningNumbers: { two_digit?: string; one_digit_open?: string; one_digit_close?: string; }): Promise<DrawResult> {
         // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
@@ -337,18 +361,18 @@ export const adminService = {
             }
 
             // ... (rest of draw logic)
-            if (winningNumbers.twoD) {
-                draw.two_digit = winningNumbers.twoD;
-                draw.one_digit_open = winningNumbers.twoD.charAt(0);
-                draw.one_digit_close = winningNumbers.twoD.charAt(1);
+            if (winningNumbers.two_digit) {
+                draw.two_digit = winningNumbers.two_digit;
+                draw.one_digit_open = winningNumbers.two_digit.charAt(0);
+                draw.one_digit_close = winningNumbers.two_digit.charAt(1);
                 draw.declared_at = new Date().toISOString();
                 betTypesToSettle.add('2D'); betTypesToSettle.add('1D-Open'); betTypesToSettle.add('1D-Close');
-            } else if (winningNumbers.oneDOpen) {
-                draw.one_digit_open = winningNumbers.oneDOpen;
+            } else if (winningNumbers.one_digit_open) {
+                draw.one_digit_open = winningNumbers.one_digit_open;
                 draw.open_declared_at = new Date().toISOString();
                 betTypesToSettle.add('1D-Open');
-            } else if (winningNumbers.oneDClose) {
-                draw.one_digit_close = winningNumbers.oneDClose;
+            } else if (winningNumbers.one_digit_close) {
+                draw.one_digit_close = winningNumbers.one_digit_close;
                 betTypesToSettle.add('1D-Close');
             }
 

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchAllDealers, addDealer, addCreditToDealer, debitFundsByAdmin, updateDealerByAdmin } from '../../services/api';
@@ -150,8 +151,10 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
         city: '',
         initial_deposit: '',
         commission_rate: '',
-        prize_rate_2d: '',
-        prize_rate_1d: '',
+        prize_rate_2d: '85',
+        prize_rate_1d: '9.5',
+        bet_limit_2d: '',
+        bet_limit_1d: '',
         bet_limit_per_draw: '',
     });
 
@@ -177,6 +180,8 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                 commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined,
                 prize_rate_2d: formData.prize_rate_2d ? parseFloat(formData.prize_rate_2d) : undefined,
                 prize_rate_1d: formData.prize_rate_1d ? parseFloat(formData.prize_rate_1d) : undefined,
+                bet_limit_2d: formData.bet_limit_2d ? parseFloat(formData.bet_limit_2d) : undefined,
+                bet_limit_1d: formData.bet_limit_1d ? parseFloat(formData.bet_limit_1d) : undefined,
                 bet_limit_per_draw: formData.bet_limit_per_draw ? parseFloat(formData.bet_limit_per_draw) : undefined,
             });
             addNotification(`Dealer ${formData.username} added successfully. Default PIN is 'Admin@123' if no password is set.`, 'success');
@@ -217,6 +222,8 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                             <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
                             <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
+                            <Input name="bet_limit_2d" label="Bet Limit (2D)" type="number" value={formData.bet_limit_2d} onChange={handleChange} placeholder="No limit" />
+                            <Input name="bet_limit_1d" label="Bet Limit (1D)" type="number" value={formData.bet_limit_1d} onChange={handleChange} placeholder="No limit" />
                             <Input name="bet_limit_per_draw" label="Bet Limit / Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="No limit" />
                         </div>
                     </fieldset>
@@ -243,6 +250,8 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
         commission_rate: dealer.commission_rate?.toString() || '',
         prize_rate_2d: dealer.prize_rate_2d?.toString() || '',
         prize_rate_1d: dealer.prize_rate_1d?.toString() || '',
+        bet_limit_2d: dealer.bet_limit_2d?.toString() || '',
+        bet_limit_1d: dealer.bet_limit_1d?.toString() || '',
         bet_limit_per_draw: dealer.bet_limit_per_draw?.toString() || '',
     });
 
@@ -263,6 +272,8 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
             commission_rate: formData.commission_rate,
             prize_rate_2d: formData.prize_rate_2d,
             prize_rate_1d: formData.prize_rate_1d,
+            bet_limit_2d: formData.bet_limit_2d,
+            bet_limit_1d: formData.bet_limit_1d,
             bet_limit_per_draw: formData.bet_limit_per_draw,
         };
 
@@ -310,6 +321,8 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                             <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
                             <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
+                             <Input name="bet_limit_2d" label="Bet Limit (2D)" type="number" value={formData.bet_limit_2d} onChange={handleChange} placeholder="No limit" />
+                            <Input name="bet_limit_1d" label="Bet Limit (1D)" type="number" value={formData.bet_limit_1d} onChange={handleChange} placeholder="No limit" />
                             <Input name="bet_limit_per_draw" label="Bet Limit / Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="Leave blank for no limit" />
                         </div>
                     </fieldset>
