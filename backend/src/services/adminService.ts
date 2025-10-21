@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction } from '../types';
+import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
 import { stripPassword, stripPasswords, generateId } from '../utils/helpers';
 import { transactionService } from './transactionService';
@@ -35,7 +35,7 @@ async function calculateRebatesAndDealerCommissions(client: PoolClient, drawLabe
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: userId,
                 amount: rebateAmount,
-                type: 'COMMISSION_REBATE',
+                type: TransactionType.COMMISSION_REBATE,
                 relatedEntityId: drawLabel
             });
         }
@@ -93,7 +93,7 @@ export const adminService = {
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: userId,
                     amount: newUser.wallet_balance,
-                    type: 'ADMIN_CREDIT',
+                    type: TransactionType.ADMIN_CREDIT,
                     relatedEntityId: newUser.dealer_id,
                 });
             }
@@ -168,7 +168,7 @@ export const adminService = {
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: dealerId,
                     amount: walletBalance,
-                    type: 'ADMIN_CREDIT'
+                    type: TransactionType.ADMIN_CREDIT
                 });
             }
 
@@ -216,7 +216,7 @@ export const adminService = {
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: userId,
                 amount: amount,
-                type: 'ADMIN_CREDIT',
+                type: TransactionType.ADMIN_CREDIT,
                 relatedEntityId: adminId
             });
             await client.query('COMMIT');
@@ -237,7 +237,7 @@ export const adminService = {
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: dealerId,
                 amount: amount,
-                type: 'ADMIN_CREDIT'
+                type: TransactionType.ADMIN_CREDIT
             });
 
             const { rows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);
@@ -357,7 +357,7 @@ export const adminService = {
                 await transactionService.createSystemCreditTransaction(client, {
                     toUserId: commission.recipient_id,
                     amount: parseFloat(commission.amount),
-                    type: 'COMMISSION_PAYOUT',
+                    type: TransactionType.COMMISSION_PAYOUT,
                     relatedEntityId: commission.id
                 });
             } else {
@@ -388,7 +388,7 @@ export const adminService = {
                  await transactionService.createSystemCreditTransaction(client, {
                     toUserId: prize.user_id,
                     amount: parseFloat(prize.amount),
-                    type: 'PRIZE_WON',
+                    type: TransactionType.PRIZE_WON,
                     relatedEntityId: prize.bet_id
                 });
             } else {
@@ -420,7 +420,7 @@ export const adminService = {
             await transactionService.createSystemCreditTransaction(client, {
                 toUserId: request.dealer_id,
                 amount: parseFloat(request.amount),
-                type: 'TOP_UP_APPROVED',
+                type: TransactionType.TOP_UP_APPROVED,
                 relatedEntityId: request.id
             });
             

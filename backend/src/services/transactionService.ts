@@ -13,7 +13,7 @@ type CreditTxnParams = {
 type SystemCreditTxnParams = {
     toUserId: string;
     amount: number;
-    type: 'ADMIN_CREDIT' | 'COMMISSION_PAYOUT' | 'PRIZE_WON' | 'TOP_UP_APPROVED' | 'COMMISSION_REBATE';
+    type: TransactionType.ADMIN_CREDIT | TransactionType.COMMISSION_PAYOUT | TransactionType.PRIZE_WON | TransactionType.TOP_UP_APPROVED | TransactionType.COMMISSION_REBATE;
     relatedEntityId?: string;
 };
 
