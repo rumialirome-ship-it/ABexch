@@ -1,9 +1,10 @@
 
 
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchUserById, fetchBetsForUserByActor, fetchTransactionsForUserByActor, addCreditToUserByAdmin, debitFundsByAdmin, fetchAllDealers, updateUserByAdmin } from '../../services/api';
+import { fetchUserById, fetchBetsForUserByActor, fetchTransactionsForUserByActor, addCreditToUserByAdmin, debitFundsByAdmin, fetchAllDealers, updateUserByAdmin, updateUserBlockStatus } from '../../services/api';
 import { User, Bet, Transaction, UserRole } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import BetStatusBadge from '../../components/common/BetStatusBadge';
@@ -23,6 +24,8 @@ const UserDetailsPage: React.FC = () => {
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
     const [isDebitModalOpen, setIsDebitModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+
 
     const loadUserDetails = useCallback(async () => {
         if (!userId || !admin) {
@@ -77,6 +80,14 @@ const UserDetailsPage: React.FC = () => {
                         <button onClick={() => setIsEditModalOpen(true)} className="border border-accent-cyan/50 text-accent-cyan font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:bg-accent-cyan hover:text-black hover:shadow-glow-accent text-sm active:scale-95">
                             Edit User
                         </button>
+                         <button 
+                            onClick={() => setIsBlockModalOpen(true)}
+                            className={`border ${user.is_blocked 
+                                ? 'border-success/50 text-success hover:bg-success hover:text-white hover:shadow-glow-success' 
+                                : 'border-danger/50 text-danger hover:bg-danger hover:text-white hover:shadow-glow-danger'} font-bold py-2 px-4 rounded-lg transition-all duration-300 text-sm active:scale-95`}
+                        >
+                            {user.is_blocked ? 'Unblock User' : 'Block User'}
+                        </button>
                         <button onClick={() => setIsDebitModalOpen(true)} className="border border-danger/50 text-danger font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:bg-danger hover:text-white hover:shadow-glow-danger text-sm active:scale-95">
                             Debit Funds
                         </button>
@@ -91,8 +102,13 @@ const UserDetailsPage: React.FC = () => {
                     <InfoItem label="Phone" value={user.phone || 'N/A'} />
                     <InfoItem label="Dealer ID" value={user.dealer_id || 'N/A'} isMono />
                     <InfoItem label="Dealer Username" value={dealerName || (user.dealer_id ? 'Loading...' : 'N/A')} />
-                    <div>
+                    <div className="lg:col-span-3 flex items-center gap-4">
                         <InfoItem label="Wallet Balance" value={formatCurrency(user.wallet_balance)} isMono highlight />
+                        {user.is_blocked && (
+                            <span className="inline-block bg-danger/20 text-danger border border-danger/30 px-3 py-1 text-sm font-semibold rounded-full">
+                                ACCOUNT BLOCKED
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
@@ -155,6 +171,7 @@ const UserDetailsPage: React.FC = () => {
             {isEditModalOpen && <EditUserModal user={user} dealers={dealers} onClose={() => setIsEditModalOpen(false)} onSuccess={loadUserDetails} />}
             {isCreditModalOpen && <AddCreditModal user={user} onClose={() => setIsCreditModalOpen(false)} onSuccess={loadUserDetails} />}
             {isDebitModalOpen && <DebitFundsModal user={user} onClose={() => setIsDebitModalOpen(false)} onSuccess={loadUserDetails} />}
+            {isBlockModalOpen && <BlockUserModal user={user} onClose={() => setIsBlockModalOpen(false)} onSuccess={loadUserDetails} />}
         </MainLayout>
     );
 };
@@ -382,6 +399,53 @@ const DebitFundsModal: React.FC<{user: User, onClose: () => void, onSuccess: () 
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    );
+};
+
+const BlockUserModal: React.FC<{ user: User; onClose: () => void; onSuccess: () => void }> = ({ user, onClose, onSuccess }) => {
+    const { user: admin } = useAuth();
+    const { addNotification } = useNotification();
+    const [isLoading, setIsLoading] = useState(false);
+    const isBlocking = !user.is_blocked;
+
+    const handleSubmit = async () => {
+        if (!admin) {
+            addNotification('Admin not logged in.', 'error');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await updateUserBlockStatus(admin, user.id, isBlocking);
+            addNotification(`Successfully ${isBlocking ? 'blocked' : 'unblocked'} ${user.username}.`, 'success');
+            onSuccess();
+            onClose();
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : `Failed to ${isBlocking ? 'block' : 'unblock'} user.`;
+            addNotification(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className={`bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border ${isBlocking ? 'border-danger/30' : 'border-success/30'} my-auto animate-fade-in-down`}>
+                <h2 className={`text-2xl font-bold mb-4 ${isBlocking ? 'text-danger text-shadow-glow-danger' : 'text-success'}`}>{isBlocking ? 'Block User' : 'Unblock User'}</h2>
+                <p className="text-text-secondary mb-6">
+                    Are you sure you want to {isBlocking ? 'block' : 'unblock'} the user <strong className="text-text-primary">{user.username}</strong>?
+                    {isBlocking 
+                        ? " They will not be able to log in or place bets." 
+                        : " They will regain full access to their account."}
+                </p>
+                <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
+                    <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
+                    <button type="button" onClick={handleSubmit} disabled={isLoading} className={`${isBlocking ? 'bg-danger hover:shadow-glow-danger' : 'bg-success hover:shadow-glow-success'} text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50`}>
+                        {isLoading ? (isBlocking ? 'Blocking...' : 'Unblocking...') : `Confirm ${isBlocking ? 'Block' : 'Unblock'}`}
+                    </button>
+                </div>
             </div>
         </div>
     );

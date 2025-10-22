@@ -1,4 +1,5 @@
 
+
 export enum UserRole {
   USER = 'user',
   DEALER = 'dealer',
@@ -13,6 +14,7 @@ export interface User {
   wallet_balance: number;
   dealer_id?: string;
   bet_limit_per_draw?: number; // Kept for compatibility, but new logic uses specific limits
+  is_blocked?: boolean;
   // New fields from form
   password?: string;
   city?: string;

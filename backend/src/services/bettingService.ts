@@ -21,13 +21,17 @@ export const bettingService = {
             await client.query('BEGIN');
             
             const userId = betsToPlace[0].user_id;
-            const { rows: userRows } = await client.query('SELECT wallet_balance FROM users WHERE id = $1 FOR UPDATE', [userId]);
+            const { rows: userRows } = await client.query('SELECT wallet_balance, is_blocked FROM users WHERE id = $1 FOR UPDATE', [userId]);
             const user: User = userRows[0];
             
             if (!user) {
                 throw new ApiError(404, "User not found");
             }
             
+            if (user.is_blocked) {
+                throw new ApiError(403, "Your account is blocked and you cannot place bets.");
+            }
+
             const totalStake = betsToPlace.reduce((acc, bet) => acc + bet.stake, 0);
             if (user.wallet_balance < totalStake) {
                 throw new ApiError(400, "Insufficient wallet balance.");

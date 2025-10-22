@@ -18,6 +18,10 @@ export const authService = {
             throw new ApiError(401, 'Invalid credentials. User not found.');
         }
 
+        if (user.is_blocked) {
+            throw new ApiError(403, 'This account has been blocked. Please contact support.');
+        }
+
         // Check against the user's stored password
         if (user.password && pin === user.password) {
             return stripPassword(user);

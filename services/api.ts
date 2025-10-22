@@ -1,5 +1,6 @@
 
 
+
 import { User, UserRole, Bet, DrawResult, Transaction, Commission, Prize, TopUpRequest } from '../types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'development'
@@ -192,6 +193,14 @@ export const updateUserByAdmin = (admin: User, userId: string, userData: Partial
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'x-user-id': admin.id, 'x-user-role': admin.role },
         body: JSON.stringify(userData)
+    });
+};
+
+export const updateUserBlockStatus = (admin: User, userId: string, is_blocked: boolean): Promise<User> => {
+    return apiRequest(`/admin/users/${userId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': admin.id, 'x-user-role': admin.role },
+        body: JSON.stringify({ is_blocked })
     });
 };
 

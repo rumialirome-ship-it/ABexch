@@ -1,6 +1,7 @@
 
 
 
+
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { requireAuth } from '../middleware/auth';
@@ -24,7 +25,8 @@ import {
     handleGetBetsForUser,
     handleGetTransactionsForUser,
     handleUpdateUser,
-    handleUpdateDealer
+    handleUpdateDealer,
+    handleSetUserBlockStatus
 } from '../controllers/adminController';
 
 const router = Router();
@@ -37,6 +39,7 @@ router.get('/users', asyncHandler(handleGetAllSystemUsers));
 router.post('/users', asyncHandler(handleAdminAddUser));
 router.get('/users/:userId', asyncHandler(handleGetSystemUserById));
 router.put('/users/:userId', asyncHandler(handleUpdateUser));
+router.put('/users/:userId/status', asyncHandler(handleSetUserBlockStatus));
 router.post('/users/:userId/credit', asyncHandler(handleAdminAddCreditToUser));
 router.get('/users/:userId/bets', asyncHandler(handleGetBetsForUser));
 router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForUser));

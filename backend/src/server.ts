@@ -6,7 +6,7 @@ import './types';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express, { Express } from 'express';
+import express, { Express, RequestHandler, ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import { apiRouter } from './routes';
 import { globalErrorHandler } from './middleware/errorHandler';
@@ -20,7 +20,8 @@ const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split('
 app.use(cors({ origin: allowedOrigins, optionsSuccessStatus: 200 }));
 
 // Parse incoming JSON requests
-app.use(express.json());
+// @google/genai-dev-tool: Fix: Cast middleware to RequestHandler to resolve overload ambiguity.
+app.use(express.json() as RequestHandler);
 
 
 // --- API Routes ---
@@ -31,7 +32,8 @@ app.use('/api', apiRouter);
 // --- Global Error Handler ---
 // This should be the last piece of middleware.
 // NOTE: The `app.use` overload error is resolved by fixing the type definitions in the imported `globalErrorHandler`.
-app.use(globalErrorHandler);
+// @google/genai-dev-tool: Fix: Cast middleware to ErrorRequestHandler to resolve overload ambiguity.
+app.use(globalErrorHandler as ErrorRequestHandler);
 
 
 // --- Server Activation ---

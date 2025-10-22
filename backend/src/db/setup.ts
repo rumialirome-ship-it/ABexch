@@ -65,6 +65,10 @@ const setupDatabase = async () => {
     // --- Synchronize both enums ---
     await synchronizeEnum(client, 'transaction_type', Object.values(TransactionType));
     await synchronizeEnum(client, 'user_role', Object.values(UserRole));
+    
+    // Step 3: Ensure auxiliary columns exist (for migrations/updates)
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE;`);
+    console.log('✅ Ensured `is_blocked` column exists on users table.');
 
 
   } catch (err) {

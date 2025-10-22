@@ -21,6 +21,7 @@ export interface User {
   phone?: string;
   role: UserRole;
   wallet_balance: number;
+  is_blocked: boolean;
   dealer_id?: string;
   bet_limit_per_draw?: number;
   city?: string;

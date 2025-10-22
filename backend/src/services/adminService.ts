@@ -2,6 +2,7 @@
 
 
 
+
 import { db } from '../db';
 import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -159,6 +160,21 @@ export const adminService = {
             throw new ApiError(404, 'User not found.');
         }
 
+        return stripPassword(rows[0]);
+    },
+
+    async setUserBlockStatus(userId: string, is_blocked: boolean): Promise<Omit<User, 'password'>> {
+        if (typeof is_blocked !== 'boolean') {
+            throw new ApiError(400, 'is_blocked must be a boolean value.');
+        }
+        // Prevent admins from blocking other admins as a safeguard
+        const { rows } = await db.query(
+            "UPDATE users SET is_blocked = $1 WHERE id = $2 AND role != 'admin' RETURNING *",
+            [is_blocked, userId]
+        );
+        if (rows.length === 0) {
+            throw new ApiError(404, 'User not found or you do not have permission to change their status.');
+        }
         return stripPassword(rows[0]);
     },
 

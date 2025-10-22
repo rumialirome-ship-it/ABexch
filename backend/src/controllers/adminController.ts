@@ -29,6 +29,13 @@ export const handleUpdateUser = async (req: Request, res: Response) => {
     res.status(200).json(updatedUser);
 };
 
+export const handleSetUserBlockStatus = async (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { is_blocked } = req.body;
+    const updatedUser = await adminService.setUserBlockStatus(userId, is_blocked);
+    res.status(200).json(updatedUser);
+};
+
 export const handleAdminAddCreditToUser = async (req: Request, res: Response) => {
     const adminId = req.user?.id;
     const { userId } = req.params;
