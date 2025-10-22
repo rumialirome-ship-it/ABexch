@@ -95,7 +95,7 @@ export const adminService = {
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    userId, username, finalPassword, phone, UserRole.USER, 0, userData.dealer_id, // Set initial balance to 0
+                    userId, username, finalPassword, phone, UserRole.USER, initialDeposit, userData.dealer_id,
                     userData.city || null,
                     userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
                     userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
@@ -106,12 +106,10 @@ export const adminService = {
             );
     
             if (initialDeposit > 0) {
-                await transactionService.createSystemCreditTransaction(client, {
-                    toUserId: userId,
-                    amount: initialDeposit,
-                    type: TransactionType.ADMIN_CREDIT,
-                    relatedEntityId: 'admin_setup',
-                });
+                await client.query(
+                    'INSERT INTO transactions (id, user_id, type, amount, balance_change, related_entity_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+                    [generateId('txn'), userId, TransactionType.ADMIN_CREDIT, initialDeposit, initialDeposit, 'admin_setup']
+                );
             }
             
             await client.query('COMMIT');
@@ -214,17 +212,16 @@ export const adminService = {
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
                     dealerId, cleanUsername, finalPassword, cleanPhone, UserRole.DEALER,
-                    0, finalCity, finalCommission, finalPrizeRate2D, // Set initial balance to 0
+                    walletBalance, finalCity, finalCommission, finalPrizeRate2D,
                     finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]
             );
     
             if (walletBalance > 0) {
-                await transactionService.createSystemCreditTransaction(client, {
-                    toUserId: dealerId,
-                    amount: walletBalance,
-                    type: TransactionType.ADMIN_CREDIT
-                });
+                await client.query(
+                    'INSERT INTO transactions (id, user_id, type, amount, balance_change, related_entity_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+                    [generateId('txn'), dealerId, TransactionType.ADMIN_CREDIT, walletBalance, walletBalance, 'admin_setup']
+                );
             }
     
             const { rows: newDealerRows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);

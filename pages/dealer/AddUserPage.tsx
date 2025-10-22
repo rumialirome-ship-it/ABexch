@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -37,8 +38,8 @@ const AddUserPage: React.FC = () => {
             return;
         }
 
-        if (!formData.username || !formData.password || !formData.phone) {
-             addNotification('⚠️ Username, Password, and Phone Number are required.', 'error');
+        if (!formData.username || !formData.phone) {
+             addNotification('⚠️ Username and Phone Number are required.', 'error');
              return;
         }
 
@@ -73,7 +74,7 @@ const AddUserPage: React.FC = () => {
                     <legend className="text-lg text-accent-blue px-2 font-semibold">User Information</legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Username" name="username" value={formData.username} onChange={handleChange} required />
-                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" required />
+                        <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" placeholder="Default: Pak@123" />
                         <InputGroup label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} type="tel" icon={<PhoneIcon/>} required />
                         <InputGroup label="City" name="city" value={formData.city} onChange={handleChange} placeholder="Optional"/>
                     </div>

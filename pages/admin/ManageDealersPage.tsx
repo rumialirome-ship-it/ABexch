@@ -1,12 +1,62 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchAllDealers, addDealer, addCreditToDealer, debitFundsByAdmin, updateDealerByAdmin } from '../../services/api';
 import { User } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useNotification } from '../../contexts/NotificationContext';
 import { useAuth } from '../../contexts/AuthContext';
+
+const MoreOptionsMenu: React.FC<{
+    dealer: User,
+    onEdit: () => void,
+    onAddCredit: () => void,
+    onDebit: () => void
+}> = ({ dealer, onEdit, onAddCredit, onDebit }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleAction = (action: () => void) => {
+        action();
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative inline-block text-left" ref={menuRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex justify-center w-full rounded-md border border-border-color shadow-sm px-4 py-2 bg-bg-primary text-sm font-medium text-text-secondary hover:bg-border-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-violet"
+            >
+                Actions
+                <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+            </button>
+
+            {isOpen && (
+                <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-bg-secondary ring-1 ring-black ring-opacity-5 z-10 animate-fade-in-down">
+                    <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                        <button onClick={() => handleAction(onEdit)} className="w-full text-left block px-4 py-2 text-sm text-accent-cyan hover:bg-accent-cyan/10" role="menuitem">Edit Dealer</button>
+                        <button onClick={() => handleAction(onAddCredit)} className="w-full text-left block px-4 py-2 text-sm text-accent-violet hover:bg-accent-violet/10" role="menuitem">Add Credit</button>
+                        <button onClick={() => handleAction(onDebit)} className="w-full text-left block px-4 py-2 text-sm text-danger hover:bg-danger/10" role="menuitem">Debit Funds</button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 const ManageDealersPage: React.FC = () => {
     const { user: admin } = useAuth();
@@ -88,25 +138,13 @@ const ManageDealersPage: React.FC = () => {
                                     <td className="py-4 px-4">{dealer.username}</td>
                                     <td className="py-4 px-4">{dealer.phone}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.wallet_balance)}</td>
-                                    <td className="py-4 px-4 text-center space-x-2 whitespace-nowrap">
-                                        <button 
-                                            onClick={() => handleOpenEdit(dealer)}
-                                            className="border border-accent-cyan/50 text-accent-cyan font-bold py-1 px-3 rounded-lg text-sm transition-all duration-300 hover:bg-accent-cyan hover:text-black active:scale-95"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button 
-                                            onClick={() => handleOpenDebitFunds(dealer)}
-                                            className="border border-danger/50 text-danger font-bold py-1 px-3 rounded-lg text-sm transition-all duration-300 hover:bg-danger hover:text-white hover:shadow-glow-danger active:scale-95"
-                                        >
-                                            Debit Funds
-                                        </button>
-                                        <button 
-                                            onClick={() => handleOpenAddCredit(dealer)}
-                                            className="bg-accent-violet/80 text-white font-bold py-1 px-3 rounded-lg text-sm transition-all duration-300 hover:bg-accent-violet hover:shadow-glow-accent hover:-translate-y-0.5 active:scale-95"
-                                        >
-                                            Add Credit
-                                        </button>
+                                    <td className="py-4 px-4 text-center">
+                                       <MoreOptionsMenu
+                                            dealer={dealer}
+                                            onEdit={() => handleOpenEdit(dealer)}
+                                            onAddCredit={() => handleOpenAddCredit(dealer)}
+                                            onDebit={() => handleOpenDebitFunds(dealer)}
+                                        />
                                     </td>
                                 </tr>
                             ))}
@@ -169,6 +207,11 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
             addNotification('Admin user not found. Please log in again.', 'error');
             return;
         }
+        if (!formData.username || !formData.password || !formData.phone) {
+            addNotification('⚠️ Username, Password, and Phone Number are required.', 'error');
+            return;
+        }
+
         setIsLoading(true);
         try {
             await addDealer(admin, {
@@ -184,11 +227,11 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                 bet_limit_1d: formData.bet_limit_1d ? parseFloat(formData.bet_limit_1d) : undefined,
                 bet_limit_per_draw: formData.bet_limit_per_draw ? parseFloat(formData.bet_limit_per_draw) : undefined,
             });
-            addNotification(`Dealer ${formData.username} added successfully. Default PIN is 'Admin@123' if no password is set.`, 'success');
+            addNotification(`✅ Dealer added successfully!`, 'success');
             onDealerAdded();
             onClose();
         } catch (err) {
-            addNotification(err instanceof Error ? err.message : 'Failed to create dealer.', 'error');
+            addNotification(`⚠️ Failed to add dealer. Please check the form.`, 'error');
         } finally {
             setIsLoading(false);
         }
@@ -204,7 +247,7 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                             <Input name="username" label="Username" value={formData.username} onChange={handleChange} required />
                             <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleChange} required />
-                            <Input name="password" label="Password" type="password" value={formData.password} onChange={handleChange} placeholder="Default: Admin@123" />
+                            <Input name="password" label="Password" type="password" value={formData.password} onChange={handleChange} required />
                             <Input name="city" label="City / Area" value={formData.city} onChange={handleChange} />
                         </div>
                     </fieldset>
@@ -212,19 +255,19 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                     <fieldset className="border border-border-color p-4 rounded-lg">
                         <legend className="text-lg text-accent-yellow px-2 font-semibold">Financials &amp; Commissions</legend>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                            <Input name="initial_deposit" label="Initial Deposit" type="number" value={formData.initial_deposit} onChange={handleChange} placeholder="0" />
-                            <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
+                            <Input name="initial_deposit" label="Wallet Balance" type="number" value={formData.initial_deposit} onChange={handleChange} placeholder="0.00" />
+                            <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5.00" />
                         </div>
                     </fieldset>
 
                     <fieldset className="border border-border-color p-4 rounded-lg">
                         <legend className="text-lg text-accent-yellow px-2 font-semibold">Default Betting Rules for Users</legend>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                            <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
-                            <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
+                            <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85.00" />
+                            <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.50" />
                             <Input name="bet_limit_2d" label="Bet Limit (2D)" type="number" value={formData.bet_limit_2d} onChange={handleChange} placeholder="No limit" />
                             <Input name="bet_limit_1d" label="Bet Limit (1D)" type="number" value={formData.bet_limit_1d} onChange={handleChange} placeholder="No limit" />
-                            <Input name="bet_limit_per_draw" label="Bet Limit / Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="No limit" />
+                            <Input name="bet_limit_per_draw" label="Bet Limit per Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="No limit" />
                         </div>
                     </fieldset>
                     
