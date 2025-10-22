@@ -15,8 +15,10 @@ const app: Express = express();
 const PORT = process.env.PORT || 3001;
 
 // --- Core Middleware ---
-// Enable CORS for the specified origin
-app.use(cors({ origin: process.env.CORS_ORIGIN, optionsSuccessStatus: 200 }));
+// Enable CORS for specified origins by parsing a comma-separated list
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : [];
+app.use(cors({ origin: allowedOrigins, optionsSuccessStatus: 200 }));
+
 // Parse incoming JSON requests
 app.use(express.json());
 

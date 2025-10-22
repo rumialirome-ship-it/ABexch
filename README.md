@@ -126,8 +126,8 @@ Create a `.env` file for secrets and run the script to build your database table
     # Backend Server Port
     PORT=3001
 
-    # Frontend URL for CORS. We'll add 'https' later.
-    CORS_ORIGIN=http://www.abexch.live
+    # Frontend URL for CORS. Use a comma-separated list for multiple domains.
+    CORS_ORIGIN=http://www.abexch.live,http://abexch.live
 
     # PostgreSQL Database Connection URL
     DATABASE_URL="postgresql://ababa_user:your_strong_password_here@localhost:5432/ababa_db"
@@ -252,7 +252,7 @@ We will use Let's Encrypt to get a free SSL certificate.
     Follow the on-screen prompts. When asked, **choose the option to redirect all HTTP traffic to HTTPS**.
 
 3.  **Final `.env` Update:**
-    Now that your site is secure, you must update the backend configuration to accept requests from the HTTPS URL.
+    Now that your site is secure, you must update the backend configuration to accept requests from the HTTPS URLs.
 
     ```bash
     # Navigate back to the backend directory
@@ -260,11 +260,11 @@ We will use Let's Encrypt to get a free SSL certificate.
     nano .env
     ```
 
-    Change `CORS_ORIGIN` to use `https`:
+    Change `CORS_ORIGIN` to use `https` and include both domains:
     ```env
-    # Before: CORS_ORIGIN=http://www.abexch.live
+    # Before: CORS_ORIGIN=http://www.abexch.live,http://abexch.live
     # After:
-    CORS_ORIGIN=https://www.abexch.live
+    CORS_ORIGIN=https://www.abexch.live,https://abexch.live
     ```
     Save the file, then restart the backend for the change to take effect:
     ```bash
@@ -288,5 +288,5 @@ Use these PM2 commands to manage your running backend process.
 
 -   **502 Bad Gateway:** Your backend is likely not running. Check `pm2 logs ababa-backend` for errors. A common error is an incorrect `DATABASE_URL` in the `.env` file.
 -   **500 Internal Server Error:** The application can't talk to the database correctly. The most common cause is that the `npm run db:setup` step failed and the tables do not exist. Use the verification step in Step 5 to confirm.
--   **CORS Error in Browser Console:** The `CORS_ORIGIN` in your `backend/.env` file does not exactly match `https://www.abexch.live`. Remember to run `pm2 restart ababa-backend` after changing it.
+-   **CORS Error in Browser Console:** The `CORS_ORIGIN` in your `backend/.env` file does not exactly match the origin of the request (e.g., `https://www.abexch.live` vs `https://abexch.live`). Ensure both are listed, comma-separated. Remember to run `pm2 restart ababa-backend` after changing it.
 -   **404 Not Found on Page Refresh:** Your Nginx `location /` block is misconfigured. Ensure the `try_files $uri $uri/ /index.html;` line is present in `/etc/nginx/sites-available/abexch.live`.
