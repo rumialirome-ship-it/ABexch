@@ -164,7 +164,7 @@ export const BettingPage: React.FC = () => {
 };
 
 const getInputClass = (hasError: boolean) => 
-    `transition-all duration-300 shadow-inner appearance-none border rounded-lg w-full py-3 px-4 bg-text-primary border-border-color text-bg-primary placeholder-text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent ${hasError ? 'border-danger/50 ring-2 ring-danger/30' : ''}`;
+    `transition-all duration-300 shadow-inner appearance-none border rounded-lg w-full py-3 px-4 bg-bg-primary border-border-color text-text-primary placeholder-text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent ${hasError ? 'border-danger/50 ring-2 ring-danger/30' : ''}`;
 
 
 const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel: string}> = ({gameType, drawLabel}) => {
