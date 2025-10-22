@@ -62,7 +62,7 @@ const ConfirmationDialog: React.FC<{
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
-                <h2 className="text-2xl text-accent-primary font-bold mb-4 text-shadow-glow-primary">{title}</h2>
+                <h2 className="text-2xl text-accent-violet font-bold mb-4">{title}</h2>
                 <div className="text-text-primary mb-6">
                     {children}
                 </div>
@@ -70,7 +70,7 @@ const ConfirmationDialog: React.FC<{
                     <button type="button" onClick={onCancel} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">
                         Cancel
                     </button>
-                    <button type="button" onClick={onConfirm} disabled={isLoading} className="bg-accent-primary text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
+                    <button type="button" onClick={onConfirm} disabled={isLoading} className="bg-accent-violet text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
                         {isLoading ? 'Confirming...' : 'Confirm Bet'}
                     </button>
                 </div>
@@ -124,7 +124,7 @@ export const BettingPage: React.FC = () => {
     };
     
     return (
-        <MainLayout title="Place Your Bet" showBackButton titleClassName="text-accent-primary text-shadow-glow-primary">
+        <MainLayout title="Place Your Bet" showBackButton>
             <div className="relative">
                 <BetInfoPanel />
                  <div className="mb-6 max-w-sm">
@@ -133,7 +133,7 @@ export const BettingPage: React.FC = () => {
                         id="game-select" 
                         value={selectedGame.name} 
                         onChange={(e) => setSelectedGame(TIMING_GAMES.find(g => g.name === e.target.value)!)}
-                        className="transition-all duration-300 w-full p-3 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-text-primary text-lg"
+                        className="transition-all duration-300 w-full p-3 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent text-text-primary text-lg"
                     >
                         {TIMING_GAMES.map(game => (
                             <option key={game.name} value={game.name}>
@@ -148,10 +148,10 @@ export const BettingPage: React.FC = () => {
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`py-3 px-4 font-semibold transition-colors duration-300 whitespace-nowrap relative ${activeTab === tab ? 'text-accent-primary' : 'text-text-secondary hover:text-text-primary'}`}
+                            className={`py-3 px-4 font-semibold transition-colors duration-300 whitespace-nowrap relative ${activeTab === tab ? 'text-accent-violet' : 'text-text-secondary hover:text-text-primary'}`}
                         >
                             {tab}
-                            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent-primary rounded-full"></div>}
+                            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-accent-violet rounded-full"></div>}
                         </button>
                     ))}
                 </div>
@@ -164,7 +164,7 @@ export const BettingPage: React.FC = () => {
 };
 
 const getInputClass = (hasError: boolean) => 
-    `transition-all duration-300 shadow-inner appearance-none border rounded-lg w-full py-3 px-4 bg-bg-primary border-border-color text-text-primary placeholder-text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent ${hasError ? 'border-danger/50 ring-2 ring-danger/30' : ''}`;
+    `transition-all duration-300 shadow-inner appearance-none border rounded-lg w-full py-3 px-4 bg-bg-primary border-border-color text-text-primary placeholder-text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-accent-violet focus:border-transparent ${hasError ? 'border-danger/50 ring-2 ring-danger/30' : ''}`;
 
 
 const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel: string}> = ({gameType, drawLabel}) => {
@@ -335,19 +335,19 @@ const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel
                 title="Confirm Your Bet"
                 isLoading={isLoading}
             >
-                <p className="mb-4 text-text-secondary">Please review your bet details for <strong className="text-accent-primary">{drawLabel}</strong>.</p>
+                <p className="mb-4 text-text-secondary">Please review your bet details for <strong className="text-accent-violet">{drawLabel}</strong>.</p>
                 <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
                     {betsToConfirm.map((bet, index) => (
                         <div key={index} className="flex justify-between items-center text-sm">
-                            <span><strong>{bet.game_type}</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
+                            <span><strong>{bet.game_type}</strong> on number <strong className="text-accent-violet font-mono">{bet.number}</strong></span>
                             <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
                         </div>
                     ))}
                 </div>
                 <div className="text-right mt-4 font-bold">
-                    Total Bets: <span className="text-accent-primary">{betsToConfirm.length}</span>
+                    Total Bets: <span className="text-accent-violet">{betsToConfirm.length}</span>
                     <br />
-                    Total Stake: <span className="text-accent-primary">{formatCurrency(betsToConfirm.reduce((acc, bet) => acc + bet.stake, 0))}</span>
+                    Total Stake: <span className="text-accent-violet">{formatCurrency(betsToConfirm.reduce((acc, bet) => acc + bet.stake, 0))}</span>
                 </div>
             </ConfirmationDialog>
         </>
@@ -530,8 +530,8 @@ const BulkBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
 
                 <div id="number-block-preview" className="space-y-2">
                     <div className="flex justify-between text-text-secondary text-sm">
-                        <span>Total Valid Bets: <span className="font-bold text-accent-primary text-base">{parsedResult.validBets.length}</span></span>
-                        <span>Total Stake: <span className="font-bold text-accent-primary text-base">{formatCurrency(parsedResult.validBets.reduce((acc, b) => acc + b.stake, 0))}</span></span>
+                        <span>Total Valid Bets: <span className="font-bold text-accent-violet text-base">{parsedResult.validBets.length}</span></span>
+                        <span>Total Stake: <span className="font-bold text-accent-violet text-base">{formatCurrency(parsedResult.validBets.reduce((acc, b) => acc + b.stake, 0))}</span></span>
                     </div>
 
                     <div className="p-3 bg-background-primary border border-border-color rounded-lg max-h-48 overflow-y-auto text-sm">
@@ -540,7 +540,7 @@ const BulkBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
                              <ul className="space-y-1">
                                 {parsedResult.validBets.map((bet, index) => (
                                     <li key={index} className="flex justify-between items-center bg-background-secondary/50 p-2 rounded">
-                                        <span>Number: <span className="font-mono text-accent-primary font-bold">{bet.number}</span></span>
+                                        <span>Number: <span className="font-mono text-accent-violet font-bold">{bet.number}</span></span>
                                         <span>Stake: <span className="font-mono text-text-primary font-bold">{formatCurrency(bet.stake)}</span></span>
                                     </li>
                                 ))}
@@ -572,19 +572,19 @@ const BulkBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
                 title="Confirm Your Bulk Bet"
                 isLoading={isLoading}
             >
-                <p className="mb-4 text-text-secondary">Please review your bulk bet details for <strong className="text-accent-primary">{drawLabel}</strong>. You are placing <strong className="text-accent-primary">{betsToConfirm.length}</strong> bet(s).</p>
+                <p className="mb-4 text-text-secondary">Please review your bulk bet details for <strong className="text-accent-violet">{drawLabel}</strong>. You are placing <strong className="text-accent-violet">{betsToConfirm.length}</strong> bet(s).</p>
                 <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
                     {betsToConfirm.map((bet, index) => (
                         <div key={index} className="flex justify-between items-center text-sm">
-                            <span><strong>2D</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
+                            <span><strong>2D</strong> on number <strong className="text-accent-violet font-mono">{bet.number}</strong></span>
                             <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
                         </div>
                     ))}
                 </div>
                 <div className="text-right mt-4 font-bold">
-                    Total Bets: <span className="text-accent-primary">{betsToConfirm.length}</span>
+                    Total Bets: <span className="text-accent-violet">{betsToConfirm.length}</span>
                     <br />
-                    Total Stake: <span className="text-accent-primary">{formatCurrency(betsToConfirm.reduce((acc, bet) => acc + bet.stake, 0))}</span>
+                    Total Stake: <span className="text-accent-violet">{formatCurrency(betsToConfirm.reduce((acc, bet) => acc + bet.stake, 0))}</span>
                 </div>
             </ConfirmationDialog>
         </>
@@ -782,7 +782,7 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
                                     type="checkbox"
                                     checked={selectedCombos.size > 0 && selectedCombos.size === generatedCombos.length}
                                     onChange={handleSelectAll}
-                                    className="h-4 w-4 rounded border-gray-300 text-accent-primary focus:ring-accent-primary"
+                                    className="h-4 w-4 rounded border-gray-300 text-accent-violet focus:ring-accent-violet"
                                 />
                                 <label htmlFor="select-all-combos" className="ml-2 text-sm text-text-secondary">Select All</label>
                             </div>
@@ -794,7 +794,7 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
                                     type="button"
                                     key={combo}
                                     onClick={() => handleSelectCombo(combo)}
-                                    className={`p-2 rounded font-mono text-lg font-bold border transition-all duration-200 ${selectedCombos.has(combo) ? 'bg-accent-primary text-black border-accent-primary shadow-glow-accent' : 'bg-background-secondary border-border-color hover:border-accent-primary/50'}`}
+                                    className={`p-2 rounded font-mono text-lg font-bold border transition-all duration-200 ${selectedCombos.has(combo) ? 'bg-accent-violet text-white border-accent-violet shadow-glow-accent' : 'bg-background-secondary border-border-color hover:border-accent-violet/50'}`}
                                 >
                                     {combo}
                                 </button>
@@ -817,18 +817,18 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
                 title="Confirm Your Combo Bet"
                 isLoading={isLoading}
             >
-                 <p className="mb-4 text-text-secondary">Please review your combo bet details for <strong className="text-accent-primary">{drawLabel}</strong>:</p>
+                 <p className="mb-4 text-text-secondary">Please review your combo bet details for <strong className="text-accent-violet">{drawLabel}</strong>:</p>
                     <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
                         {betsToConfirm.map((bet, index) => (
                             <div key={index} className="flex justify-between items-center">
-                                <span><strong>2D</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
+                                <span><strong>2D</strong> on number <strong className="text-accent-violet font-mono">{bet.number}</strong></span>
                                 <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
                             </div>
                         ))}
                     </div>
                     <div className="text-right mt-4 font-bold">
-                        Total Bets: <span className="text-accent-primary">{betCount}</span><br/>
-                        Total Stake: <span className="text-accent-primary">{formatCurrency(totalStake)}</span>
+                        Total Bets: <span className="text-accent-violet">{betCount}</span><br/>
+                        Total Stake: <span className="text-accent-violet">{formatCurrency(totalStake)}</span>
                     </div>
             </ConfirmationDialog>
         </>

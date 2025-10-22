@@ -57,7 +57,7 @@ const ResultsPage: React.FC = () => {
 
 
   return (
-    <MainLayout title="Recent Draw Results" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+    <MainLayout title="Recent Draw Results" showBackButton>
       {loading ? (
         <LoadingSpinner />
       ) : (

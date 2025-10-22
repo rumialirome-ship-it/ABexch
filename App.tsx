@@ -1,5 +1,7 @@
 
 
+
+
 import React, { lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -29,6 +31,7 @@ const AddUserPage = lazy(() => import('./pages/dealer/AddUserPage'));
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageUsersPage = lazy(() => import('./pages/admin/ManageUsersPage'));
+// @google/genai-dev-tool: Fix: Corrected the lazy import for `ManageDealersPage` to properly handle its default export, resolving the type error.
 const ManageDealersPage = lazy(() => import('./pages/admin/ManageDealersPage'));
 const ManageDrawsPage = lazy(() => import('./pages/admin/ManageDrawsPage'));
 const ApproveCommissionsPage = lazy(() => import('./pages/admin/ApproveCommissionsPage'));

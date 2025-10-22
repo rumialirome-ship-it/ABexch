@@ -1,6 +1,3 @@
-
-
-
 import { User, UserRole, Bet, DrawResult, Transaction, Commission, Prize, TopUpRequest } from '../types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'development'
@@ -210,6 +207,19 @@ export const updateDealerByAdmin = (admin: User, dealerId: string, dealerData: P
         headers: { 'Content-Type': 'application/json', 'x-user-id': admin.id, 'x-user-role': admin.role },
         body: JSON.stringify(dealerData)
     });
+};
+
+export interface AdminDashboardStats {
+    betsToday: number;
+    betsMonth: number;
+    prizesToday: number;
+    prizesMonth: number;
+    commissionsToday: number;
+    commissionsMonth: number;
+}
+
+export const fetchAdminDashboardStats = (admin: User): Promise<AdminDashboardStats> => {
+    return apiRequest('/admin/stats', { headers: { 'x-user-id': admin.id, 'x-user-role': admin.role }});
 };
 
 // --- Dealer-Specific Actions ---

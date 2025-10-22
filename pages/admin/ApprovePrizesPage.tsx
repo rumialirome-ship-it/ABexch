@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingPrizes, approvePrize } from '../../services/api';
@@ -42,7 +40,7 @@ const ApprovePrizesPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="Approve Prizes" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title="Approve Prizes" showBackButton>
             <div className="flex justify-end mb-4">
                 <button 
                   onClick={handleApproveAll} 
@@ -59,15 +57,15 @@ const ApprovePrizesPage: React.FC = () => {
                     <table className="min-w-full bg-transparent rounded-lg">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">User ID</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Draw</th>
-                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Amount</th>
-                                <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Action</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">User ID</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Draw</th>
+                                <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Amount</th>
+                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {prizes.map((p) => (
-                                <tr key={p.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
+                                <tr key={p.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-violet/5 transition-colors duration-300">
                                     <td className="py-3 px-4 font-mono">{p.user_id}</td>
                                     <td className="py-3 px-4">{p.draw_label}</td>
                                     <td className="py-3 px-4 text-right font-mono">{formatCurrency(p.amount)}</td>

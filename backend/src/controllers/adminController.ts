@@ -133,3 +133,8 @@ export const handleDebitFunds = async (req: Request, res: Response) => {
     await adminService.debitFunds(adminId, targetUserId, amount);
     res.status(200).json({ message: 'Funds debited successfully.' });
 };
+
+export const handleGetDashboardStats = async (req: Request, res: Response) => {
+    const stats = await adminService.getDashboardStats();
+    res.status(200).json(stats);
+};

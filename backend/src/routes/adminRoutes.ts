@@ -1,7 +1,3 @@
-
-
-
-
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { requireAuth } from '../middleware/auth';
@@ -26,13 +22,17 @@ import {
     handleGetTransactionsForUser,
     handleUpdateUser,
     handleUpdateDealer,
-    handleSetUserBlockStatus
+    handleSetUserBlockStatus,
+    handleGetDashboardStats
 } from '../controllers/adminController';
 
 const router = Router();
 
 // All routes in this file require ADMIN role
 router.use(requireAuth([UserRole.ADMIN]));
+
+// --- Dashboard Stats ---
+router.get('/stats', asyncHandler(handleGetDashboardStats));
 
 // --- User Management ---
 router.get('/users', asyncHandler(handleGetAllSystemUsers));

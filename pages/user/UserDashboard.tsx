@@ -168,7 +168,7 @@ interface DashboardLinkProps {
 const DashboardLink: React.FC<DashboardLinkProps> = ({ to, title, description, icon }) => (
     <Link to={to} className="group block bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/50 hover:shadow-glow-accent hover:shadow-glow-inset-accent hover:-translate-y-1.5">
         <div className="flex items-start gap-4">
-            <div className="text-accent-cyan transition-colors duration-300 group-hover:text-accent-violet">{icon}</div>
+            <div className="text-accent-violet transition-colors duration-300">{icon}</div>
             <div>
                 <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-violet">{title}</h3>
                 <p className="text-text-secondary mt-1">{description}</p>

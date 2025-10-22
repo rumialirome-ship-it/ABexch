@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchPendingTopUps, approveTopUp } from '../../services/api';
@@ -52,7 +50,7 @@ const ApproveTopUpsPage: React.FC = () => {
     };
     
     return (
-        <MainLayout title="Approve Dealer Top-Ups" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title="Approve Dealer Top-Ups" showBackButton>
              {loading ? (
                 <LoadingSpinner />
             ) : (
@@ -60,16 +58,16 @@ const ApproveTopUpsPage: React.FC = () => {
                     <table className="min-w-full bg-transparent rounded-lg">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Dealer</th>
-                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Amount</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Reference</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Date</th>
-                                <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Action</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Dealer</th>
+                                <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Amount</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Reference</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Date</th>
+                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             {requests.map((req) => (
-                                <tr key={req.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
+                                <tr key={req.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-violet/5 transition-colors duration-300">
                                     <td className="py-3 px-4">
                                         {req.dealer_username}
                                         <span className="block text-xs font-mono text-text-secondary">{req.dealer_id}</span>

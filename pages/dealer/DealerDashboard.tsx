@@ -49,7 +49,7 @@ const RequestTopUpModal: React.FC<{
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
-                <h2 className="text-2xl text-accent-cyan font-bold mb-4">Request Wallet Top-Up</h2>
+                <h2 className="text-2xl text-accent-violet font-bold mb-4">Request Wallet Top-Up</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                      <div>
                         <label className="block text-text-secondary mb-1">Amount</label>
@@ -61,7 +61,7 @@ const RequestTopUpModal: React.FC<{
                     </div>
                     <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
-                        <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Submitting...' : 'Submit Request'}</button>
+                        <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Submitting...' : 'Submit Request'}</button>
                     </div>
                 </form>
             </div>
@@ -248,7 +248,7 @@ const DealerDashboard: React.FC = () => {
 
 
   return (
-    <MainLayout title={`Dealer Dashboard: ${user.username}`} titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+    <MainLayout title={`Dealer Dashboard: ${user.username}`}>
       {/* KPI Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard label="Available Wallet Balance" value={formatCurrency(user.wallet_balance)} />
@@ -262,34 +262,34 @@ const DealerDashboard: React.FC = () => {
        <div className="mb-8">
             <button 
                 onClick={() => setIsTopUpModalOpen(true)}
-                className="w-full sm:w-auto bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary"
+                className="w-full sm:w-auto bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary"
             >
                 Request Wallet Top-Up
             </button>
         </div>
 
         <div className="mt-8 animate-fade-in" style={{animationDelay: '100ms'}}>
-            <h3 className="text-xl font-semibold text-accent-cyan mb-4">Managed Users ({managedUsers.length})</h3>
+            <h3 className="text-xl font-semibold text-accent-violet mb-4">Managed Users ({managedUsers.length})</h3>
             <div className="bg-bg-primary/50 rounded-lg border border-border-color shadow-glow-inset-accent overflow-x-auto">
                 {loading ? <LoadingSpinner /> : (
                     <table className="min-w-full bg-transparent text-sm">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-2 px-3 text-left text-accent-cyan/80 font-semibold tracking-wider uppercase">Username</th>
-                                <th className="py-2 px-3 text-right text-accent-cyan/80 font-semibold tracking-wider uppercase">Balance</th>
-                                <th className="py-2 px-3 text-center text-accent-cyan/80 font-semibold tracking-wider uppercase">Actions</th>
+                                <th className="py-2 px-3 text-left text-accent-violet/80 font-semibold tracking-wider uppercase">Username</th>
+                                <th className="py-2 px-3 text-right text-accent-violet/80 font-semibold tracking-wider uppercase">Balance</th>
+                                <th className="py-2 px-3 text-center text-accent-violet/80 font-semibold tracking-wider uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-color/30">
                             {managedUsers.map(u => (
-                                <tr key={u.id} className="hover:bg-accent-cyan/5">
+                                <tr key={u.id} className="hover:bg-accent-violet/5">
                                     <td className="py-3 px-3">{u.username} <span className="text-xs text-text-secondary font-mono">({u.id})</span></td>
                                     <td className="py-3 px-3 text-right font-mono">{formatCurrency(u.wallet_balance)}</td>
                                     <td className="py-3 px-3 text-center space-x-2 whitespace-nowrap">
                                         <button onClick={() => handleOpenCreditModal(u)} className="bg-accent-violet/80 text-white font-bold py-1 px-3 rounded text-xs transition-all duration-300 hover:bg-accent-violet hover:-translate-y-0.5 active:scale-95">
                                             Add Credit
                                         </button>
-                                         <Link to={`/dealer/users/${u.id}`} className="text-accent-cyan hover:underline text-xs font-semibold">
+                                         <Link to={`/dealer/users/${u.id}`} className="text-accent-violet hover:underline text-xs font-semibold">
                                             Details
                                         </Link>
                                     </td>
@@ -305,7 +305,7 @@ const DealerDashboard: React.FC = () => {
         </div>
 
         <div className="mt-8 animate-fade-in" style={{animationDelay: '200ms'}}>
-            <h3 className="text-xl font-semibold text-accent-cyan mb-4">Recent Activity Logs</h3>
+            <h3 className="text-xl font-semibold text-accent-violet mb-4">Recent Activity Logs</h3>
             <div className="bg-bg-primary/50 p-4 sm:p-6 rounded-lg border border-border-color shadow-glow-inset-accent">
                 {loading ? <LoadingSpinner /> : (
                     transactions.length > 0 ? (
@@ -342,11 +342,11 @@ const DealerDashboard: React.FC = () => {
 };
 
 const StatCard: React.FC<{label: string, value: string, isLoading?: boolean}> = ({label, value, isLoading}) => (
-    <div className="bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-cyan/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
+    <div className="bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
         <h3 className="text-text-secondary text-lg mb-1">{label}</h3>
         {isLoading 
-            ? <div className="h-10 mt-1 flex items-center"><div className="loader !w-6 !h-6 !border-2 !border-accent-cyan/50 !border-t-accent-cyan"></div></div> 
-            : <p className="text-4xl font-bold text-accent-cyan">{value}</p>
+            ? <div className="h-10 mt-1 flex items-center"><div className="loader !w-6 !h-6 !border-2 !border-accent-violet/50 !border-t-accent-violet"></div></div> 
+            : <p className="text-4xl font-bold text-accent-violet">{value}</p>
         }
     </div>
 );
@@ -362,9 +362,9 @@ interface DashboardLinkProps {
 const DashboardLink: React.FC<DashboardLinkProps> = ({ to, title, description, icon }) => (
     <Link to={to} className="group block bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/50 hover:shadow-glow-accent hover:shadow-glow-inset-accent hover:-translate-y-1.5">
         <div className="flex items-start gap-4">
-            <div className="text-accent-violet transition-colors duration-300 group-hover:text-accent-cyan">{icon}</div>
+            <div className="text-accent-violet transition-colors duration-300">{icon}</div>
             <div>
-                <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-cyan">{title}</h3>
+                <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-violet">{title}</h3>
                 <p className="text-text-secondary mt-1">{description}</p>
             </div>
         </div>

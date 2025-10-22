@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
@@ -63,12 +61,12 @@ const DealerUserDetailsPage: React.FC = () => {
     }
 
     return (
-        <MainLayout title={`Details for ${user.username}`} showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title={`Details for ${user.username}`} showBackButton>
             <div className="bg-bg-primary/50 p-6 rounded-lg border border-border-color mb-8 shadow-glow-inset-accent">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <h2 className="text-2xl font-semibold text-accent-cyan">User Information</h2>
+                    <h2 className="text-2xl font-semibold text-accent-violet">User Information</h2>
                     <div className="flex items-center gap-2 flex-wrap">
-                         <button onClick={() => setIsLimitModalOpen(true)} className="border border-accent-cyan/50 text-accent-cyan font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-accent-cyan hover:text-black hover:shadow-glow-accent text-sm active:scale-95">
+                         <button onClick={() => setIsLimitModalOpen(true)} className="border border-accent-violet/50 text-accent-violet font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-accent-violet hover:text-white hover:shadow-glow-accent text-sm active:scale-95">
                             Set Bet Limit
                         </button>
                         <button onClick={() => setIsCreditModalOpen(true)} className="bg-accent-violet text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-primary">
@@ -90,20 +88,20 @@ const DealerUserDetailsPage: React.FC = () => {
             {/* Bet and Transaction History */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <div>
-                    <h3 className="text-xl font-semibold text-accent-cyan mb-4">Bet History ({bets.length})</h3>
+                    <h3 className="text-xl font-semibold text-accent-violet mb-4">Bet History ({bets.length})</h3>
                     <div className="overflow-auto max-h-96 rounded-lg border border-border-color">
                         <table className="min-w-full bg-transparent text-sm">
                             <thead className="border-b-2 border-border-color sticky top-0 bg-bg-secondary/80 backdrop-blur-sm z-10">
                                 <tr>
-                                    <th className="py-2 px-3 text-left text-accent-cyan/80 font-semibold tracking-wider uppercase">Draw</th>
-                                    <th className="py-2 px-3 text-center text-accent-cyan/80 font-semibold tracking-wider uppercase">#</th>
-                                    <th className="py-2 px-3 text-right text-accent-cyan/80 font-semibold tracking-wider uppercase">Stake</th>
-                                    <th className="py-2 px-3 text-center text-accent-cyan/80 font-semibold tracking-wider uppercase">Status</th>
+                                    <th className="py-2 px-3 text-left text-accent-violet/80 font-semibold tracking-wider uppercase">Draw</th>
+                                    <th className="py-2 px-3 text-center text-accent-violet/80 font-semibold tracking-wider uppercase">#</th>
+                                    <th className="py-2 px-3 text-right text-accent-violet/80 font-semibold tracking-wider uppercase">Stake</th>
+                                    <th className="py-2 px-3 text-center text-accent-violet/80 font-semibold tracking-wider uppercase">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-color/30">
                                 {bets.map(bet => (
-                                    <tr key={bet.id} className="hover:bg-accent-cyan/5">
+                                    <tr key={bet.id} className="hover:bg-accent-violet/5">
                                         <td className="py-3 px-3">{bet.draw_label}<br/><span className="text-xs text-text-secondary">{new Date(bet.created_at).toLocaleDateString()}</span></td>
                                         <td className="py-3 px-3 text-center font-mono text-lg font-bold">{bet.number}</td>
                                         <td className="py-3 px-3 text-right font-mono">{formatCurrency(bet.stake)}</td>
@@ -116,19 +114,19 @@ const DealerUserDetailsPage: React.FC = () => {
                     </div>
                 </div>
                 <div>
-                    <h3 className="text-xl font-semibold text-accent-cyan mb-4">Transaction History ({transactions.length})</h3>
+                    <h3 className="text-xl font-semibold text-accent-violet mb-4">Transaction History ({transactions.length})</h3>
                      <div className="overflow-auto max-h-96 rounded-lg border border-border-color">
                         <table className="min-w-full bg-transparent text-sm">
                              <thead className="border-b-2 border-border-color sticky top-0 bg-bg-secondary/80 backdrop-blur-sm z-10">
                                 <tr>
-                                    <th className="py-2 px-3 text-left text-accent-cyan/80 font-semibold tracking-wider uppercase">Date</th>
-                                    <th className="py-2 px-3 text-left text-accent-cyan/80 font-semibold tracking-wider uppercase">Type</th>
-                                    <th className="py-2 px-3 text-right text-accent-cyan/80 font-semibold tracking-wider uppercase">Amount</th>
+                                    <th className="py-2 px-3 text-left text-accent-violet/80 font-semibold tracking-wider uppercase">Date</th>
+                                    <th className="py-2 px-3 text-left text-accent-violet/80 font-semibold tracking-wider uppercase">Type</th>
+                                    <th className="py-2 px-3 text-right text-accent-violet/80 font-semibold tracking-wider uppercase">Amount</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border-color/30">
                                 {transactions.map(t => (
-                                    <tr key={t.id} className="hover:bg-accent-cyan/5">
+                                    <tr key={t.id} className="hover:bg-accent-violet/5">
                                         <td className="py-3 px-3 whitespace-nowrap text-text-secondary">{new Date(t.created_at).toLocaleString()}</td>
                                         <td className="py-3 px-3"><TransactionTypeBadge type={t.type} /></td>
                                         <td className={`py-3 px-3 text-right font-mono font-bold ${t.balance_change > 0 ? 'text-success' : 'text-danger'}`}>
@@ -264,7 +262,7 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border border-border-color my-auto animate-fade-in-down">
-                <h2 className="text-2xl text-accent-cyan font-bold mb-2">Set Bet Limit</h2>
+                <h2 className="text-2xl text-accent-violet font-bold mb-2">Set Bet Limit</h2>
                 <p className="text-text-secondary mb-4">For user <span className="font-bold text-text-primary">{user.username}</span></p>
                 <form onSubmit={handleSave} className="space-y-4">
                     <div>
@@ -289,7 +287,7 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
                         </div>
                         <div className="flex items-center gap-4">
                             <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
-                            <button type="submit" disabled={isLoading} className="bg-accent-cyan text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
+                            <button type="submit" disabled={isLoading} className="bg-accent-violet text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
                                 {isLoading ? 'Saving...' : 'Save Limit'}
                             </button>
                         </div>
@@ -304,7 +302,7 @@ const SetLimitModal: React.FC<{user: User, dealer: User | null, onClose: () => v
 const InfoItem: React.FC<{label: string, value: string, isMono?: boolean, highlight?: boolean}> = ({ label, value, isMono, highlight }) => (
     <div>
         <span className="text-text-secondary">{label}:</span> 
-        <span className={`${isMono ? 'font-mono' : ''} ${highlight ? 'text-accent-cyan font-bold' : 'text-text-primary'}`}> {value}</span>
+        <span className={`${isMono ? 'font-mono' : ''} ${highlight ? 'text-accent-violet font-bold' : 'text-text-primary'}`}> {value}</span>
     </div>
 );
 

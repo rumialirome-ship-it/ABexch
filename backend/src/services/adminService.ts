@@ -1,8 +1,3 @@
-
-
-
-
-
 import { db } from '../db';
 import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -59,6 +54,32 @@ async function calculateRebatesAndDealerCommissions(client: PoolClient, drawLabe
 
 
 export const adminService = {
+    async getDashboardStats() {
+        // A single, efficient query to get all stats at once
+        const query = `
+            SELECT
+                (SELECT COALESCE(SUM(stake), 0) FROM bets WHERE created_at >= aistudio_core.date_trunc('day', aistudio_core.now())) AS "betsToday",
+                (SELECT COALESCE(SUM(stake), 0) FROM bets WHERE created_at >= aistudio_core.date_trunc('month', aistudio_core.now())) AS "betsMonth",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'prize_won' AND created_at >= aistudio_core.date_trunc('day', aistudio_core.now())) AS "prizesToday",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'prize_won' AND created_at >= aistudio_core.date_trunc('month', aistudio_core.now())) AS "prizesMonth",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'commission_payout' AND created_at >= aistudio_core.date_trunc('day', aistudio_core.now())) AS "commissionsToday",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'commission_payout' AND created_at >= aistudio_core.date_trunc('month', aistudio_core.now())) AS "commissionsMonth"
+        `;
+    
+        const { rows } = await db.query(query);
+        const stats = rows[0];
+    
+        // The query returns strings for SUM, so parse them to numbers.
+        return {
+            betsToday: parseFloat(stats.betsToday),
+            betsMonth: parseFloat(stats.betsMonth),
+            prizesToday: parseFloat(stats.prizesToday),
+            prizesMonth: parseFloat(stats.prizesMonth),
+            commissionsToday: parseFloat(stats.commissionsToday),
+            commissionsMonth: parseFloat(stats.commissionsMonth),
+        };
+    },
+
     // ... User & Dealer Management ...
     async getAllUsersByRole(role: UserRole): Promise<Omit<User, 'password'>[]> {
         const { rows } = await db.query('SELECT * FROM users WHERE role = $1', [role]);
@@ -396,7 +417,6 @@ export const adminService = {
                 draw = { id: generateId('drw'), draw_label: drawLabel, declared_at: new Date().toISOString() };
             }
 
-            // ... (rest of draw logic)
             if (winningNumbers.two_digit) {
                 draw.two_digit = winningNumbers.two_digit;
                 draw.one_digit_open = winningNumbers.two_digit.charAt(0);
@@ -427,27 +447,60 @@ export const adminService = {
             }
 
             const { rows: pendingBets } = await client.query(
-                `SELECT b.*, u.prize_rate_2d, u.prize_rate_1d FROM bets b JOIN users u ON b.user_id = u.id 
-                 WHERE b.draw_label = $1 AND b.status = $2 AND b.game_type = ANY($3::text[])`,
+                `SELECT
+                    b.*,
+                    u.prize_rate_2d as user_prize_rate_2d,
+                    u.prize_rate_1d as user_prize_rate_1d,
+                    u.dealer_id,
+                    d.prize_rate_2d as dealer_prize_rate_2d,
+                    d.prize_rate_1d as dealer_prize_rate_1d
+                 FROM bets b
+                 JOIN users u ON b.user_id = u.id
+                 LEFT JOIN users d ON u.dealer_id = d.id AND d.role = 'dealer'
+                 WHERE b.draw_label = $1
+                   AND b.status = $2
+                   AND b.game_type = ANY($3::text[])`,
                 [drawLabel, BetStatus.PENDING, Array.from(betTypesToSettle)]
             );
 
             for (const bet of pendingBets) {
                 let isWin = false;
                 let prizeMultiplier = 0;
-                if (bet.game_type === '2D' && draw.two_digit === bet.number) { isWin = true; prizeMultiplier = bet.prize_rate_2d ?? 85; }
-                if (bet.game_type === '1D-Open' && draw.one_digit_open === bet.number) { isWin = true; prizeMultiplier = bet.prize_rate_1d ?? 9.5; }
-                if (bet.game_type === '1D-Close' && draw.one_digit_close === bet.number) { isWin = true; prizeMultiplier = bet.prize_rate_1d ?? 9.5; }
+                
+                if (bet.game_type === '2D' && draw.two_digit === bet.number) { isWin = true; prizeMultiplier = bet.user_prize_rate_2d ?? 85; }
+                if (bet.game_type === '1D-Open' && draw.one_digit_open === bet.number) { isWin = true; prizeMultiplier = bet.user_prize_rate_1d ?? 9.5; }
+                if (bet.game_type === '1D-Close' && draw.one_digit_close === bet.number) { isWin = true; prizeMultiplier = bet.user_prize_rate_1d ?? 9.5; }
 
                 const newStatus = isWin ? BetStatus.WON : BetStatus.LOST;
                 await client.query('UPDATE bets SET status = $1 WHERE id = $2', [newStatus, bet.id]);
                 
                 if (isWin) {
+                    // 1. Calculate and create user prize
                     const prizeAmount = parseFloat(bet.stake) * prizeMultiplier;
                     await client.query(
                         'INSERT INTO prizes (id, user_id, bet_id, draw_label, amount, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
                         [generateId('prz'), bet.user_id, bet.id, bet.draw_label, prizeAmount, 'pending']
                     );
+
+                    // 2. Calculate and create dealer profit from prize difference
+                    if (bet.dealer_id) {
+                        const is2D = bet.game_type === '2D';
+                        const finalUserRate = (is2D ? bet.user_prize_rate_2d : bet.user_prize_rate_1d) ?? (is2D ? 85 : 9.5);
+                        // Admin base rate is stored on the dealer's record
+                        const adminBaseRate = (is2D ? bet.dealer_prize_rate_2d : bet.dealer_prize_rate_1d);
+        
+                        if (typeof adminBaseRate === 'number' && adminBaseRate > finalUserRate) {
+                            const prizeDifference = adminBaseRate - finalUserRate;
+                            const dealerProfit = parseFloat(bet.stake) * prizeDifference;
+                            
+                            if (dealerProfit > 0) {
+                                await client.query(
+                                    "INSERT INTO commissions (id, recipient_id, recipient_type, draw_label, amount, status, created_at) VALUES ($1, $2, 'dealer', $3, $4, 'pending', NOW())",
+                                    [generateId('com'), bet.dealer_id, bet.draw_label, dealerProfit]
+                                );
+                            }
+                        }
+                    }
                 }
             }
             

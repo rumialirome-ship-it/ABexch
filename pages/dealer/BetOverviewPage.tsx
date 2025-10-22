@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -116,7 +114,7 @@ const BetOverviewPage: React.FC = () => {
   }, [bets, filters, sortBy]);
 
   return (
-    <MainLayout title="Bet Overview" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+    <MainLayout title="Bet Overview" showBackButton>
        <FilterControls
         filters={filters}
         onFilterChange={handleFilterChange}
@@ -131,13 +129,13 @@ const BetOverviewPage: React.FC = () => {
           <table className="min-w-full bg-transparent rounded-lg">
             <thead className="border-b-2 border-border-color">
               <tr>
-                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">User ID</th>
-                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">Draw</th>
-                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">Game</th>
-                <th className="py-3 px-4 text-center text-accent-cyan font-semibold tracking-wider uppercase text-sm">Number</th>
-                <th className="py-3 px-4 text-right text-accent-cyan font-semibold tracking-wider uppercase text-sm">Stake</th>
-                <th className="py-3 px-4 text-center text-accent-cyan font-semibold tracking-wider uppercase text-sm">Status</th>
-                <th className="py-3 px-4 text-left text-accent-cyan font-semibold tracking-wider uppercase text-sm">Date</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">User ID</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Draw</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Game</th>
+                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Number</th>
+                <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Stake</th>
+                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Status</th>
+                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Date</th>
               </tr>
             </thead>
             <tbody>
@@ -151,7 +149,7 @@ const BetOverviewPage: React.FC = () => {
                  }
 
                 return (
-                    <tr key={bet.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-cyan/5 transition-colors duration-300`}>
+                    <tr key={bet.id} className={`border-b border-border-color/50 last:border-b-0 hover:bg-accent-violet/5 transition-colors duration-300`}>
                       <td className="py-4 px-4 font-mono">{bet.user_id}</td>
                       <td className="py-4 px-4">{bet.draw_label}</td>
                       <td className="py-4 px-4">{bet.game_type}</td>

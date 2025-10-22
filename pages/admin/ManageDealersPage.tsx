@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchAllDealers, addDealer } from '../../services/api';
@@ -55,7 +54,7 @@ const ManageDealersPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="Manage Dealers" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title="Manage Dealers" showBackButton>
             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div className="relative w-full md:w-1/3">
                     <input
@@ -72,7 +71,7 @@ const ManageDealersPage: React.FC = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
                 </div>
-                <button onClick={() => setShowModal(true)} className="w-full md:w-auto bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-secondary">
+                <button onClick={() => setShowModal(true)} className="w-full md:w-auto bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 focus:outline-none focus:ring-2 focus:ring-accent-violet focus:ring-offset-2 focus:ring-offset-bg-secondary">
                     Add New Dealer
                 </button>
             </div>
@@ -84,17 +83,17 @@ const ManageDealersPage: React.FC = () => {
                     <table className="min-w-full bg-transparent">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Dealer ID</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Name</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Phone</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Area</th>
-                                <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Commission</th>
-                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Dealer ID</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Name</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Phone</th>
+                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Area</th>
+                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Commission</th>
+                                <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Balance</th>
                             </tr>
                         </thead>
                         <tbody>
                             {paginatedDealers.map((dealer) => (
-                                <tr key={dealer.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
+                                <tr key={dealer.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-violet/5 transition-colors duration-300">
                                     <td className="py-4 px-4 font-mono">{dealer.id}</td>
                                     <td className="py-4 px-4">{dealer.username}</td>
                                     <td className="py-4 px-4">{dealer.phone || 'N/A'}</td>
@@ -117,7 +116,7 @@ const ManageDealersPage: React.FC = () => {
                     <div className="flex justify-center items-center mt-6 space-x-2">
                         <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-3 py-1 rounded-lg bg-bg-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&laquo;</button>
                         {[...Array(totalPages)].map((_, i) => (
-                            <button key={i} onClick={() => handlePageChange(i + 1)} className={`px-3 py-1 rounded-lg border transition-colors ${currentPage === i + 1 ? 'bg-accent-yellow text-black border-accent-yellow' : 'bg-bg-primary border-border-color hover:bg-border-color'}`}>{i + 1}</button>
+                            <button key={i} onClick={() => handlePageChange(i + 1)} className={`px-3 py-1 rounded-lg border transition-colors ${currentPage === i + 1 ? 'bg-accent-violet text-white border-accent-violet' : 'bg-bg-primary border-border-color hover:bg-border-color'}`}>{i + 1}</button>
                         ))}
                         <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-3 py-1 rounded-lg bg-bg-primary border border-border-color disabled:opacity-50 transition-colors hover:bg-border-color">&raquo;</button>
                     </div>
@@ -186,11 +185,11 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
     return (
          <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-2xl border border-border-color my-auto animate-fade-in-down">
-                <h2 className="text-2xl text-accent-yellow font-bold mb-6">Add New Dealer</h2>
+                <h2 className="text-2xl text-accent-violet font-bold mb-6">Add New Dealer</h2>
                  <p className="text-sm text-text-secondary -mt-4 mb-6">A unique Dealer ID will be auto-generated.</p>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <fieldset className="border border-border-color p-4 rounded-lg">
-                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Account Details</legend>
+                        <legend className="text-lg text-accent-violet px-2 font-semibold">Account Details</legend>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                             <Input name="username" label="Name" value={formData.username} onChange={handleChange} required />
                             <Input name="phone" label="Phone Number" value={formData.phone} onChange={handleChange} />
@@ -200,7 +199,7 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                     </fieldset>
                     
                     <fieldset className="border border-border-color p-4 rounded-lg">
-                        <legend className="text-lg text-accent-yellow px-2 font-semibold">Financials &amp; Rates</legend>
+                        <legend className="text-lg text-accent-violet px-2 font-semibold">Financials &amp; Rates</legend>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
                             <Input name="initial_deposit" label="Initial Wallet Balance" type="number" value={formData.initial_deposit} onChange={handleChange} placeholder="0.00" />
                             <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
@@ -211,7 +210,7 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                     
                     <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50 mt-6">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
-                        <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-orange to-accent-yellow text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Creating...' : 'Create Dealer'}</button>
+                        <button type="submit" disabled={isLoading} className="bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-0.5 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">{isLoading ? 'Creating...' : 'Create Dealer'}</button>
                     </div>
                 </form>
             </div>
@@ -245,7 +244,7 @@ const Input: React.FC<{name: string, label: string, value: string, onChange: (e:
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-yellow transition-colors duration-300"
+                        className="absolute inset-y-0 right-0 flex items-center px-3 text-text-secondary hover:text-accent-violet transition-colors duration-300"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
@@ -257,7 +256,4 @@ const Input: React.FC<{name: string, label: string, value: string, onChange: (e:
 };
 
 const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
-const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
-
-
-export default ManageDealersPage;
+const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13

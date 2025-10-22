@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -68,10 +66,10 @@ const AddUserPage: React.FC = () => {
     };
 
     return (
-        <MainLayout title="Create New User" showBackButton titleClassName="bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange bg-clip-text text-transparent">
+        <MainLayout title="Create New User" showBackButton>
             <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-8">
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <legend className="text-lg text-accent-blue px-2 font-semibold">User Information</legend>
+                    <legend className="text-lg text-accent-violet px-2 font-semibold">User Information</legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Username" name="username" value={formData.username} onChange={handleChange} required />
                         <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" placeholder="Default: Pak@123" />
@@ -81,7 +79,7 @@ const AddUserPage: React.FC = () => {
                 </fieldset>
 
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    <legend className="text-lg text-accent-blue px-2 font-semibold">💰 Account Settings</legend>
+                    <legend className="text-lg text-accent-violet px-2 font-semibold">💰 Account Settings</legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Wallet Balance" name="walletBalance" value={formData.walletBalance} onChange={handleChange} type="number" />
                         <InputGroup label="Prize Rate (2D)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" />
@@ -96,7 +94,7 @@ const AddUserPage: React.FC = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full sm:w-auto bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isLoading && <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>}
                         {isLoading ? 'Creating User...' : 'Create User'}

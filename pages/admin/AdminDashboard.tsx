@@ -1,17 +1,66 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
 import { useAuth } from '../../contexts/AuthContext';
+import { fetchAdminDashboardStats, AdminDashboardStats } from '../../services/api';
+import { formatCurrency } from '../../utils/formatters';
+import { useNotification } from '../../contexts/NotificationContext';
+
+const StatCard: React.FC<{label: string, value: string, isLoading?: boolean}> = ({label, value, isLoading}) => (
+    <div className="bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/30 hover:-translate-y-1 hover:shadow-glow-accent hover:shadow-glow-inset-accent">
+        <h3 className="text-text-secondary text-base mb-1">{label}</h3>
+        {isLoading
+            ? <div className="h-10 mt-1 flex items-center"><div className="loader !w-6 !h-6 !border-2 !border-accent-violet/50 !border-t-accent-violet"></div></div>
+            : <p className="text-3xl font-bold text-accent-violet font-mono">{value}</p>
+        }
+    </div>
+);
 
 const AdminDashboard: React.FC = () => {
     const { user } = useAuth();
+    const { addNotification } = useNotification();
+    const [stats, setStats] = useState<AdminDashboardStats | null>(null);
+    const [loadingStats, setLoadingStats] = useState(true);
+
+    const loadStats = useCallback(async () => {
+        if (!user) return;
+        setLoadingStats(true);
+        try {
+            const data = await fetchAdminDashboardStats(user);
+            setStats(data);
+        } catch (error) {
+            console.error("Failed to load dashboard stats", error);
+            addNotification("Could not load dashboard statistics.", "error");
+        } finally {
+            setLoadingStats(false);
+        }
+    }, [user, addNotification]);
+
+    useEffect(() => {
+        loadStats();
+    }, [loadStats]);
     
     if (!user) {
         return null;
     }
 
     return (
-        <MainLayout title={`Admin Dashboard: ${user.username}`} titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title={`Admin Dashboard: ${user.username}`}>
+            {/* Stats Section */}
+            <div className="mb-8">
+                <h2 className="text-2xl font-semibold text-text-primary mb-4">Platform Overview</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <StatCard label="Today's Bet Volume" value={formatCurrency(stats?.betsToday ?? 0)} isLoading={loadingStats} />
+                    <StatCard label="Prizes Paid Out (Today)" value={formatCurrency(stats?.prizesToday ?? 0)} isLoading={loadingStats} />
+                    <StatCard label="Commissions Paid (Today)" value={formatCurrency(stats?.commissionsToday ?? 0)} isLoading={loadingStats} />
+                    <StatCard label="This Month's Bet Volume" value={formatCurrency(stats?.betsMonth ?? 0)} isLoading={loadingStats} />
+                    <StatCard label="Prizes Paid Out (This Month)" value={formatCurrency(stats?.prizesMonth ?? 0)} isLoading={loadingStats} />
+                    <StatCard label="Commissions Paid (This Month)" value={formatCurrency(stats?.commissionsMonth ?? 0)} isLoading={loadingStats} />
+                </div>
+            </div>
+
+            {/* Links Section */}
+            <h2 className="text-2xl font-semibold text-text-primary mb-4 pt-4 border-t border-border-color">Management Actions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <DashboardLink 
                     to="/admin/manage-draws" 
@@ -62,11 +111,11 @@ interface DashboardLinkProps {
 }
 
 const DashboardLink: React.FC<DashboardLinkProps> = ({ to, title, description, icon }) => (
-    <Link to={to} className="group block bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-yellow/50 hover:shadow-glow-accent hover:shadow-glow-inset-accent hover:-translate-y-1.5">
+    <Link to={to} className="group block bg-bg-primary/50 p-6 rounded-lg border border-border-color transition-all duration-300 hover:border-accent-violet/50 hover:shadow-glow-accent hover:shadow-glow-inset-accent hover:-translate-y-1.5">
         <div className="flex items-start gap-4">
-            <div className="text-accent-violet transition-colors duration-300 group-hover:text-accent-yellow">{icon}</div>
+            <div className="text-accent-violet transition-colors duration-300">{icon}</div>
             <div>
-                <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-yellow">{title}</h3>
+                <h3 className="text-xl font-semibold text-text-primary transition-colors duration-300 group-hover:text-accent-violet">{title}</h3>
                 <p className="text-text-secondary mt-1">{description}</p>
             </div>
         </div>

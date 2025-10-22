@@ -134,7 +134,7 @@ export const BettingPage: React.FC = () => {
                         id="game-select" 
                         value={selectedGame.name} 
                         onChange={(e) => setSelectedGame(TIMING_GAMES.find(g => g.name === e.target.value)!)}
-                        className="transition-all duration-300 w-full p-3 bg-background-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-text-primary text-lg"
+                        className="transition-all duration-300 w-full p-3 bg-bg-primary border border-border-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent text-text-primary text-lg"
                     >
                         {TIMING_GAMES.map(game => (
                             <option key={game.name} value={game.name}>
