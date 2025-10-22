@@ -209,6 +209,15 @@ export const updateDealerByAdmin = (admin: User, dealerId: string, dealerData: P
     });
 };
 
+export const fetchDealerById = (admin: User, dealerId: string): Promise<User> => {
+    return apiRequest(`/admin/dealers/${dealerId}`, { headers: { 'x-user-id': admin.id, 'x-user-role': admin.role } });
+};
+
+export const fetchUsersForDealerByAdmin = (admin: User, dealerId: string): Promise<User[]> => {
+    return apiRequest(`/admin/dealers/${dealerId}/users`, { headers: { 'x-user-id': admin.id, 'x-user-role': admin.role } });
+};
+
+
 export interface AdminDashboardStats {
     betsToday: number;
     betsMonth: number;

@@ -23,7 +23,9 @@ import {
     handleUpdateUser,
     handleUpdateDealer,
     handleSetUserBlockStatus,
-    handleGetDashboardStats
+    handleGetDashboardStats,
+    handleGetDealerById,
+    handleGetUsersForDealer
 } from '../controllers/adminController';
 
 const router = Router();
@@ -48,6 +50,8 @@ router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForU
 // --- Dealer Management ---
 router.get('/dealers', asyncHandler(handleGetAllDealers));
 router.post('/dealers', asyncHandler(handleAddDealer));
+router.get('/dealers/:dealerId', asyncHandler(handleGetDealerById));
+router.get('/dealers/:dealerId/users', asyncHandler(handleGetUsersForDealer));
 router.put('/dealers/:dealerId', asyncHandler(handleUpdateDealer));
 router.post('/dealers/:dealerId/credit', asyncHandler(handleAddCreditToDealer));
 

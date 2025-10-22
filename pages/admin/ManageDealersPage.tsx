@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
 import { fetchAllDealers, addDealer } from '../../services/api';
 import { User } from '../../types';
@@ -89,6 +90,7 @@ const ManageDealersPage: React.FC = () => {
                                 <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Area</th>
                                 <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Commission</th>
                                 <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -100,11 +102,16 @@ const ManageDealersPage: React.FC = () => {
                                     <td className="py-4 px-4">{dealer.city || 'N/A'}</td>
                                     <td className="py-4 px-4 text-center">{dealer.commission_rate != null ? `${dealer.commission_rate}%` : 'N/A'}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.wallet_balance)}</td>
+                                    <td className="py-4 px-4 text-center">
+                                        <Link to={`/admin/dealers/${dealer.id}`} className="text-accent-violet hover:underline text-sm font-semibold">
+                                            View Details
+                                        </Link>
+                                    </td>
                                 </tr>
                             ))}
                             {paginatedDealers.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-12 text-text-secondary">
+                                    <td colSpan={7} className="text-center py-12 text-text-secondary">
                                         No dealers found matching your criteria.
                                     </td>
                                 </tr>
@@ -256,6 +263,6 @@ const Input: React.FC<{name: string, label: string, value: string, onChange: (e:
 };
 
 const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
-const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
+const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 8.228A8.947 8.947 0 0112 8c-4.477 0-8.268 2.943-9.542 7a10.035 10.035 0 003.542 4.472m6-8.244A2 2 0 0112 12a2 2 0 01-2 2" /></svg>;
 
 export default ManageDealersPage;

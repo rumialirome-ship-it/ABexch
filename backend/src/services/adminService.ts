@@ -92,6 +92,19 @@ export const adminService = {
         return stripPassword(rows[0]);
     },
 
+    async getDealerById(dealerId: string): Promise<Omit<User, 'password'>> {
+        const { rows } = await db.query("SELECT * FROM users WHERE id = $1 AND role = 'dealer'", [dealerId]);
+        if (rows.length === 0) {
+            throw new ApiError(404, 'Dealer not found.');
+        }
+        return stripPassword(rows[0]);
+    },
+    
+    async getUsersForDealer(dealerId: string): Promise<Omit<User, 'password'>[]> {
+        const { rows } = await db.query("SELECT * FROM users WHERE dealer_id = $1 AND role = 'user' ORDER BY username", [dealerId]);
+        return stripPasswords(rows);
+    },
+
     async addUser(userData: Partial<User> & { username: string; dealer_id: string; initial_deposit?: number }): Promise<Omit<User, 'password'>> {
         const { rows: dealerRows } = await db.query('SELECT id FROM users WHERE id = $1 AND role = $2', [userData.dealer_id, UserRole.DEALER]);
         if (dealerRows.length === 0) throw new ApiError(404, `Dealer with ID ${userData.dealer_id} not found.`);

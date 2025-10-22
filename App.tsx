@@ -2,6 +2,8 @@
 
 
 
+
+
 import React, { lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -31,12 +33,12 @@ const AddUserPage = lazy(() => import('./pages/dealer/AddUserPage'));
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const ManageUsersPage = lazy(() => import('./pages/admin/ManageUsersPage'));
-// @google/genai-dev-tool: Fix: Corrected the lazy import for `ManageDealersPage` to properly handle its default export, resolving the type error.
 const ManageDealersPage = lazy(() => import('./pages/admin/ManageDealersPage'));
 const ManageDrawsPage = lazy(() => import('./pages/admin/ManageDrawsPage'));
 const ApproveCommissionsPage = lazy(() => import('./pages/admin/ApproveCommissionsPage'));
 const ApprovePrizesPage = lazy(() => import('./pages/admin/ApprovePrizesPage'));
 const UserDetailsPage = lazy(() => import('./pages/admin/UserDetailsPage'));
+const DealerDetailsPage = lazy(() => import('./pages/admin/DealerDetailsPage'));
 const ApproveTopUpsPage = lazy(() => import('./pages/admin/ApproveTopUpsPage'));
 
 const FullPageLoader: React.FC = () => (
@@ -87,6 +89,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/admin/manage-users" element={<ProtectedRoute role={UserRole.ADMIN}><ManageUsersPage /></ProtectedRoute>} />
                     <Route path="/admin/users/:userId" element={<ProtectedRoute role={UserRole.ADMIN}><UserDetailsPage /></ProtectedRoute>} />
                     <Route path="/admin/manage-dealers" element={<ProtectedRoute role={UserRole.ADMIN}><ManageDealersPage /></ProtectedRoute>} />
+                    <Route path="/admin/dealers/:dealerId" element={<ProtectedRoute role={UserRole.ADMIN}><DealerDetailsPage /></ProtectedRoute>} />
                     <Route path="/admin/manage-draws" element={<ProtectedRoute role={UserRole.ADMIN}><ManageDrawsPage /></ProtectedRoute>} />
                     <Route path="/admin/approve-commissions" element={<ProtectedRoute role={UserRole.ADMIN}><ApproveCommissionsPage /></ProtectedRoute>} />
                     <Route path="/admin/approve-prizes" element={<ProtectedRoute role={UserRole.ADMIN}><ApprovePrizesPage /></ProtectedRoute>} />

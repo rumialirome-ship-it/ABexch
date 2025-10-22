@@ -34,6 +34,18 @@ export const handleGetSystemUserById = async (req: Request, res: Response) => {
     res.status(200).json(user);
 };
 
+export const handleGetDealerById = async (req: Request, res: Response) => {
+    const { dealerId } = req.params;
+    const dealer = await adminService.getDealerById(dealerId);
+    res.status(200).json(dealer);
+};
+
+export const handleGetUsersForDealer = async (req: Request, res: Response) => {
+    const { dealerId } = req.params;
+    const users = await adminService.getUsersForDealer(dealerId);
+    res.status(200).json(users);
+};
+
 export const handleUpdateUser = async (req: Request, res: Response) => {
     const { userId } = req.params;
     const updatedUser = await adminService.updateUser(userId, req.body);
