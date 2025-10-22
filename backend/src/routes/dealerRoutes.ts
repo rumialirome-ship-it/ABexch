@@ -1,3 +1,4 @@
+
 import { Router } from 'express';
 import { asyncHandler } from '../middleware/errorHandler';
 import { requireAuth } from '../middleware/auth';
@@ -12,7 +13,9 @@ import {
     handleUpdateUserBetLimit,
     handleGetManagedUserById,
     handleGetBetsForManagedUser,
-    handleGetTransactionsForManagedUser
+    handleGetTransactionsForManagedUser,
+    handleUpdateManagedUser,
+    handleDeleteManagedUser
 } from '../controllers/dealerController';
 
 const router = Router();
@@ -24,6 +27,8 @@ router.use(requireAuth([UserRole.DEALER]));
 router.get('/users', asyncHandler(handleGetManagedUsers));
 router.post('/users', asyncHandler(handleAddUser));
 router.get('/users/:userId', asyncHandler(handleGetManagedUserById));
+router.put('/users/:userId', asyncHandler(handleUpdateManagedUser));
+router.delete('/users/:userId', asyncHandler(handleDeleteManagedUser));
 router.post('/users/:userId/credit', asyncHandler(handleAddCreditToUser));
 router.put('/users/:userId/bet-limit', asyncHandler(handleUpdateUserBetLimit));
 router.get('/users/:userId/bets', asyncHandler(handleGetBetsForManagedUser));

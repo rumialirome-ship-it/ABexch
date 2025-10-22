@@ -246,6 +246,21 @@ export const updateUserBetLimit = (dealer: User, userId: string, limit: number |
         body: JSON.stringify({ limit })
     });
 };
+export const updateUserByDealer = (dealer: User, userId: string, userData: Partial<User>): Promise<User> => {
+    return apiRequest(`/dealer/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': dealer.id, 'x-user-role': dealer.role },
+        body: JSON.stringify(userData)
+    });
+};
+
+export const deleteUserByDealer = (dealer: User, userId: string): Promise<void> => {
+    return apiRequest(`/dealer/users/${userId}`, {
+        method: 'DELETE',
+        headers: { 'x-user-id': dealer.id, 'x-user-role': dealer.role }
+    });
+};
+
 
 
 // --- Functions for Realtime Polling ---

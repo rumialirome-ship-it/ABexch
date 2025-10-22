@@ -1,3 +1,5 @@
+
+
 import { db } from '../db';
 import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -93,7 +95,7 @@ export const adminService = {
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    userId, username, finalPassword, phone, UserRole.USER, initialDeposit, userData.dealer_id,
+                    userId, username, finalPassword, phone, UserRole.USER, 0, userData.dealer_id, // Set initial balance to 0
                     userData.city || null,
                     userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
                     userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
@@ -212,7 +214,7 @@ export const adminService = {
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
                     dealerId, cleanUsername, finalPassword, cleanPhone, UserRole.DEALER,
-                    walletBalance, finalCity, finalCommission, finalPrizeRate2D,
+                    0, finalCity, finalCommission, finalPrizeRate2D, // Set initial balance to 0
                     finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]
             );
@@ -301,7 +303,6 @@ export const adminService = {
 
     // ... Financial Actions ...
     async addCreditToUser(adminId: string, userId: string, amount: number): Promise<void> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
@@ -321,7 +322,6 @@ export const adminService = {
     },
 
     async addCreditToDealer(dealerId: string, amount: number): Promise<Omit<User, 'password'>> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
@@ -345,7 +345,6 @@ export const adminService = {
     },
 
     async declareDraw(drawLabel: string, winningNumbers: { two_digit?: string; one_digit_open?: string; one_digit_close?: string; }): Promise<DrawResult> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
@@ -439,7 +438,6 @@ export const adminService = {
     },
     
     async approveCommission(id: string): Promise<void> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
@@ -470,7 +468,6 @@ export const adminService = {
     },
 
     async approvePrize(id: string): Promise<void> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
@@ -501,7 +498,6 @@ export const adminService = {
     },
     
     async approveTopUp(requestId: string): Promise<void> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
@@ -526,7 +522,6 @@ export const adminService = {
     },
 
     async debitFunds(adminId: string, targetUserId: string, amount: number): Promise<void> {
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');

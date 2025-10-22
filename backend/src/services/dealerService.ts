@@ -1,4 +1,5 @@
 
+
 import { db } from '../db';
 import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -62,7 +63,7 @@ export const dealerService = {
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    userId, username, finalPassword, phone, UserRole.USER, initialDeposit, dealerId,
+                    userId, username, finalPassword, phone, UserRole.USER, 0, dealerId, // Set initial balance to 0
                     userData.city || null,
                     userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
                     userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
@@ -178,5 +179,58 @@ export const dealerService = {
     async getTransactionsForManagedUser(dealerId: string, userId: string): Promise<Transaction[]> {
         await this.getManagedUserById(dealerId, userId);
         return transactionService.getTransactionHistory(userId);
+    },
+
+    async updateUser(dealerId: string, userId: string, userData: Partial<User>): Promise<Omit<User, 'password'>> {
+        const { rows: existingUserRows } = await db.query('SELECT * FROM users WHERE id = $1 AND dealer_id = $2', [userId, dealerId]);
+        if (existingUserRows.length === 0) {
+            throw new ApiError(404, "User not found or you don't have permission to edit this user.");
+        }
+        
+        const allowedToUpdate = ['username', 'password', 'phone', 'city', 'prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw'];
+        const updates: { [key: string]: any } = {};
+        
+        for (const key of allowedToUpdate) {
+            if (Object.prototype.hasOwnProperty.call(userData, key)) {
+                const value = (userData as any)[key];
+                if (key === 'password' && (!value || String(value).trim() === '')) {
+                    continue; 
+                }
+                
+                const isNumericField = ['prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw'].includes(key);
+                if (isNumericField && (value === '' || value === null)) {
+                     updates[key] = null;
+                } else {
+                    updates[key] = value;
+                }
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return stripPassword(existingUserRows[0]); // Nothing to update
+        }
+
+        if (updates.username && updates.username !== existingUserRows[0].username) {
+            const { rows: conflict } = await db.query('SELECT id FROM users WHERE username = $1 AND id != $2', [updates.username, userId]);
+            if (conflict.length > 0) throw new ApiError(409, "Username already exists.");
+        }
+        if (updates.phone && updates.phone !== existingUserRows[0].phone) {
+            const { rows: conflict } = await db.query('SELECT id FROM users WHERE phone = $1 AND id != $2', [updates.phone, userId]);
+            if (conflict.length > 0) throw new ApiError(409, "Phone number already exists.");
+        }
+
+        const setClause = Object.keys(updates).map((key, index) => `"${key}" = $${index + 2}`).join(', ');
+        const values = [userId, ...Object.values(updates)];
+
+        const { rows: updatedUserRows } = await db.query(`UPDATE users SET ${setClause} WHERE id = $1 RETURNING *`, values);
+        
+        return stripPassword(updatedUserRows[0]);
+    },
+
+    async deleteUser(dealerId: string, userId: string): Promise<void> {
+        const { rows } = await db.query('DELETE FROM users WHERE id = $1 AND dealer_id = $2 RETURNING id', [userId, dealerId]);
+        if (rows.length === 0) {
+            throw new ApiError(404, "User not found or you don't have permission to delete this user.");
+        }
     },
 };

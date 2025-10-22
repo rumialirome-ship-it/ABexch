@@ -38,13 +38,13 @@ const AddUserPage: React.FC = () => {
         }
 
         if (!formData.username || !formData.password || !formData.phone) {
-             addNotification('Username, Password, and Phone Number are required.', 'error');
+             addNotification('⚠️ Username, Password, and Phone Number are required.', 'error');
              return;
         }
 
         setIsLoading(true);
         try {
-            const newUser = await addUser(dealer, {
+            await addUser(dealer, {
                 username: formData.username,
                 password: formData.password,
                 phone: formData.phone,
@@ -56,37 +56,35 @@ const AddUserPage: React.FC = () => {
                 bet_limit_1d: formData.betLimit1D ? parseFloat(formData.betLimit1D) : undefined,
                 bet_limit_per_draw: formData.betLimitPerDraw ? parseFloat(formData.betLimitPerDraw) : undefined,
             });
-            addNotification(`User ${newUser.username} added successfully!`, 'success');
+            addNotification('✅ User added successfully!', 'success');
             navigate('/dealer/manage-users');
         } catch (error) {
-            addNotification(error instanceof Error ? error.message : 'Failed to create user.', 'error');
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create user.';
+            addNotification(`⚠️ ${errorMessage}`, 'error');
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <MainLayout title="Create New User" showBackButton titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
+        <MainLayout title="Create New User" showBackButton titleClassName="bg-gradient-to-r from-accent-blue via-accent-violet to-accent-orange bg-clip-text text-transparent">
             <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-8">
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <legend className="text-lg text-accent-cyan px-2 font-semibold">User Information</legend>
-                    <div className="p-2 text-sm text-text-secondary">
-                        A unique User ID will be auto-generated upon creation.
-                    </div>
+                    <legend className="text-lg text-accent-blue px-2 font-semibold">User Information</legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 pt-2">
                         <InputGroup label="Username" name="username" value={formData.username} onChange={handleChange} required />
                         <InputGroup label="Password" name="password" value={formData.password} onChange={handleChange} type="password" required />
-                        <InputGroup label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} icon={<PhoneIcon/>} required />
+                        <InputGroup label="Phone Number" name="phone" value={formData.phone} onChange={handleChange} type="tel" icon={<PhoneIcon/>} required />
                         <InputGroup label="City" name="city" value={formData.city} onChange={handleChange} placeholder="Optional"/>
                     </div>
                 </fieldset>
 
                  <fieldset className="border border-border-color p-4 rounded-lg animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    <legend className="text-lg text-accent-cyan px-2 font-semibold">💰 Account Settings</legend>
+                    <legend className="text-lg text-accent-blue px-2 font-semibold">💰 Account Settings</legend>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 pt-2">
-                        <InputGroup label="Wallet Balance" name="walletBalance" value={formData.walletBalance} onChange={handleChange} type="number" placeholder="0.00" />
-                        <InputGroup label="Prize Rate (2D)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" placeholder="Default: 85" />
-                        <InputGroup label="Prize Rate (1D)" name="prizeRate1D" value={formData.prizeRate1D} onChange={handleChange} type="number" placeholder="Default: 9.5" />
+                        <InputGroup label="Wallet Balance" name="walletBalance" value={formData.walletBalance} onChange={handleChange} type="number" />
+                        <InputGroup label="Prize Rate (2D)" name="prizeRate2D" value={formData.prizeRate2D} onChange={handleChange} type="number" />
+                        <InputGroup label="Prize Rate (1D)" name="prizeRate1D" value={formData.prizeRate1D} onChange={handleChange} type="number" />
                         <InputGroup label="Bet Limit (2D)" name="betLimit2D" value={formData.betLimit2D} onChange={handleChange} type="number" placeholder="Optional" />
                         <InputGroup label="Bet Limit (1D)" name="betLimit1D" value={formData.betLimit1D} onChange={handleChange} type="number" placeholder="Optional" />
                         <InputGroup label="Bet Limit per Draw" name="betLimitPerDraw" value={formData.betLimitPerDraw} onChange={handleChange} type="number" placeholder="Optional"/>
@@ -97,8 +95,9 @@ const AddUserPage: React.FC = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full sm:w-auto bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50"
+                        className="w-full sm:w-auto bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:saturate-150 hover:-translate-y-1 hover:shadow-glow-accent active:scale-95 disabled:bg-border-color disabled:opacity-50 flex items-center justify-center gap-2"
                     >
+                        {isLoading && <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>}
                         {isLoading ? 'Creating User...' : 'Create User'}
                     </button>
                     <Link to="/dealer/manage-users" className="w-full sm:w-auto text-center border border-border-color text-text-secondary font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">
@@ -148,8 +147,8 @@ const InputGroup: React.FC<{label: string, name: string, value: string, onChange
     );
 };
 
-const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>;
-const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
-const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
+const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>;
+const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
+const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
 
 export default AddUserPage;

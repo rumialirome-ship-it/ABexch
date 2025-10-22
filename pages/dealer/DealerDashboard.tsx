@@ -142,13 +142,16 @@ const DealerDashboard: React.FC = () => {
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   const [selectedUserForCredit, setSelectedUserForCredit] = useState<User | null>(null);
 
-  const [pendingCommission, setPendingCommission] = useState(0);
   const [managedUsers, setManagedUsers] = useState<User[]>([]);
-  const [dailyBetTotal, setDailyBetTotal] = useState(0);
-  const [weeklyBetTotal, setWeeklyBetTotal] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map());
   const [loading, setLoading] = useState(true);
+
+  // KPIs
+  const [pendingCommission, setPendingCommission] = useState(0);
+  const [totalCommissionEarned, setTotalCommissionEarned] = useState(0);
+  const [totalUserBalance, setTotalUserBalance] = useState(0);
+  const [dailyBetTotal, setDailyBetTotal] = useState(0);
 
   const loadDashboardData = useCallback(async () => {
     if (!user || user.role !== UserRole.DEALER) return;
@@ -164,32 +167,34 @@ const DealerDashboard: React.FC = () => {
             setTransactions(transactionsData.slice(0, 5));
             setManagedUsers(usersData);
 
+            // Calculate KPIs
             const usersIdToNameMap = new Map<string, string>();
-            usersData.forEach(u => usersIdToNameMap.set(u.id, u.username));
+            let outstandingUserBalance = 0;
+            usersData.forEach(u => {
+                usersIdToNameMap.set(u.id, u.username);
+                outstandingUserBalance += u.wallet_balance;
+            });
             setUsersMap(usersIdToNameMap);
+            setTotalUserBalance(outstandingUserBalance);
             
             const totalPending = commissionsData.reduce((acc, c) => acc + c.amount, 0);
             setPendingCommission(totalPending);
 
-            // Calculate betting summaries
+            const totalEarned = transactionsData
+                .filter(tx => tx.type === TransactionType.COMMISSION_PAYOUT)
+                .reduce((acc, tx) => acc + tx.amount, 0);
+            setTotalCommissionEarned(totalEarned);
+
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const weekStart = new Date(todayStart);
-            weekStart.setDate(todayStart.getDate() - 6); // Today + 6 previous days
-
             let dailyTotal = 0;
-            let weeklyTotal = 0;
             betsData.forEach(bet => {
                 const betDate = new Date(bet.created_at);
-                if (betDate >= weekStart) {
-                    weeklyTotal += bet.stake;
-                    if (betDate >= todayStart) {
-                        dailyTotal += bet.stake;
-                    }
+                if (betDate >= todayStart) {
+                    dailyTotal += bet.stake;
                 }
             });
             setDailyBetTotal(dailyTotal);
-            setWeeklyBetTotal(weeklyTotal);
 
         } catch (error) {
             console.error("Failed to load dashboard data", error);
@@ -244,14 +249,14 @@ const DealerDashboard: React.FC = () => {
 
   return (
     <MainLayout title={`Dealer Dashboard: ${user.username}`} titleClassName="bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      {/* KPI Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard label="Available Wallet Balance" value={formatCurrency(user.wallet_balance)} />
         <StatCard label="Pending Commission" value={formatCurrency(pendingCommission)} isLoading={loading} />
+        <StatCard label="Total Commission Earned" value={formatCurrency(totalCommissionEarned)} isLoading={loading} />
         <StatCard label="Managed Users" value={managedUsers.length.toString()} isLoading={loading} />
-      </div>
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <StatCard label="Total User Balances" value={formatCurrency(totalUserBalance)} isLoading={loading} />
         <StatCard label="Today's Bet Volume" value={formatCurrency(dailyBetTotal)} isLoading={loading} />
-        <StatCard label="This Week's Bet Volume" value={formatCurrency(weeklyBetTotal)} isLoading={loading} />
       </div>
       
        <div className="mb-8">
