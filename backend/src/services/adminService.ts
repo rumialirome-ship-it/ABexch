@@ -1,5 +1,7 @@
 
 
+
+
 import { db } from '../db';
 import { User, UserRole, Bet, BetStatus, DrawResult, Commission, Prize, TopUpRequest, GameType, Transaction, TransactionType } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -254,47 +256,69 @@ export const adminService = {
     },
 
     async updateDealer(dealerId: string, dealerData: Partial<User>): Promise<Omit<User, 'password'>> {
-        const { username, password, phone, city } = dealerData;
+        // 1. Fetch the existing dealer to compare against for conflict resolution
+        const { rows: existingDealerRows } = await db.query("SELECT * FROM users WHERE id = $1 AND role = 'dealer'", [dealerId]);
+        if (existingDealerRows.length === 0) {
+            throw new ApiError(404, 'Dealer not found.');
+        }
+        const existingDealer = existingDealerRows[0];
+    
+        // 2. Build the 'updates' object from the provided data
         const updates: { [key: string]: any } = {};
-
-        if (username !== undefined) updates.username = username;
-        if (password) updates.password = password;
-        if (phone !== undefined) updates.phone = phone;
-        if (city !== undefined) updates.city = city;
-        
-        const handleOptionalNumber = (fieldName: keyof User) => {
-            if (Object.prototype.hasOwnProperty.call(dealerData, fieldName)) {
-                const rawValue = (dealerData as any)[fieldName];
+    
+        // Handle string fields, special-casing password
+        const stringFields: (keyof User)[] = ['username', 'password', 'phone', 'city'];
+        for (const field of stringFields) {
+            if (Object.prototype.hasOwnProperty.call(dealerData, field)) {
+                const value = (dealerData as any)[field];
+                // Only add password to the update if it's a non-empty string
+                if (field === 'password' && (!value || String(value).trim() === '')) {
+                    continue;
+                }
+                updates[field] = value;
+            }
+        }
+    
+        // Handle optional number fields, converting empty strings from the form to null
+        const numericFields: (keyof User)[] = ['commission_rate', 'prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw'];
+        for (const field of numericFields) {
+            if (Object.prototype.hasOwnProperty.call(dealerData, field)) {
+                const rawValue = (dealerData as any)[field];
                 const parsedValue = (rawValue === '' || rawValue === null) ? null : parseFloat(rawValue);
                 if (parsedValue !== null && isNaN(parsedValue)) {
-                    throw new ApiError(400, `${fieldName.replace(/_/g, ' ')} must be a valid number.`);
+                    throw new ApiError(400, `${field.replace(/_/g, ' ')} must be a valid number.`);
                 }
-                updates[fieldName] = parsedValue;
+                updates[field] = parsedValue;
             }
-        };
-
-        handleOptionalNumber('commission_rate');
-        handleOptionalNumber('prize_rate_2d');
-        handleOptionalNumber('prize_rate_1d');
-        handleOptionalNumber('bet_limit_2d');
-        handleOptionalNumber('bet_limit_1d');
-        handleOptionalNumber('bet_limit_per_draw');
-
-        if (Object.keys(updates).length === 0) {
-            throw new ApiError(400, "No update data provided.");
         }
-
+    
+        // 3. Check for conflicts if username or phone are being changed
+        if (updates.username && updates.username !== existingDealer.username) {
+            const { rows: conflict } = await db.query('SELECT id FROM users WHERE username = $1 AND id != $2', [updates.username, dealerId]);
+            if (conflict.length > 0) throw new ApiError(409, "Username already exists.");
+        }
+        if (updates.phone && updates.phone !== existingDealer.phone) {
+            const { rows: conflict } = await db.query('SELECT id FROM users WHERE phone = $1 AND id != $2', [updates.phone, dealerId]);
+            if (conflict.length > 0) throw new ApiError(409, "Phone number already exists.");
+        }
+    
+        // 4. If nothing to update, just return the user to avoid an empty SQL query
+        if (Object.keys(updates).length === 0) {
+            return stripPassword(existingDealer);
+        }
+    
+        // 5. Build and execute the dynamic UPDATE query
         const setClause = Object.keys(updates).map((key, index) => `"${key}" = $${index + 2}`).join(', ');
         const values = [dealerId, ...Object.values(updates)];
-
+    
         const query = `UPDATE users SET ${setClause} WHERE id = $1 AND role = 'dealer' RETURNING *`;
         
         const { rows } = await db.query(query, values);
-
+    
         if (rows.length === 0) {
-            throw new ApiError(404, 'Dealer not found.');
+            throw new ApiError(404, 'Dealer not found during update operation.');
         }
-
+    
         return stripPassword(rows[0]);
     },
 

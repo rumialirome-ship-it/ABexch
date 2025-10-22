@@ -231,7 +231,8 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
             onDealerAdded();
             onClose();
         } catch (err) {
-            addNotification(`⚠️ Failed to add dealer. Please check the form.`, 'error');
+            const errorMessage = err instanceof Error ? err.message : 'Failed to add dealer.';
+            addNotification(`⚠️ ${errorMessage}`, 'error');
         } finally {
             setIsLoading(false);
         }
