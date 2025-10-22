@@ -1,4 +1,3 @@
-// @google/genai-dev-tool: Fix: Corrected the malformed React import statement.
 import React, { useState, useMemo, ReactNode, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -165,7 +164,7 @@ export const BettingPage: React.FC = () => {
 };
 
 const getInputClass = (hasError: boolean) => 
-    `transition-all duration-300 shadow-inner appearance-none border rounded-lg w-full py-3 px-4 bg-background-primary border-border-color text-text-primary leading-tight focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent ${hasError ? 'border-danger/50 ring-2 ring-danger/30' : ''}`;
+    `transition-all duration-300 shadow-inner appearance-none border rounded-lg w-full py-3 px-4 bg-text-primary border-border-color text-bg-primary placeholder-text-secondary leading-tight focus:outline-none focus:ring-2 focus:ring-accent-primary focus:border-transparent ${hasError ? 'border-danger/50 ring-2 ring-danger/30' : ''}`;
 
 
 const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel: string}> = ({gameType, drawLabel}) => {
@@ -336,16 +335,18 @@ const QuickBetForm: React.FC<{gameType: '2D' | '1D-Open' | '1D-Close'; drawLabel
                 title="Confirm Your Bet"
                 isLoading={isLoading}
             >
-                <p className="mb-4 text-text-secondary">Please review your bet details for <strong className="text-accent-primary">{drawLabel}</strong> before confirming:</p>
+                <p className="mb-4 text-text-secondary">Please review your bet details for <strong className="text-accent-primary">{drawLabel}</strong>.</p>
                 <div className="space-y-2 bg-background-primary p-4 rounded-lg border border-border-color max-h-60 overflow-y-auto">
                     {betsToConfirm.map((bet, index) => (
-                        <div key={index} className="flex justify-between items-center">
+                        <div key={index} className="flex justify-between items-center text-sm">
                             <span><strong>{bet.game_type}</strong> on number <strong className="text-accent-primary font-mono">{bet.number}</strong></span>
                             <span>Stake: <strong className="text-text-primary font-mono">{formatCurrency(bet.stake)}</strong></span>
                         </div>
                     ))}
                 </div>
                 <div className="text-right mt-4 font-bold">
+                    Total Bets: <span className="text-accent-primary">{betsToConfirm.length}</span>
+                    <br />
                     Total Stake: <span className="text-accent-primary">{formatCurrency(betsToConfirm.reduce((acc, bet) => acc + bet.stake, 0))}</span>
                 </div>
             </ConfirmationDialog>

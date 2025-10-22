@@ -4,42 +4,62 @@ import { UserRole, TIMING_GAMES, Game, DrawResult } from '../types';
 import { fetchAllResults } from '../services/api';
 import { formatDisplayTime } from '../utils/formatters';
 
-// Custom hook for game countdown based on Pakistan Standard Time (UTC+5)
+// Custom hook for game countdown and status based on Pakistan Standard Time (UTC+5)
 const useGameCountdown = (time: string) => {
     const [timeLeft, setTimeLeft] = useState('--:--:--');
     const [isClosed, setIsClosed] = useState(false);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
+            // All times are in PKT (UTC+5)
+            const marketOpenHourPkt = 16; // 4 PM
+
+            // 1. Get current PKT time components
             const nowUtc = new Date();
-            
-            const [hourPkt, minutePkt] = time.split(':').map(Number);
-            
-            const hourUtc = (hourPkt - 5 + 24) % 24;
+            const nowPkt = new Date(nowUtc.getTime() + (5 * 60 * 60 * 1000));
+            const currentHourPkt = nowPkt.getUTCHours();
+            const currentMinutePkt = nowPkt.getUTCMinutes();
 
-            let targetTimeUtc = new Date(Date.UTC(
-                nowUtc.getUTCFullYear(),
-                nowUtc.getUTCMonth(),
-                nowUtc.getUTCDate(),
-                hourUtc,
-                minutePkt,
-                0, 0
-            ));
+            // 2. Get game draw time components
+            const [gameHourPkt, gameMinutePkt] = time.split(':').map(Number);
 
-            if (nowUtc.getTime() > targetTimeUtc.getTime()) {
-                targetTimeUtc.setUTCDate(targetTimeUtc.getUTCDate() + 1);
+            // 3. Check market status
+            const isMarketOpen = currentHourPkt >= marketOpenHourPkt;
+
+            // 4. Determine game status and countdown
+            if (!isMarketOpen) {
+                // Market is closed (before 4 PM). All games are unavailable.
+                setTimeLeft('Opens at 4 PM');
+                setIsClosed(true);
+                return;
             }
 
-            const difference = targetTimeUtc.getTime() - nowUtc.getTime();
-            
+            // Market is OPEN (4 PM or later)
+            const gameTimePassedToday = currentHourPkt > gameHourPkt || (currentHourPkt === gameHourPkt && currentMinutePkt >= gameMinutePkt);
+
+            if (gameTimePassedToday) {
+                // Game's draw for today is over. It's closed until tomorrow.
+                setTimeLeft('Draw Closed');
+                setIsClosed(true);
+                return;
+            }
+
+            // Game is open and countdown should be shown.
+            // Calculate difference to today's draw time.
+            const targetTimePkt = new Date(nowPkt.getTime());
+            targetTimePkt.setUTCHours(gameHourPkt, gameMinutePkt, 0, 0);
+
+            const difference = targetTimePkt.getTime() - nowPkt.getTime();
+
             if (difference > 0) {
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference / 1000 / 60) % 60);
                 const seconds = Math.floor((difference / 1000) % 60);
-                
+
                 setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
                 setIsClosed(false);
             } else {
+                // Fallback, should be covered by `gameTimePassedToday`
                 setTimeLeft('Draw Closed');
                 setIsClosed(true);
             }
@@ -60,9 +80,12 @@ const GameCard: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result 
 
     let winningNumberToShow: string | undefined;
     if (isClosed && result) {
-        if (game.bet_type === 'open') winningNumberToShow = result.one_digit_open;
-        else if (game.bet_type === 'close') winningNumberToShow = result.one_digit_close;
-        else winningNumberToShow = result.two_digit;
+        // Only show result if the reason for closure is not 'market not open'
+        if (timeLeft !== 'Opens at 4 PM') {
+            if (game.bet_type === 'open') winningNumberToShow = result.one_digit_open;
+            else if (game.bet_type === 'close') winningNumberToShow = result.one_digit_close;
+            else winningNumberToShow = result.two_digit;
+        }
     }
 
     const commonClasses = "bg-bg-secondary rounded-lg p-4 flex flex-col items-center justify-center text-center border border-border-color transition-all duration-300 transform-gpu shadow-lg aspect-square";
@@ -75,7 +98,7 @@ const GameCard: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result 
             <div className="my-3">
                 {isClosed ? (
                      <span className={`font-mono text-4xl font-bold tracking-widest ${winningNumberToShow ? 'text-accent-yellow animate-pulse' : 'text-text-secondary'}`}>
-                        {winningNumberToShow || 'CLOSED'}
+                        {winningNumberToShow || (timeLeft.includes(':') ? 'CLOSED' : timeLeft.toUpperCase())}
                     </span>
                 ) : (
                     <span className="font-mono text-4xl font-bold tracking-widest bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-yellow bg-clip-text text-transparent animate-flicker">
@@ -91,7 +114,9 @@ const GameCard: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result 
 
 
     if (isClosed) {
-        return <div className={`${commonClasses} ${!winningNumberToShow ? disabledClasses : ''}`}>{content}</div>;
+        // Disable the card if it's closed for any reason other than showing a past result
+        const isDisabled = !winningNumberToShow;
+        return <div className={`${commonClasses} ${isDisabled ? disabledClasses : ''}`}>{content}</div>;
     }
 
     return (

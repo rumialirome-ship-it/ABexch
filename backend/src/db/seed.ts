@@ -1,9 +1,17 @@
 import { db } from './index';
+import fs from 'fs';
 import path from 'path';
-import { UserRole } from '../types';
 // @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
 import * as process from 'process';
+import { UserRole } from '../types';
+import { PoolClient } from 'pg';
 
+/**
+ * A self-healing database setup script.
+ * It first executes the main schema to establish a baseline, then immediately
+ * synchronizes critical ENUM types (`transaction_type` and `user_role`) to
+ * ensure they match the application code, adding any missing values.
+ */
 const seed = async () => {
     // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
     const client = await db.connect();

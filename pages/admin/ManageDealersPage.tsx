@@ -124,20 +124,30 @@ const ManageDealersPage: React.FC = () => {
                     <table className="min-w-full bg-transparent">
                         <thead className="border-b-2 border-border-color">
                             <tr>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Dealer ID</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Username</th>
-                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Phone</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Dealer</th>
                                 <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-right text-accent-yellow font-semibold tracking-wider uppercase text-sm">Comm. Rate</th>
+                                <th className="py-3 px-4 text-left text-accent-yellow font-semibold tracking-wider uppercase text-sm">Default Prize Rates</th>
                                 <th className="py-3 px-4 text-center text-accent-yellow font-semibold tracking-wider uppercase text-sm">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {dealers.map((dealer) => (
                                 <tr key={dealer.id} className="border-b border-border-color/50 last:border-b-0 hover:bg-accent-yellow/5 transition-colors duration-300">
-                                    <td className="py-4 px-4 font-mono">{dealer.id}</td>
-                                    <td className="py-4 px-4">{dealer.username}</td>
-                                    <td className="py-4 px-4">{dealer.phone}</td>
+                                    <td className="py-4 px-4">
+                                        {dealer.username}
+                                        <span className="block text-xs font-mono text-text-secondary">{dealer.id}</span>
+                                    </td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.wallet_balance)}</td>
+                                    <td className="py-4 px-4 text-right font-mono">{dealer.commission_rate != null ? `${dealer.commission_rate}%` : 'N/A'}</td>
+                                    <td className="py-4 px-4">
+                                        <div className="text-xs">
+                                            <span className="font-semibold text-text-secondary">2D:</span> <span className="font-mono">{dealer.prize_rate_2d ?? 'N/A'}</span>
+                                        </div>
+                                        <div className="text-xs">
+                                            <span className="font-semibold text-text-secondary">1D:</span> <span className="font-mono">{dealer.prize_rate_1d ?? 'N/A'}</span>
+                                        </div>
+                                    </td>
                                     <td className="py-4 px-4 text-center">
                                        <MoreOptionsMenu
                                             dealer={dealer}
