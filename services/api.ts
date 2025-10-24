@@ -286,6 +286,14 @@ export const updateUserByDealer = (dealer: User, userId: string, userData: Parti
     });
 };
 
+export const updateUserBlockStatusByDealer = (dealer: User, userId: string, is_blocked: boolean): Promise<User> => {
+    return apiRequest(`/dealer/users/${userId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-user-id': dealer.id, 'x-user-role': dealer.role },
+        body: JSON.stringify({ is_blocked })
+    });
+};
+
 export const deleteUserByDealer = (dealer: User, userId: string): Promise<void> => {
     return apiRequest(`/dealer/users/${userId}`, {
         method: 'DELETE',

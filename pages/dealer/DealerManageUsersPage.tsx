@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchUsersByDealer, updateUserByDealer, deleteUserByDealer } from '../../services/api';
+import { fetchUsersByDealer, updateUserByDealer, deleteUserByDealer, updateUserBlockStatusByDealer } from '../../services/api';
 import { User, UserRole } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useAuth } from '../../contexts/AuthContext';
@@ -19,6 +19,7 @@ const DealerManageUsersPage: React.FC = () => {
 
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deletingUser, setDeletingUser] = useState<User | null>(null);
+    const [blockingUser, setBlockingUser] = useState<User | null>(null);
 
 
     const loadUsers = async () => {
@@ -93,6 +94,7 @@ const DealerManageUsersPage: React.FC = () => {
                                 <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Username</th>
                                 <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Phone</th>
                                 <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Status</th>
                                 <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Actions</th>
                             </tr>
                         </thead>
@@ -104,13 +106,18 @@ const DealerManageUsersPage: React.FC = () => {
                                     <td className="py-4 px-4">{u.phone}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(u.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center">
-                                       <MoreOptionsMenu user={u} onEdit={() => setEditingUser(u)} onDelete={() => setDeletingUser(u)} />
+                                        {u.is_blocked 
+                                            ? <span className="px-2 py-1 text-xs font-semibold rounded-full bg-danger/20 text-danger border border-danger/30">Blocked</span> 
+                                            : <span className="px-2 py-1 text-xs font-semibold rounded-full bg-success/20 text-success border border-success/30">Active</span>}
+                                    </td>
+                                    <td className="py-4 px-4 text-center">
+                                       <MoreOptionsMenu user={u} onEdit={() => setEditingUser(u)} onDelete={() => setDeletingUser(u)} onBlock={() => setBlockingUser(u)} />
                                     </td>
                                 </tr>
                             ))}
                             {paginatedUsers.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="text-center py-12 text-text-secondary">
+                                    <td colSpan={6} className="text-center py-12 text-text-secondary">
                                         No users found.
                                     </td>
                                 </tr>
@@ -132,11 +139,12 @@ const DealerManageUsersPage: React.FC = () => {
 
             {editingUser && <EditUserModal user={editingUser} onClose={() => setEditingUser(null)} onSuccess={loadUsers} />}
             {deletingUser && <DeleteUserModal user={deletingUser} onClose={() => setDeletingUser(null)} onSuccess={loadUsers} />}
+            {blockingUser && <BlockUserModal user={blockingUser} onClose={() => setBlockingUser(null)} onSuccess={loadUsers} />}
         </MainLayout>
     );
 };
 
-const MoreOptionsMenu: React.FC<{ user: User, onEdit: () => void, onDelete: () => void }> = ({ user, onEdit, onDelete }) => {
+const MoreOptionsMenu: React.FC<{ user: User, onEdit: () => void, onDelete: () => void, onBlock: () => void }> = ({ user, onEdit, onDelete, onBlock }) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -172,6 +180,9 @@ const MoreOptionsMenu: React.FC<{ user: User, onEdit: () => void, onDelete: () =
                     <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                         <Link to={`/dealer/users/${user.id}`} className="block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">View Details</Link>
                         <button onClick={() => handleAction(onEdit)} className="w-full text-left block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">Edit User</button>
+                        <button onClick={() => handleAction(onBlock)} className={`w-full text-left block px-4 py-2 text-sm ${user.is_blocked ? 'text-success hover:bg-success/20' : 'text-danger hover:bg-danger/20'}`} role="menuitem">
+                            {user.is_blocked ? 'Unblock User' : 'Block User'}
+                        </button>
                         <button onClick={() => handleAction(onDelete)} className="w-full text-left block px-4 py-2 text-sm text-danger hover:bg-danger/20" role="menuitem">Delete User</button>
                     </div>
                 </div>
@@ -302,6 +313,53 @@ const DeleteUserModal: React.FC<{ user: User, onClose: () => void, onSuccess: ()
                     <button onClick={handleDelete} disabled={isLoading} className="bg-danger text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 hover:shadow-glow-danger active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
                         {isLoading && <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>}
                         {isLoading ? 'Deleting...' : 'Delete User'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const BlockUserModal: React.FC<{ user: User; onClose: () => void; onSuccess: () => void }> = ({ user, onClose, onSuccess }) => {
+    const { user: dealer } = useAuth();
+    const { addNotification } = useNotification();
+    const [isLoading, setIsLoading] = useState(false);
+    const isBlocking = !user.is_blocked;
+
+    const handleSubmit = async () => {
+        if (!dealer) {
+            addNotification('Dealer not logged in.', 'error');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await updateUserBlockStatusByDealer(dealer, user.id, isBlocking);
+            addNotification(`Successfully ${isBlocking ? 'blocked' : 'unblocked'} ${user.username}.`, 'success');
+            onSuccess();
+            onClose();
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : `Failed to ${isBlocking ? 'block' : 'unblock'} user.`;
+            addNotification(errorMessage, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className={`bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-md border ${isBlocking ? 'border-danger/30' : 'border-success/30'} my-auto animate-fade-in-down`}>
+                <h2 className={`text-2xl font-bold mb-4 ${isBlocking ? 'text-danger text-shadow-glow-danger' : 'text-success'}`}>{isBlocking ? 'Block User' : 'Unblock User'}</h2>
+                <p className="text-text-secondary mb-6">
+                    Are you sure you want to {isBlocking ? 'block' : 'unblock'} the user <strong className="text-text-primary">{user.username}</strong>?
+                    {isBlocking 
+                        ? " They will not be able to log in or place bets." 
+                        : " They will regain full access to their account."}
+                </p>
+                <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
+                    <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
+                    <button type="button" onClick={handleSubmit} disabled={isLoading} className={`${isBlocking ? 'bg-danger hover:shadow-glow-danger' : 'bg-success hover:shadow-glow-success'} text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50`}>
+                        {isLoading ? (isBlocking ? 'Blocking...' : 'Unblocking...') : `Confirm ${isBlocking ? 'Block' : 'Unblock'}`}
                     </button>
                 </div>
             </div>

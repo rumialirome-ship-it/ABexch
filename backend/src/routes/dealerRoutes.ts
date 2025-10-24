@@ -16,7 +16,8 @@ import {
     handleGetTransactionsForManagedUser,
     handleUpdateManagedUser,
     handleDeleteManagedUser,
-    handleGetCommissionsForDealer
+    handleGetCommissionsForDealer,
+    handleSetUserBlockStatus
 } from '../controllers/dealerController';
 
 const router = Router();
@@ -32,6 +33,7 @@ router.put('/users/:userId', asyncHandler(handleUpdateManagedUser));
 router.delete('/users/:userId', asyncHandler(handleDeleteManagedUser));
 router.post('/users/:userId/credit', asyncHandler(handleAddCreditToUser));
 router.put('/users/:userId/bet-limit', asyncHandler(handleUpdateUserBetLimit));
+router.put('/users/:userId/status', asyncHandler(handleSetUserBlockStatus));
 router.get('/users/:userId/bets', asyncHandler(handleGetBetsForManagedUser));
 router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForManagedUser));
 

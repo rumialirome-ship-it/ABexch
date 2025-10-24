@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchAllDealers, addDealer } from '../../services/api';
+import { fetchAllDealers, addDealer, updateDealerByAdmin, updateUserBlockStatus } from '../../services/api';
 import { User } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useNotification } from '../../contexts/NotificationContext';
@@ -16,6 +16,9 @@ const ManageDealersPage: React.FC = () => {
     const [showModal, setShowModal] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    
+    const [editingDealer, setEditingDealer] = useState<User | null>(null);
+    const [blockingDealer, setBlockingDealer] = useState<User | null>(null);
 
     const loadDealers = async () => {
         if (!admin) return;
@@ -87,9 +90,8 @@ const ManageDealersPage: React.FC = () => {
                                 <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Dealer ID</th>
                                 <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Name</th>
                                 <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Phone</th>
-                                <th className="py-3 px-4 text-left text-accent-violet font-semibold tracking-wider uppercase text-sm">Area</th>
-                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Commission</th>
                                 <th className="py-3 px-4 text-right text-accent-violet font-semibold tracking-wider uppercase text-sm">Balance</th>
+                                <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Status</th>
                                 <th className="py-3 px-4 text-center text-accent-violet font-semibold tracking-wider uppercase text-sm">Actions</th>
                             </tr>
                         </thead>
@@ -99,19 +101,20 @@ const ManageDealersPage: React.FC = () => {
                                     <td className="py-4 px-4 font-mono">{dealer.id}</td>
                                     <td className="py-4 px-4">{dealer.username}</td>
                                     <td className="py-4 px-4">{dealer.phone || 'N/A'}</td>
-                                    <td className="py-4 px-4">{dealer.city || 'N/A'}</td>
-                                    <td className="py-4 px-4 text-center">{dealer.commission_rate != null ? `${dealer.commission_rate}%` : 'N/A'}</td>
                                     <td className="py-4 px-4 text-right font-mono">{formatCurrency(dealer.wallet_balance)}</td>
                                     <td className="py-4 px-4 text-center">
-                                        <Link to={`/admin/dealers/${dealer.id}`} className="text-accent-violet hover:underline text-sm font-semibold">
-                                            View Details
-                                        </Link>
+                                         {dealer.is_blocked 
+                                            ? <span className="px-2 py-1 text-xs font-semibold rounded-full bg-danger/20 text-danger border border-danger/30">Blocked</span> 
+                                            : <span className="px-2 py-1 text-xs font-semibold rounded-full bg-success/20 text-success border border-success/30">Active</span>}
+                                    </td>
+                                    <td className="py-4 px-4 text-center">
+                                        <MoreOptionsMenu dealer={dealer} onEdit={() => setEditingDealer(dealer)} onBlock={() => setBlockingDealer(dealer)} />
                                     </td>
                                 </tr>
                             ))}
                             {paginatedDealers.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="text-center py-12 text-text-secondary">
+                                    <td colSpan={6} className="text-center py-12 text-text-secondary">
                                         No dealers found matching your criteria.
                                     </td>
                                 </tr>
@@ -131,9 +134,58 @@ const ManageDealersPage: React.FC = () => {
                 </>
             )}
             {showModal && <AddDealerModal onClose={() => setShowModal(false)} onDealerAdded={loadDealers} />}
+            {editingDealer && <EditDealerModal dealer={editingDealer} onClose={() => setEditingDealer(null)} onSuccess={loadDealers} />}
+            {blockingDealer && <BlockDealerModal dealer={blockingDealer} onClose={() => setBlockingDealer(null)} onSuccess={loadDealers} />}
         </MainLayout>
     );
 };
+
+const MoreOptionsMenu: React.FC<{ dealer: User, onEdit: () => void, onBlock: () => void }> = ({ dealer, onEdit, onBlock }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleAction = (action: () => void) => {
+        action();
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative inline-block text-left" ref={menuRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex justify-center w-full rounded-md border border-border-color shadow-sm px-4 py-2 bg-bg-primary text-sm font-medium text-text-secondary hover:bg-border-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-violet"
+            >
+                Options
+                <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+            </button>
+
+            {isOpen && (
+                <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-bg-secondary ring-1 ring-black ring-opacity-5 z-10">
+                    <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                        <Link to={`/admin/dealers/${dealer.id}`} className="block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">View Details</Link>
+                        <button onClick={() => handleAction(onEdit)} className="w-full text-left block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">Edit Dealer</button>
+                        <button onClick={() => handleAction(onBlock)} className={`w-full text-left block px-4 py-2 text-sm ${dealer.is_blocked ? 'text-success hover:bg-success/20' : 'text-danger hover:bg-danger/20'}`} role="menuitem">
+                            {dealer.is_blocked ? 'Unblock Dealer' : 'Block Dealer'}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}> = ({onClose, onDealerAdded}) => {
     const { addNotification } = useNotification();
@@ -224,6 +276,112 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
         </div>
     );
 };
+
+const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: () => void}> = ({ dealer, onClose, onSuccess }) => {
+    const { addNotification } = useNotification();
+    const { user: admin } = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        username: dealer.username || '',
+        password: '',
+        phone: dealer.phone || '',
+        city: dealer.city || '',
+        commission_rate: dealer.commission_rate?.toString() || '',
+        prize_rate_2d: dealer.prize_rate_2d?.toString() || '85',
+        prize_rate_1d: dealer.prize_rate_1d?.toString() || '9.5',
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!admin) return;
+
+        setIsLoading(true);
+        try {
+            await updateDealerByAdmin(admin, dealer.id, {
+                username: formData.username,
+                password: formData.password || undefined,
+                phone: formData.phone,
+                city: formData.city,
+                commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined,
+                prize_rate_2d: formData.prize_rate_2d ? parseFloat(formData.prize_rate_2d) : undefined,
+                prize_rate_1d: formData.prize_rate_1d ? parseFloat(formData.prize_rate_1d) : undefined,
+            });
+            addNotification(`Dealer ${formData.username} updated successfully.`, 'success');
+            onSuccess();
+            onClose();
+        } catch (err) {
+            addNotification(err instanceof Error ? err.message : 'Failed to update dealer.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard w-full max-w-2xl border border-border-color my-auto animate-fade-in-down">
+                <h2 className="text-2xl text-accent-violet font-bold mb-6">Edit Dealer: {dealer.username}</h2>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <Input name="username" label="Name" value={formData.username} onChange={handleChange} required />
+                        <Input name="password" label="New Password" type="password" value={formData.password} onChange={handleChange} placeholder="Leave blank to keep unchanged" />
+                        <Input name="phone" label="Phone" value={formData.phone} onChange={handleChange} />
+                        <Input name="city" label="Area" value={formData.city} onChange={handleChange} />
+                        <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
+                        <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="e.g., 85" />
+                        <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="e.g., 9.5" />
+                    </div>
+                    <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50">
+                        <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
+                        <button type="submit" disabled={isLoading} className="bg-accent-violet text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 active:scale-95 disabled:opacity-50">{isLoading ? 'Saving...' : 'Save Changes'}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const BlockDealerModal: React.FC<{ dealer: User; onClose: () => void; onSuccess: () => void }> = ({ dealer, onClose, onSuccess }) => {
+    const { user: admin } = useAuth();
+    const { addNotification } = useNotification();
+    const [isLoading, setIsLoading] = useState(false);
+    const isBlocking = !dealer.is_blocked;
+
+    const handleSubmit = async () => {
+        if (!admin) return;
+        setIsLoading(true);
+        try {
+            await updateUserBlockStatus(admin, dealer.id, isBlocking);
+            addNotification(`Successfully ${isBlocking ? 'blocked' : 'unblocked'} ${dealer.username}.`, 'success');
+            onSuccess();
+            onClose();
+        } catch (err) {
+            addNotification(err instanceof Error ? err.message : `Failed to ${isBlocking ? 'block' : 'unblock'} dealer.`, 'error');
+        } finally { setIsLoading(false); }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className={`bg-bg-secondary p-8 rounded-xl shadow-glow-hard w-full max-w-md border ${isBlocking ? 'border-danger/30' : 'border-success/30'} my-auto animate-fade-in-down`}>
+                <h2 className={`text-2xl font-bold mb-4 ${isBlocking ? 'text-danger' : 'text-success'}`}>{isBlocking ? 'Block Dealer' : 'Unblock Dealer'}</h2>
+                <p className="text-text-secondary mb-6">
+                    Are you sure you want to {isBlocking ? 'block' : 'unblock'} the dealer <strong className="text-text-primary">{dealer.username}</strong>?
+                    {isBlocking ? " They will not be able to log in." : " They will regain full access."}
+                </p>
+                <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
+                    <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all hover:bg-border-color active:scale-95">Cancel</button>
+                    <button type="button" onClick={handleSubmit} disabled={isLoading} className={`${isBlocking ? 'bg-danger' : 'bg-success'} text-white font-bold py-2 px-6 rounded-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50`}>
+                        {isLoading ? (isBlocking ? 'Blocking...' : 'Unblocking...') : `Confirm ${isBlocking ? 'Block' : 'Unblock'}`}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 
 const Input: React.FC<{name: string, label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, type?: string, required?: boolean, placeholder?: string}> = 
 ({ name, label, value, onChange, type = 'text', required, placeholder }) => {

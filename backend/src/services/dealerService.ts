@@ -1,6 +1,7 @@
 
 
 
+
 import { db } from '../db';
 import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -140,6 +141,20 @@ export const dealerService = {
         const { rows } = await db.query(
             "UPDATE users SET bet_limit_per_draw = $1 WHERE id = $2 AND dealer_id = $3 RETURNING *", 
             [limit, userId, dealerId]
+        );
+        if (rows.length === 0) {
+            throw new ApiError(404, "User not found or does not belong to this dealer.");
+        }
+        return stripPassword(rows[0]);
+    },
+
+    async setUserBlockStatus(dealerId: string, userId: string, is_blocked: boolean): Promise<Omit<User, 'password'>> {
+        if (typeof is_blocked !== 'boolean') {
+            throw new ApiError(400, 'is_blocked must be a boolean value.');
+        }
+        const { rows } = await db.query(
+            "UPDATE users SET is_blocked = $1 WHERE id = $2 AND dealer_id = $3 RETURNING *",
+            [is_blocked, userId, dealerId]
         );
         if (rows.length === 0) {
             throw new ApiError(404, "User not found or does not belong to this dealer.");

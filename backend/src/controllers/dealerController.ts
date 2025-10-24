@@ -50,6 +50,16 @@ export const handleUpdateUserBetLimit = async (req: Request, res: Response) => {
     res.status(200).json(updatedUser);
 };
 
+export const handleSetUserBlockStatus = async (req: Request, res: Response) => {
+    const dealerId = req.user?.id;
+    const { userId } = req.params;
+    const { is_blocked } = req.body;
+    if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
+
+    const updatedUser = await dealerService.setUserBlockStatus(dealerId, userId, is_blocked);
+    res.status(200).json(updatedUser);
+};
+
 export const handleGetBetsByDealer = async (req: Request, res: Response) => {
     const dealerId = req.user?.id;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
