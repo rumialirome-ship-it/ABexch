@@ -42,7 +42,7 @@ export const bettingService = {
             }
 
             // 2. Check bet limit per draw
-            if (user.bet_limit_per_draw !== null && user.bet_limit_per_draw > 0) {
+            if (user.bet_limit_per_draw != null && user.bet_limit_per_draw > 0) {
                 const { rows: stakeRows } = await client.query(
                     'SELECT COALESCE(SUM(stake), 0)::numeric as total_staked FROM bets WHERE user_id = $1 AND draw_label = $2',
                     [userId, drawLabel]
