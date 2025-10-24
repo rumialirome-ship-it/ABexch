@@ -75,6 +75,14 @@ export const handleGetPendingCommissions = async (req: Request, res: Response) =
     res.status(200).json(commissions);
 };
 
+export const handleGetCommissionsForDealer = async (req: Request, res: Response) => {
+    const dealerId = req.user?.id;
+    if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
+
+    const commissions = await dealerService.getCommissionsForDealer(dealerId);
+    res.status(200).json(commissions);
+};
+
 export const handleGetBetsForManagedUser = async (req: Request, res: Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;

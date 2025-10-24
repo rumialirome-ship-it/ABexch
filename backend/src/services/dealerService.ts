@@ -1,5 +1,6 @@
 
 
+
 import { db } from '../db';
 import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -166,6 +167,14 @@ export const dealerService = {
     async getPendingCommissionsForDealer(dealerId: string): Promise<Commission[]> {
         const { rows } = await db.query(
             "SELECT * FROM commissions WHERE status = 'pending' AND recipient_id = $1 AND recipient_type = 'dealer'", 
+            [dealerId]
+        );
+        return rows;
+    },
+
+    async getCommissionsForDealer(dealerId: string): Promise<Commission[]> {
+        const { rows } = await db.query(
+            "SELECT * FROM commissions WHERE recipient_id = $1 AND recipient_type = 'dealer' ORDER BY created_at DESC", 
             [dealerId]
         );
         return rows;

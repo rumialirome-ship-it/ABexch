@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React, { lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -29,6 +24,7 @@ const BetOverviewPage = lazy(() => import('./pages/dealer/BetOverviewPage'));
 const DealerManageUsersPage = lazy(() => import('./pages/dealer/DealerManageUsersPage'));
 const DealerUserDetailsPage = lazy(() => import('./pages/dealer/DealerUserDetailsPage'));
 const AddUserPage = lazy(() => import('./pages/dealer/AddUserPage'));
+const CommissionOverviewPage = lazy(() => import('./pages/dealer/CommissionOverviewPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -83,6 +79,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/dealer/add-user" element={<ProtectedRoute role={UserRole.DEALER}><AddUserPage /></ProtectedRoute>} />
                     <Route path="/dealer/users/:userId" element={<ProtectedRoute role={UserRole.DEALER}><DealerUserDetailsPage /></ProtectedRoute>} />
                     <Route path="/dealer/bet-overview" element={<ProtectedRoute role={UserRole.DEALER}><BetOverviewPage /></ProtectedRoute>} />
+                    <Route path="/dealer/commission-overview" element={<ProtectedRoute role={UserRole.DEALER}><CommissionOverviewPage /></ProtectedRoute>} />
 
                     {/* Admin Routes */}
                     <Route path="/admin/dashboard" element={<ProtectedRoute role={UserRole.ADMIN}><AdminDashboard /></ProtectedRoute>} />

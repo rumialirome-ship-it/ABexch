@@ -332,7 +332,7 @@ const DealerDashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         <DashboardLink to="/dealer/manage-users" title="Manage Users" description="View, create, or manage your users." icon={<IconAddUser />} />
         <DashboardLink to="/dealer/bet-overview" title="Bet Overview" description="See bets placed by your users." icon={<IconBetOverview />} />
-        <DashboardLink to="#" title="Commission Overview" description="View pending and approved commissions." icon={<IconCommission />} />
+        <DashboardLink to="/dealer/commission-overview" title="Commission Overview" description="View pending and approved commissions." icon={<IconCommission />} />
       </div>
        {isTopUpModalOpen && <RequestTopUpModal onClose={() => setIsTopUpModalOpen(false)} onSuccess={handleTopUpSuccess} />}
        {isCreditModalOpen && selectedUserForCredit && <AddCreditModal targetUser={selectedUserForCredit} dealer={user} onClose={() => setIsCreditModalOpen(false)} onSuccess={handleCreditSuccess} />}

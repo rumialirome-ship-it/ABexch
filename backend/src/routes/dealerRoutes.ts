@@ -15,7 +15,8 @@ import {
     handleGetBetsForManagedUser,
     handleGetTransactionsForManagedUser,
     handleUpdateManagedUser,
-    handleDeleteManagedUser
+    handleDeleteManagedUser,
+    handleGetCommissionsForDealer
 } from '../controllers/dealerController';
 
 const router = Router();
@@ -38,5 +39,6 @@ router.get('/users/:userId/transactions', asyncHandler(handleGetTransactionsForM
 router.get('/bets', asyncHandler(handleGetBetsByDealer));
 router.post('/top-up', asyncHandler(handleRequestTopUp));
 router.get('/commissions/pending', asyncHandler(handleGetPendingCommissions));
+router.get('/commissions', asyncHandler(handleGetCommissionsForDealer));
 
 export { router as dealerRouter };

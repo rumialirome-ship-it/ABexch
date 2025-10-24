@@ -267,6 +267,9 @@ export const apiRequestTopUp = (dealer: User, amount: number, reference: string)
 export const fetchPendingCommissionsForDealer = (dealer: User): Promise<Commission[]> => {
     return apiRequest('/dealer/commissions/pending', { headers: { 'x-user-id': dealer.id, 'x-user-role': dealer.role }});
 };
+export const fetchCommissionsForDealer = (dealer: User): Promise<Commission[]> => {
+    return apiRequest('/dealer/commissions', { headers: { 'x-user-id': dealer.id, 'x-user-role': dealer.role }});
+};
 
 export const updateUserBetLimit = (dealer: User, userId: string, limit: number | null): Promise<User> => {
     return apiRequest(`/dealer/users/${userId}/bet-limit`, {

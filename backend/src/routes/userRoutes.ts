@@ -7,20 +7,21 @@ import { handleAssistantQuery } from '../controllers/assistantController';
 
 const router = Router();
 
-// This middleware will apply to all routes in this file,
-// protecting them and making user info available on req.user
-const userAuth = requireAuth([UserRole.USER]);
+// Define different auth middleware for clarity
+const userOnlyAuth = requireAuth([UserRole.USER]);
+const userAndDealerAuth = requireAuth([UserRole.USER, UserRole.DEALER]);
+
 
 // --- AI Assistant ---
-router.post('/assistant', userAuth, asyncHandler(handleAssistantQuery));
+router.post('/assistant', userOnlyAuth, asyncHandler(handleAssistantQuery));
 
 // --- Betting ---
-router.post('/bets', userAuth, asyncHandler(handlePlaceBets));
+router.post('/bets', userOnlyAuth, asyncHandler(handlePlaceBets));
+router.get('/bets', userOnlyAuth, asyncHandler(handleGetBetHistory));
 
-// --- Data Fetching ---
-router.get('/bets', userAuth, asyncHandler(handleGetBetHistory));
-router.get('/transactions', userAuth, asyncHandler(handleGetTransactionHistory));
-router.get('/profile', userAuth, asyncHandler(handleGetUserById)); // Fetch own profile
+// --- Data Fetching (for self) ---
+router.get('/transactions', userAndDealerAuth, asyncHandler(handleGetTransactionHistory));
+router.get('/profile', userAndDealerAuth, asyncHandler(handleGetUserById)); // Fetch own profile
 
 
 export { router as userRouter };
