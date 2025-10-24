@@ -6,22 +6,24 @@ import { generateId } from '../utils/helpers';
 export const bettingService = {
     /**
      * Places multiple bets for a user in a single atomic transaction.
-     * It validates the user's balance, creates the bet records, and creates
-     * corresponding 'bet_placed' transactions.
+     * It validates the user's balance and bet limit per draw, creates bet records, 
+     * and creates corresponding 'bet_placed' transactions.
      * @param betsToPlace An array of bet objects to be placed.
      * @returns A promise that resolves to an array of the newly created Bet objects.
-     * @throws ApiError if the user is not found or has an insufficient balance.
+     * @throws ApiError if the user is not found, has an insufficient balance, or exceeds their bet limit.
      */
     async placeBets(betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[]): Promise<Bet[]> {
         if (betsToPlace.length === 0) return [];
         
-        // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
         const client = await db.connect();
         try {
             await client.query('BEGIN');
             
             const userId = betsToPlace[0].user_id;
-            const { rows: userRows } = await client.query('SELECT wallet_balance, is_blocked FROM users WHERE id = $1 FOR UPDATE', [userId]);
+            const drawLabel = betsToPlace[0].draw_label;
+            
+            // Fetch user details, including the bet limit
+            const { rows: userRows } = await client.query('SELECT wallet_balance, is_blocked, bet_limit_per_draw FROM users WHERE id = $1 FOR UPDATE', [userId]);
             const user: User = userRows[0];
             
             if (!user) {
@@ -32,9 +34,27 @@ export const bettingService = {
                 throw new ApiError(403, "Your account is blocked and you cannot place bets.");
             }
 
-            const totalStake = betsToPlace.reduce((acc, bet) => acc + bet.stake, 0);
-            if (user.wallet_balance < totalStake) {
+            const totalStakeForThisRequest = betsToPlace.reduce((acc, bet) => acc + bet.stake, 0);
+            
+            // 1. Check wallet balance
+            if (user.wallet_balance < totalStakeForThisRequest) {
                 throw new ApiError(400, "Insufficient wallet balance.");
+            }
+
+            // 2. Check bet limit per draw
+            if (user.bet_limit_per_draw !== null && user.bet_limit_per_draw > 0) {
+                const { rows: stakeRows } = await client.query(
+                    'SELECT COALESCE(SUM(stake), 0)::numeric as total_staked FROM bets WHERE user_id = $1 AND draw_label = $2',
+                    [userId, drawLabel]
+                );
+                const alreadyStaked = parseFloat(stakeRows[0].total_staked);
+
+                const newTotalStakedForDraw = alreadyStaked + totalStakeForThisRequest;
+
+                if (newTotalStakedForDraw > user.bet_limit_per_draw) {
+                    const remainingAmount = user.bet_limit_per_draw - alreadyStaked;
+                    throw new ApiError(400, `Bet exceeds draw limit of ${user.bet_limit_per_draw.toFixed(2)}. You can bet up to ${remainingAmount.toFixed(2)} more on this draw.`);
+                }
             }
             
             const placedBets: Bet[] = [];
@@ -55,7 +75,7 @@ export const bettingService = {
                 );
             }
             
-            await client.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [totalStake, userId]);
+            await client.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [totalStakeForThisRequest, userId]);
             
             await client.query('COMMIT');
             return placedBets;

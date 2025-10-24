@@ -58,12 +58,12 @@ export const adminService = {
         // A single, efficient query to get all stats at once
         const query = `
             SELECT
-                (SELECT COALESCE(SUM(stake), 0) FROM bets WHERE created_at >= aistudio_core.date_trunc('day', aistudio_core.now())) AS "betsToday",
-                (SELECT COALESCE(SUM(stake), 0) FROM bets WHERE created_at >= aistudio_core.date_trunc('month', aistudio_core.now())) AS "betsMonth",
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'prize_won' AND created_at >= aistudio_core.date_trunc('day', aistudio_core.now())) AS "prizesToday",
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'prize_won' AND created_at >= aistudio_core.date_trunc('month', aistudio_core.now())) AS "prizesMonth",
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'commission_payout' AND created_at >= aistudio_core.date_trunc('day', aistudio_core.now())) AS "commissionsToday",
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'commission_payout' AND created_at >= aistudio_core.date_trunc('month', aistudio_core.now())) AS "commissionsMonth"
+                (SELECT COALESCE(SUM(stake), 0) FROM bets WHERE created_at >= date_trunc('day', now())) AS "betsToday",
+                (SELECT COALESCE(SUM(stake), 0) FROM bets WHERE created_at >= date_trunc('month', now())) AS "betsMonth",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'prize_won' AND created_at >= date_trunc('day', now())) AS "prizesToday",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'prize_won' AND created_at >= date_trunc('month', now())) AS "prizesMonth",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'commission_payout' AND created_at >= date_trunc('day', now())) AS "commissionsToday",
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'commission_payout' AND created_at >= date_trunc('month', now())) AS "commissionsMonth"
         `;
     
         const { rows } = await db.query(query);

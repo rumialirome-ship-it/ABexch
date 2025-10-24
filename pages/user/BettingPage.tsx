@@ -82,6 +82,7 @@ const ConfirmationDialog: React.FC<{
 export const BettingPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const gameNameFromUrl = searchParams.get('game');
+    const { user } = useAuth();
 
     const findInitialGame = () => {
         if (gameNameFromUrl) {
@@ -125,8 +126,8 @@ export const BettingPage: React.FC = () => {
     
     return (
         <MainLayout title="Place Your Bet" showBackButton>
-            <div className="relative">
-                <BetInfoPanel />
+            <div>
+                <BetInfoPanel prizeRate2D={user?.prize_rate_2d} prizeRate1D={user?.prize_rate_1d} />
                  <div className="mb-6 max-w-sm">
                     <label htmlFor="game-select" className="block text-text-secondary mb-2 font-semibold">Select Game</label>
                     <select 
@@ -794,7 +795,7 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
                                     type="button"
                                     key={combo}
                                     onClick={() => handleSelectCombo(combo)}
-                                    className={`p-2 rounded font-mono text-lg font-bold border transition-all duration-200 ${selectedCombos.has(combo) ? 'bg-accent-violet text-white border-accent-violet shadow-glow-accent' : 'bg-background-secondary border-border-color hover:border-accent-violet/50'}`}
+                                    className={`p-2 rounded font-mono text-lg font-bold border transition-all duration-200 ${selectedCombos.has(combo) ? 'bg-accent-violet text-black border-accent-violet shadow-glow-accent' : 'bg-background-secondary border-border-color hover:border-accent-violet/50'}`}
                                 >
                                     {combo}
                                 </button>

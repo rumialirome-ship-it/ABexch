@@ -1,10 +1,15 @@
 import React from 'react';
 import { formatCurrency } from '../../utils/formatters';
 
-const BetInfoPanel: React.FC = () => {
+interface BetInfoPanelProps {
+  prizeRate2D?: number;
+  prizeRate1D?: number;
+}
+
+const BetInfoPanel: React.FC<BetInfoPanelProps> = ({ prizeRate2D, prizeRate1D }) => {
   return (
-    <div className="absolute top-0 right-0 bg-bg-primary/50 p-4 rounded-lg border border-border-color shadow-glow-inset-accent w-64 hidden lg:block animate-fade-in">
-      <div className="mb-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-bg-primary/50 p-4 rounded-lg border border-border-color shadow-glow-inset-accent animate-fade-in mb-6">
+      <div>
         <h3 className="text-accent-violet font-semibold text-sm uppercase tracking-wider mb-2">Bet Limits</h3>
         <ul className="text-xs space-y-1">
           <li className="flex justify-between items-center">
@@ -22,11 +27,11 @@ const BetInfoPanel: React.FC = () => {
         <ul className="text-xs space-y-1">
           <li className="flex justify-between items-center">
             <span className="text-text-secondary">2-Digit:</span>
-            <span className="font-mono text-text-primary">1 : 85</span>
+            <span className="font-mono text-text-primary">1 : {prizeRate2D ?? 85}</span>
           </li>
           <li className="flex justify-between items-center">
             <span className="text-text-secondary">1-Digit:</span>
-            <span className="font-mono text-text-primary">1 : 9.5</span>
+            <span className="font-mono text-text-primary">1 : {prizeRate1D ?? 9.5}</span>
           </li>
         </ul>
       </div>

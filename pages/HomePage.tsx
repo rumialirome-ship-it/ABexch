@@ -121,7 +121,7 @@ const GameCard: React.FC<{ game: Game; result?: DrawResult }> = ({ game, result 
 
     return (
         <Link 
-            to={`/user/betting?game=${encodeURIComponent(game.name)}`}
+            to={`/login/user`}
             className={`${commonClasses} ${linkClasses}`}
         >
             {content}

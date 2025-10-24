@@ -54,7 +54,9 @@ const UserDashboard: React.FC = () => {
                         summary.commission += tx.amount;
                         break;
                     case TransactionType.BET_PLACED:
-                        summary.booking += tx.amount;
+                        // Use the negative balance_change to represent a deduction.
+                        // This is more explicit as 'booking' is a cost.
+                        summary.booking -= tx.balance_change; 
                         break;
                 }
             }
