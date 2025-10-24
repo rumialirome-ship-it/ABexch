@@ -1,5 +1,6 @@
 // @google/genai-dev-tool: Fix: Add missing Express type imports.
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
+import '../types';
 
 /**
  * Custom error class for API-specific errors, containing a status code.

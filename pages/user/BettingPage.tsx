@@ -127,7 +127,12 @@ export const BettingPage: React.FC = () => {
     return (
         <MainLayout title="Place Your Bet" showBackButton>
             <div>
-                <BetInfoPanel prizeRate2D={user?.prize_rate_2d} prizeRate1D={user?.prize_rate_1d} />
+                <BetInfoPanel 
+                    prizeRate2D={user?.prize_rate_2d} 
+                    prizeRate1D={user?.prize_rate_1d}
+                    betLimit2D={user?.bet_limit_2d}
+                    betLimit1D={user?.bet_limit_1d}
+                />
                  <div className="mb-6 max-w-sm">
                     <label htmlFor="game-select" className="block text-text-secondary mb-2 font-semibold">Select Game</label>
                     <select 
@@ -692,7 +697,6 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
             return;
         }
 
-        // @google/genai-dev-tool: Fix: Explicitly type 'num' as a string to resolve TypeScript inference error.
         const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map((num: string) => ({
             user_id: user.id,
             draw_label: drawLabel,

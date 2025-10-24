@@ -213,57 +213,49 @@ export const adminService = {
     },
 
     async addDealer(dealerData: Partial<User> & { username: string; initial_deposit?: number; }): Promise<Omit<User, 'password'>> {
+        const {
+            username, phone, password, city, initial_deposit,
+            commission_rate, prize_rate_2d, prize_rate_1d,
+            bet_limit_2d, bet_limit_1d, bet_limit_per_draw,
+        } = dealerData;
+    
+        if (!username || !username.trim()) {
+            throw new ApiError(400, "Username is required.");
+        }
+    
         const client = await db.connect();
         try {
             await client.query('BEGIN');
     
-            const {
-                username,
-                phone,
-                password,
-                city,
-                initial_deposit,
-                commission_rate,
-                prize_rate_2d,
-                prize_rate_1d,
-                bet_limit_2d,
-                bet_limit_1d,
-                bet_limit_per_draw,
-            } = dealerData;
-    
-            if (!username || !username.trim()) {
-                throw new ApiError(400, "Username is required.");
-            }
-            const cleanUsername = username.trim();
-            const cleanPhone = (phone && typeof phone === 'string' && phone.trim()) ? phone.trim() : null;
-    
-            const { rows: existingUser } = await client.query('SELECT id FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
-            if (existingUser.length > 0) {
-                throw new ApiError(409, `Username '${cleanUsername}' is already taken.`);
-            }
-            if (cleanPhone) {
-                const { rows: existingPhone } = await client.query('SELECT id FROM users WHERE phone = $1', [cleanPhone]);
-                if (existingPhone.length > 0) {
-                    throw new ApiError(409, `Phone number '${cleanPhone}' is already in use.`);
+            const parseAndValidateNumeric = (value: any, fieldName: string): number | null => {
+                if (value === null || value === undefined || String(value).trim() === '') {
+                    return null;
                 }
-            }
+                const parsed = Number(value);
+                if (isNaN(parsed) || !isFinite(parsed)) {
+                    throw new ApiError(400, `${fieldName} must be a valid number.`);
+                }
+                return parsed;
+            };
+    
+            const walletBalance = parseAndValidateNumeric(initial_deposit, 'Initial Deposit') ?? 0;
+            const finalCommission = parseAndValidateNumeric(commission_rate, 'Commission Rate');
+            const finalPrizeRate2D = parseAndValidateNumeric(prize_rate_2d, 'Prize Rate (2D)');
+            const finalPrizeRate1D = parseAndValidateNumeric(prize_rate_1d, 'Prize Rate (1D)');
+            const finalBetLimit2D = parseAndValidateNumeric(bet_limit_2d, 'Bet Limit (2D)');
+            const finalBetLimit1D = parseAndValidateNumeric(bet_limit_1d, 'Bet Limit (1D)');
+            const finalBetLimit = parseAndValidateNumeric(bet_limit_per_draw, 'Bet Limit per Draw');
     
             const dealerId = generateId('dlr');
-            const walletBalance = (typeof initial_deposit === 'number' && !isNaN(initial_deposit)) ? initial_deposit : 0;
             const finalPassword = (password && typeof password === 'string' && password.trim()) ? password.trim() : null;
             const finalCity = (city && typeof city === 'string' && city.trim()) ? city.trim() : null;
-            const finalCommission = (typeof commission_rate === 'number' && !isNaN(commission_rate)) ? commission_rate : null;
-            const finalPrizeRate2D = (typeof prize_rate_2d === 'number' && !isNaN(prize_rate_2d)) ? prize_rate_2d : null;
-            const finalPrizeRate1D = (typeof prize_rate_1d === 'number' && !isNaN(prize_rate_1d)) ? prize_rate_1d : null;
-            const finalBetLimit2D = (typeof bet_limit_2d === 'number' && !isNaN(bet_limit_2d)) ? bet_limit_2d : null;
-            const finalBetLimit1D = (typeof bet_limit_1d === 'number' && !isNaN(bet_limit_1d)) ? bet_limit_1d : null;
-            const finalBetLimit = (typeof bet_limit_per_draw === 'number' && !isNaN(bet_limit_per_draw)) ? bet_limit_per_draw : null;
     
-            await client.query(
+            const { rows: newDealerRows } = await client.query(
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                 RETURNING *`,
                 [
-                    dealerId, cleanUsername, finalPassword, cleanPhone, UserRole.DEALER,
+                    dealerId, username.trim(), finalPassword, (phone && phone.trim()) || null, UserRole.DEALER,
                     walletBalance, finalCity, finalCommission, finalPrizeRate2D,
                     finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]
@@ -275,23 +267,18 @@ export const adminService = {
                     [generateId('txn'), dealerId, TransactionType.ADMIN_CREDIT, walletBalance, walletBalance, 'admin_setup']
                 );
             }
-    
-            const { rows: newDealerRows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);
-            if (newDealerRows.length === 0) {
-                throw new ApiError(500, "Failed to create dealer record after insertion.");
-            }
-    
+            
             await client.query('COMMIT');
             return stripPassword(newDealerRows[0]);
         } catch (e: any) {
             await client.query('ROLLBACK');
     
-            if (e.code === '23505') {
+            if (e.code === '23505') { // unique_violation
                 if (e.constraint && e.constraint.includes('username')) {
-                    throw new ApiError(409, `Username '${dealerData.username}' is already taken.`);
+                    throw new ApiError(409, `Username '${username}' is already taken.`);
                 }
                 if (e.constraint && e.constraint.includes('phone')) {
-                     throw new ApiError(409, `Phone number '${dealerData.phone}' is already in use.`);
+                     throw new ApiError(409, `Phone number '${phone}' is already in use.`);
                 }
                 throw new ApiError(409, "A unique value constraint was violated. Please check your input.");
             }

@@ -4,9 +4,11 @@ import { formatCurrency } from '../../utils/formatters';
 interface BetInfoPanelProps {
   prizeRate2D?: number;
   prizeRate1D?: number;
+  betLimit2D?: number;
+  betLimit1D?: number;
 }
 
-const BetInfoPanel: React.FC<BetInfoPanelProps> = ({ prizeRate2D, prizeRate1D }) => {
+const BetInfoPanel: React.FC<BetInfoPanelProps> = ({ prizeRate2D, prizeRate1D, betLimit2D, betLimit1D }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-bg-primary/50 p-4 rounded-lg border border-border-color shadow-glow-inset-accent animate-fade-in mb-6">
       <div>
@@ -14,11 +16,11 @@ const BetInfoPanel: React.FC<BetInfoPanelProps> = ({ prizeRate2D, prizeRate1D })
         <ul className="text-xs space-y-1">
           <li className="flex justify-between items-center">
             <span className="text-text-secondary">2-Digit:</span>
-            <span className="font-mono text-text-primary">{formatCurrency(5000)}</span>
+            <span className="font-mono text-text-primary">{betLimit2D ? formatCurrency(betLimit2D) : 'No Limit'}</span>
           </li>
           <li className="flex justify-between items-center">
             <span className="text-text-secondary">1-Digit:</span>
-            <span className="font-mono text-text-primary">{formatCurrency(10000)}</span>
+            <span className="font-mono text-text-primary">{betLimit1D ? formatCurrency(betLimit1D) : 'No Limit'}</span>
           </li>
         </ul>
       </div>

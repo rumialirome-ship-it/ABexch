@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { bettingService } from '../services/bettingService';
 import { pollingService } from '../services/pollingService';
+import '../types';
 
 export const handleGetDrawResults = async (req: Request, res: Response) => {
     const results = await bettingService.getDrawResults();
