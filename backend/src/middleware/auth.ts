@@ -1,6 +1,7 @@
 import '../types';
-// FIX: Use namespace import for express to resolve type ambiguities.
-import * as express from 'express';
+// FIX: Switched to standard ES module import for Express types.
+// This resolves type errors and ensures the augmented Request type (with `req.user`) is correctly applied.
+import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
 import { ApiError, asyncHandler } from './errorHandler';
@@ -11,7 +12,7 @@ import { ApiError, asyncHandler } from './errorHandler';
  * and attaches the user info to the request object.
  * @param roles An array of UserRole enums that are allowed to access the route.
  */
-export const requireAuth = (roles: UserRole[]) => asyncHandler(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const requireAuth = (roles: UserRole[]) => asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.headers['x-user-id'] as string;
     const userRole = req.headers['x-user-role'] as UserRole;
 

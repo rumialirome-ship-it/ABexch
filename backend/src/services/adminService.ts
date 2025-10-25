@@ -130,9 +130,9 @@ export const adminService = {
     
             await client.query(
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
-                 VALUES ($1, $2, $3, $4, $5, 0, $7, $8, $9, $10, $11, $12, $13)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    userId, username, finalPassword, phone, UserRole.USER, /* wallet_balance placeholder $6 */
+                    userId, username, finalPassword, phone, UserRole.USER, 0,
                     userData.dealer_id, userData.city || null,
                     userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
                     userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
@@ -265,9 +265,9 @@ export const adminService = {
     
             await client.query(
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
-                 VALUES ($1, $2, $3, $4, $5, 0, $7, $8, $9, $10, $11, $12, $13)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    dealerId, trimmedUsername, finalPassword, trimmedPhone, UserRole.DEALER, // wallet_balance ($6) is hardcoded to 0
+                    dealerId, trimmedUsername, finalPassword, trimmedPhone, UserRole.DEALER, 0, 
                     finalCity, finalCommission, finalPrizeRate2D,
                     finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]

@@ -1,12 +1,13 @@
 // Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
-// FIX: Use namespace import for express to resolve type ambiguities.
-import * as express from 'express';
+// FIX: Switched to standard ES module import for Express types.
+// This resolves type errors for Request and Response objects, including streaming methods.
+import { Request, Response } from 'express';
 import { ApiError } from '../middleware/errorHandler';
 import { bettingService } from '../services/bettingService';
 import { geminiService } from '../services/geminiService';
 
-export const handleAssistantQuery = async (req: express.Request, res: express.Response) => {
+export const handleAssistantQuery = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     if (!userId) throw new ApiError(401, 'User not authenticated.');
 

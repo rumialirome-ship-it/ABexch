@@ -207,6 +207,9 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
         commission_rate: '',
         prize_rate_2d: '85',
         prize_rate_1d: '9.5',
+        bet_limit_2d: '',
+        bet_limit_1d: '',
+        bet_limit_per_draw: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,6 +239,9 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                 commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined,
                 prize_rate_2d: formData.prize_rate_2d ? parseFloat(formData.prize_rate_2d) : undefined,
                 prize_rate_1d: formData.prize_rate_1d ? parseFloat(formData.prize_rate_1d) : undefined,
+                bet_limit_2d: formData.bet_limit_2d ? parseFloat(formData.bet_limit_2d) : undefined,
+                bet_limit_1d: formData.bet_limit_1d ? parseFloat(formData.bet_limit_1d) : undefined,
+                bet_limit_per_draw: formData.bet_limit_per_draw ? parseFloat(formData.bet_limit_per_draw) : undefined,
             });
             addNotification(`Dealer ${formData.username} created successfully.`, 'success');
             onDealerAdded();
@@ -270,6 +276,9 @@ const AddDealerModal: React.FC<{onClose: () => void, onDealerAdded: () => void}>
                             <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
                             <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="Default: 85" />
                             <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="Default: 9.5" />
+                            <Input name="bet_limit_2d" label="Bet Limit (2D)" type="number" value={formData.bet_limit_2d} onChange={handleChange} placeholder="Optional"/>
+                            <Input name="bet_limit_1d" label="Bet Limit (1D)" type="number" value={formData.bet_limit_1d} onChange={handleChange} placeholder="Optional"/>
+                            <Input name="bet_limit_per_draw" label="Bet Limit per Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="Optional"/>
                         </div>
                     </fieldset>
                     
@@ -295,6 +304,9 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
         commission_rate: dealer.commission_rate?.toString() || '',
         prize_rate_2d: dealer.prize_rate_2d?.toString() || '85',
         prize_rate_1d: dealer.prize_rate_1d?.toString() || '9.5',
+        bet_limit_2d: dealer.bet_limit_2d?.toString() || '',
+        bet_limit_1d: dealer.bet_limit_1d?.toString() || '',
+        bet_limit_per_draw: dealer.bet_limit_per_draw?.toString() || '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,6 +327,9 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
                 commission_rate: formData.commission_rate ? parseFloat(formData.commission_rate) : undefined,
                 prize_rate_2d: formData.prize_rate_2d ? parseFloat(formData.prize_rate_2d) : undefined,
                 prize_rate_1d: formData.prize_rate_1d ? parseFloat(formData.prize_rate_1d) : undefined,
+                bet_limit_2d: formData.bet_limit_2d ? parseFloat(formData.bet_limit_2d) : undefined,
+                bet_limit_1d: formData.bet_limit_1d ? parseFloat(formData.bet_limit_1d) : undefined,
+                bet_limit_per_draw: formData.bet_limit_per_draw ? parseFloat(formData.bet_limit_per_draw) : undefined,
             });
             addNotification(`Dealer ${formData.username} updated successfully.`, 'success');
             onSuccess();
@@ -331,7 +346,7 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard w-full max-w-2xl border border-border-color my-auto animate-fade-in-down">
                 <h2 className="text-2xl text-accent-violet font-bold mb-6">Edit Dealer: {dealer.username}</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <Input name="username" label="Name" value={formData.username} onChange={handleChange} required />
                         <Input name="password" label="New Password" type="password" value={formData.password} onChange={handleChange} placeholder="Leave blank to keep unchanged" />
                         <Input name="phone" label="Phone" value={formData.phone} onChange={handleChange} />
@@ -339,6 +354,9 @@ const EditDealerModal: React.FC<{dealer: User, onClose: () => void, onSuccess: (
                         <Input name="commission_rate" label="Commission Rate (%)" type="number" value={formData.commission_rate} onChange={handleChange} placeholder="e.g., 5" />
                         <Input name="prize_rate_2d" label="Prize Rate (2D)" type="number" value={formData.prize_rate_2d} onChange={handleChange} placeholder="e.g., 85" />
                         <Input name="prize_rate_1d" label="Prize Rate (1D)" type="number" value={formData.prize_rate_1d} onChange={handleChange} placeholder="e.g., 9.5" />
+                        <Input name="bet_limit_2d" label="Bet Limit (2D)" type="number" value={formData.bet_limit_2d} onChange={handleChange} placeholder="Optional"/>
+                        <Input name="bet_limit_1d" label="Bet Limit (1D)" type="number" value={formData.bet_limit_1d} onChange={handleChange} placeholder="Optional"/>
+                        <Input name="bet_limit_per_draw" label="Bet Limit per Draw" type="number" value={formData.bet_limit_per_draw} onChange={handleChange} placeholder="Optional"/>
                     </div>
                     <div className="flex justify-end space-x-4 pt-6 border-t border-border-color/50">
                         <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95">Cancel</button>
