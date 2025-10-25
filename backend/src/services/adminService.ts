@@ -130,10 +130,10 @@ export const adminService = {
     
             await client.query(
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, dealer_id, city, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                 VALUES ($1, $2, $3, $4, $5, 0, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    userId, username, finalPassword, phone, UserRole.USER, initialDeposit, userData.dealer_id,
-                    userData.city || null,
+                    userId, username, finalPassword, phone, UserRole.USER, /* wallet_balance placeholder $6 */
+                    userData.dealer_id, userData.city || null,
                     userData.prize_rate_2d != null ? userData.prize_rate_2d : 85,
                     userData.prize_rate_1d != null ? userData.prize_rate_1d : 9.5,
                     userData.bet_limit_2d || null,
@@ -143,15 +143,18 @@ export const adminService = {
             );
     
             if (initialDeposit > 0) {
-                await client.query(
-                    'INSERT INTO transactions (id, user_id, type, amount, balance_change, related_entity_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
-                    [generateId('txn'), userId, TransactionType.ADMIN_CREDIT, initialDeposit, initialDeposit, 'admin_setup']
-                );
+                await transactionService.createSystemCreditTransaction(client, {
+                    toUserId: userId,
+                    amount: initialDeposit,
+                    type: TransactionType.ADMIN_CREDIT,
+                    relatedEntityId: 'admin_setup'
+                });
             }
             
+            const { rows: newUserRows } = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
+
             await client.query('COMMIT');
             
-            const { rows: newUserRows } = await client.query('SELECT * FROM users WHERE id = $1', [userId]);
             return stripPassword(newUserRows[0]);
         } catch (e) {
             await client.query('ROLLBACK');
@@ -227,39 +230,28 @@ export const adminService = {
         try {
             await client.query('BEGIN');
             
-            // Proactive check for username and phone conflicts
             const trimmedUsername = username.trim();
             const trimmedPhone = phone ? phone.trim() : null;
 
             if (trimmedPhone) {
                 const { rows: existingUsers } = await client.query('SELECT username, phone FROM users WHERE username = $1 OR phone = $2', [trimmedUsername, trimmedPhone]);
                 if (existingUsers.length > 0) {
-                    if (existingUsers[0].username === trimmedUsername) {
-                        throw new ApiError(409, `Username '${trimmedUsername}' is already taken.`);
-                    }
-                    if (existingUsers[0].phone === trimmedPhone) {
-                        throw new ApiError(409, `Phone number '${trimmedPhone}' is already in use.`);
-                    }
+                    if (existingUsers[0].username === trimmedUsername) throw new ApiError(409, `Username '${trimmedUsername}' is already taken.`);
+                    if (existingUsers[0].phone === trimmedPhone) throw new ApiError(409, `Phone number '${trimmedPhone}' is already in use.`);
                 }
             } else {
                 const { rows: existingUsers } = await client.query('SELECT username FROM users WHERE username = $1', [trimmedUsername]);
-                if (existingUsers.length > 0) {
-                    throw new ApiError(409, `Username '${trimmedUsername}' is already taken.`);
-                }
+                if (existingUsers.length > 0) throw new ApiError(409, `Username '${trimmedUsername}' is already taken.`);
             }
     
             const parseAndValidateNumeric = (value: any, fieldName: string): number | null => {
-                if (value === null || value === undefined || String(value).trim() === '') {
-                    return null;
-                }
+                if (value === null || value === undefined || String(value).trim() === '') return null;
                 const parsed = Number(value);
-                if (isNaN(parsed) || !isFinite(parsed)) {
-                    throw new ApiError(400, `${fieldName} must be a valid number.`);
-                }
+                if (isNaN(parsed) || !isFinite(parsed)) throw new ApiError(400, `${fieldName} must be a valid number.`);
                 return parsed;
             };
     
-            const walletBalance = parseAndValidateNumeric(initial_deposit, 'Initial Deposit') ?? 0;
+            const initialDepositAmount = parseAndValidateNumeric(initial_deposit, 'Initial Deposit') ?? 0;
             const finalCommission = parseAndValidateNumeric(commission_rate, 'Commission Rate');
             const finalPrizeRate2D = parseAndValidateNumeric(prize_rate_2d, 'Prize Rate (2D)');
             const finalPrizeRate1D = parseAndValidateNumeric(prize_rate_1d, 'Prize Rate (1D)');
@@ -271,34 +263,33 @@ export const adminService = {
             const finalPassword = (password && typeof password === 'string' && password.trim()) ? password.trim() : null;
             const finalCity = (city && typeof city === 'string' && city.trim()) ? city.trim() : null;
     
-            const { rows: newDealerRows } = await client.query(
+            await client.query(
                 `INSERT INTO users (id, username, password, phone, role, wallet_balance, city, commission_rate, prize_rate_2d, prize_rate_1d, bet_limit_2d, bet_limit_1d, bet_limit_per_draw) 
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-                 RETURNING *`,
+                 VALUES ($1, $2, $3, $4, $5, 0, $7, $8, $9, $10, $11, $12, $13)`,
                 [
-                    dealerId, trimmedUsername, finalPassword, trimmedPhone, UserRole.DEALER,
-                    walletBalance, finalCity, finalCommission, finalPrizeRate2D,
+                    dealerId, trimmedUsername, finalPassword, trimmedPhone, UserRole.DEALER, // wallet_balance ($6) is hardcoded to 0
+                    finalCity, finalCommission, finalPrizeRate2D,
                     finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]
             );
     
-            if (walletBalance > 0) {
-                await client.query(
-                    'INSERT INTO transactions (id, user_id, type, amount, balance_change, related_entity_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
-                    [generateId('txn'), dealerId, TransactionType.ADMIN_CREDIT, walletBalance, walletBalance, 'admin_setup']
-                );
+            if (initialDepositAmount > 0) {
+                await transactionService.createSystemCreditTransaction(client, {
+                    toUserId: dealerId,
+                    amount: initialDepositAmount,
+                    type: TransactionType.ADMIN_CREDIT,
+                    relatedEntityId: 'admin_setup'
+                });
             }
+
+            const { rows: finalDealerRows } = await client.query('SELECT * FROM users WHERE id = $1', [dealerId]);
             
             await client.query('COMMIT');
-            return stripPassword(newDealerRows[0]);
+            return stripPassword(finalDealerRows[0]);
         } catch (e: any) {
             await client.query('ROLLBACK');
     
-            // Fallback for race conditions
-            if (e.code === '23505') { 
-                throw new ApiError(409, "A unique value (username or phone) already exists. Please try another.");
-            }
-    
+            if (e.code === '23505') throw new ApiError(409, "A unique value (username or phone) already exists. Please try another.");
             if (e instanceof ApiError) throw e;
     
             console.error("Database error in addDealer service:", e);

@@ -1,11 +1,11 @@
 // Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
 // FIX: Use namespace import for express to resolve type ambiguities.
-import { Request, Response } from 'express';
+import * as express from 'express';
 import { dealerService } from '../services/dealerService';
 import { ApiError } from '../middleware/errorHandler';
 
-export const handleGetManagedUsers = async (req: Request, res: Response) => {
+export const handleGetManagedUsers = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
     
@@ -13,7 +13,7 @@ export const handleGetManagedUsers = async (req: Request, res: Response) => {
     res.status(200).json(users);
 };
 
-export const handleAddUser = async (req: Request, res: Response) => {
+export const handleAddUser = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
 
@@ -21,7 +21,7 @@ export const handleAddUser = async (req: Request, res: Response) => {
     res.status(201).json(newUser);
 };
 
-export const handleGetManagedUserById = async (req: Request, res: Response) => {
+export const handleGetManagedUserById = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
@@ -30,7 +30,7 @@ export const handleGetManagedUserById = async (req: Request, res: Response) => {
     res.status(200).json(user);
 };
 
-export const handleAddCreditToUser = async (req: Request, res: Response) => {
+export const handleAddCreditToUser = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     const { amount } = req.body;
@@ -40,7 +40,7 @@ export const handleAddCreditToUser = async (req: Request, res: Response) => {
     res.status(200).json({ message: 'Credit added successfully.' });
 };
 
-export const handleUpdateUserBetLimit = async (req: Request, res: Response) => {
+export const handleUpdateUserBetLimit = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     const { limit } = req.body;
@@ -50,7 +50,7 @@ export const handleUpdateUserBetLimit = async (req: Request, res: Response) => {
     res.status(200).json(updatedUser);
 };
 
-export const handleSetUserBlockStatus = async (req: Request, res: Response) => {
+export const handleSetUserBlockStatus = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     const { is_blocked } = req.body;
@@ -60,7 +60,7 @@ export const handleSetUserBlockStatus = async (req: Request, res: Response) => {
     res.status(200).json(updatedUser);
 };
 
-export const handleGetBetsByDealer = async (req: Request, res: Response) => {
+export const handleGetBetsByDealer = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
 
@@ -68,7 +68,7 @@ export const handleGetBetsByDealer = async (req: Request, res: Response) => {
     res.status(200).json(bets);
 };
 
-export const handleRequestTopUp = async (req: Request, res: Response) => {
+export const handleRequestTopUp = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { amount, reference } = req.body;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
@@ -77,7 +77,7 @@ export const handleRequestTopUp = async (req: Request, res: Response) => {
     res.status(201).json(topUpRequest);
 };
 
-export const handleGetPendingCommissions = async (req: Request, res: Response) => {
+export const handleGetPendingCommissions = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
 
@@ -85,7 +85,7 @@ export const handleGetPendingCommissions = async (req: Request, res: Response) =
     res.status(200).json(commissions);
 };
 
-export const handleGetCommissionsForDealer = async (req: Request, res: Response) => {
+export const handleGetCommissionsForDealer = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
 
@@ -93,7 +93,7 @@ export const handleGetCommissionsForDealer = async (req: Request, res: Response)
     res.status(200).json(commissions);
 };
 
-export const handleGetBetsForManagedUser = async (req: Request, res: Response) => {
+export const handleGetBetsForManagedUser = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
@@ -101,7 +101,7 @@ export const handleGetBetsForManagedUser = async (req: Request, res: Response) =
     res.status(200).json(bets);
 };
 
-export const handleGetTransactionsForManagedUser = async (req: Request, res: Response) => {
+export const handleGetTransactionsForManagedUser = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
@@ -109,7 +109,7 @@ export const handleGetTransactionsForManagedUser = async (req: Request, res: Res
     res.status(200).json(transactions);
 };
 
-export const handleUpdateManagedUser = async (req: Request, res: Response) => {
+export const handleUpdateManagedUser = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
@@ -118,7 +118,7 @@ export const handleUpdateManagedUser = async (req: Request, res: Response) => {
     res.status(200).json(updatedUser);
 };
 
-export const handleDeleteManagedUser = async (req: Request, res: Response) => {
+export const handleDeleteManagedUser = async (req: express.Request, res: express.Response) => {
     const dealerId = req.user?.id;
     const { userId } = req.params;
     if (!dealerId) throw new ApiError(401, 'Dealer not authenticated.');
