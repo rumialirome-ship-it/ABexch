@@ -1,10 +1,9 @@
-// @google/genai-dev-tool: Fix: Add missing Express type imports.
+// Import type augmentation for Express.Request to include the 'user' property.
+import '../types';
 import { Request, Response } from 'express';
 import { UserRole } from '../types';
 import { adminService } from '../services/adminService';
 import { ApiError } from '../middleware/errorHandler';
-// Import type augmentation for Express.Request to include the 'user' property.
-import '../types';
 
 
 // --- User & Dealer Management ---

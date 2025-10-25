@@ -1,7 +1,6 @@
 import { db } from './index';
 import fs from 'fs';
 import path from 'path';
-// @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
 import * as process from 'process';
 import { UserRole } from '../types';
 import { PoolClient } from 'pg';
@@ -13,7 +12,6 @@ import { PoolClient } from 'pg';
  * ensure they match the application code, adding any missing values.
  */
 const seed = async () => {
-    // @google/genai-dev-tool: Fix: The method to get a client from the pool is `connect()`, not `getClient()`.
     const client = await db.connect();
     try {
         console.log('Starting to seed the database...');

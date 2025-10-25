@@ -9,6 +9,53 @@ import { useNotification } from '../../contexts/NotificationContext';
 
 const ITEMS_PER_PAGE = 10;
 
+const MoreOptionsMenu: React.FC<{ user: User, onEdit: () => void, onDelete: () => void, onBlock: () => void }> = ({ user, onEdit, onDelete, onBlock }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleAction = (action: () => void) => {
+        action();
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative inline-block text-left" ref={menuRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex justify-center w-full rounded-md border border-border-color shadow-sm px-4 py-2 bg-bg-primary text-sm font-medium text-text-secondary hover:bg-border-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-violet"
+            >
+                More Options
+                <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+            </button>
+
+            {isOpen && (
+                <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-bg-secondary ring-1 ring-black ring-opacity-5 z-10">
+                    <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                        <Link to={`/dealer/users/${user.id}`} className="block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">View Details</Link>
+                        <button onClick={() => handleAction(onEdit)} className="w-full text-left block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">Edit User</button>
+                        <button onClick={() => handleAction(onBlock)} className={`w-full text-left block px-4 py-2 text-sm ${user.is_blocked ? 'text-success hover:bg-success/20' : 'text-danger hover:bg-danger/20'}`} role="menuitem">
+                            {user.is_blocked ? 'Unblock User' : 'Block User'}
+                        </button>
+                        <button onClick={() => handleAction(onDelete)} className="w-full text-left block px-4 py-2 text-sm text-danger hover:bg-danger/20" role="menuitem">Delete User</button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const DealerManageUsersPage: React.FC = () => {
     const { user } = useAuth();
     const { addNotification } = useNotification();
@@ -141,53 +188,6 @@ const DealerManageUsersPage: React.FC = () => {
             {deletingUser && <DeleteUserModal user={deletingUser} onClose={() => setDeletingUser(null)} onSuccess={loadUsers} />}
             {blockingUser && <BlockUserModal user={blockingUser} onClose={() => setBlockingUser(null)} onSuccess={loadUsers} />}
         </MainLayout>
-    );
-};
-
-const MoreOptionsMenu: React.FC<{ user: User, onEdit: () => void, onDelete: () => void, onBlock: () => void }> = ({ user, onEdit, onDelete, onBlock }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleAction = (action: () => void) => {
-        action();
-        setIsOpen(false);
-    };
-
-    return (
-        <div className="relative inline-block text-left" ref={menuRef}>
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex justify-center w-full rounded-md border border-border-color shadow-sm px-4 py-2 bg-bg-primary text-sm font-medium text-text-secondary hover:bg-border-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-bg-primary focus:ring-accent-violet"
-            >
-                More Options
-                <svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-            </button>
-
-            {isOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-bg-secondary ring-1 ring-black ring-opacity-5 z-10">
-                    <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                        <Link to={`/dealer/users/${user.id}`} className="block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">View Details</Link>
-                        <button onClick={() => handleAction(onEdit)} className="w-full text-left block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">Edit User</button>
-                        <button onClick={() => handleAction(onBlock)} className={`w-full text-left block px-4 py-2 text-sm ${user.is_blocked ? 'text-success hover:bg-success/20' : 'text-danger hover:bg-danger/20'}`} role="menuitem">
-                            {user.is_blocked ? 'Unblock User' : 'Block User'}
-                        </button>
-                        <button onClick={() => handleAction(onDelete)} className="w-full text-left block px-4 py-2 text-sm text-danger hover:bg-danger/20" role="menuitem">Delete User</button>
-                    </div>
-                </div>
-            )}
-        </div>
     );
 };
 
@@ -408,6 +408,6 @@ const InputGroup: React.FC<{label: string, name: string, value: string, onChange
 
 const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>;
 const EyeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
-const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
+const EyeOffIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .527-1.666 1.415-3.165 2.584-4.416M9 12a3 3 0 11-6 0 3 3 0 016 0zm-1.148-.949a3.001 3.001 0 00-4.002 4.002l5.15-5.15a3.001 3.001 0 00-1.148-1.148zM12 5c.675 0 1.339.098 1.98.281m5.562 2.158a10.003 10.003 0 013.002 4.561C20.268 16.057 16.477 19 12 19c-1.11 0-2.193-.17-3.21-.498m2.148-13.455A10.002 10.002 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.004 10.004 0 01-2.458 4.416M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18" /></svg>;
 
 export default DealerManageUsersPage;

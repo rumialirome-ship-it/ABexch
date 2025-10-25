@@ -1,4 +1,3 @@
-// @google/genai-dev-tool: Fix: Corrected the malformed React import statement.
 import React, { useState, useMemo, ReactNode, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout';
@@ -63,7 +62,7 @@ const ConfirmationDialog: React.FC<{
     return (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
             <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-hard shadow-glow-inset-accent w-full max-w-lg border border-border-color my-auto animate-fade-in-down">
-                <h2 className="text-2xl text-accent-violet font-bold mb-4 text-shadow-glow-primary">{title}</h2>
+                <h2 className="text-2xl text-accent-violet font-bold mb-4">{title}</h2>
                 <div className="text-text-primary mb-6">
                     {children}
                 </div>
@@ -71,7 +70,7 @@ const ConfirmationDialog: React.FC<{
                     <button type="button" onClick={onCancel} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">
                         Cancel
                     </button>
-                    <button type="button" onClick={onConfirm} disabled={isLoading} className="bg-accent-violet text-black font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
+                    <button type="button" onClick={onConfirm} disabled={isLoading} className="bg-accent-violet text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 active:scale-95 disabled:bg-border-color disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0">
                         {isLoading ? 'Confirming...' : 'Confirm Bet'}
                     </button>
                 </div>
@@ -83,6 +82,7 @@ const ConfirmationDialog: React.FC<{
 export const BettingPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const gameNameFromUrl = searchParams.get('game');
+    const { user } = useAuth();
 
     const findInitialGame = () => {
         if (gameNameFromUrl) {
@@ -125,9 +125,14 @@ export const BettingPage: React.FC = () => {
     };
     
     return (
-        <MainLayout title="Place Your Bet" showBackButton titleClassName="text-accent-violet text-shadow-glow-primary">
-            <div className="relative">
-                <BetInfoPanel />
+        <MainLayout title="Place Your Bet" showBackButton>
+            <div>
+                <BetInfoPanel 
+                    prizeRate2D={user?.prize_rate_2d} 
+                    prizeRate1D={user?.prize_rate_1d}
+                    betLimit2D={user?.bet_limit_2d}
+                    betLimit1D={user?.bet_limit_1d}
+                />
                  <div className="mb-6 max-w-sm">
                     <label htmlFor="game-select" className="block text-text-secondary mb-2 font-semibold">Select Game</label>
                     <select 
@@ -692,7 +697,6 @@ const ComboBetForm: React.FC<{drawLabel: string}> = ({drawLabel}) => {
             return;
         }
 
-        // @google/genai-dev-tool: Fix: Explicitly type 'num' as a string to resolve TypeScript inference error.
         const betsToPlace: Omit<Bet, 'id' | 'created_at' | 'status'>[] = Array.from(selectedCombos).map((num: string) => ({
             user_id: user.id,
             draw_label: drawLabel,

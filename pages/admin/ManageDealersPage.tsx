@@ -354,6 +354,7 @@ const BlockDealerModal: React.FC<{ dealer: User; onClose: () => void; onSuccess:
         if (!admin) return;
         setIsLoading(true);
         try {
+            // Note: Using updateUserBlockStatus which targets the generic `users` table
             await updateUserBlockStatus(admin, dealer.id, isBlocking);
             addNotification(`Successfully ${isBlocking ? 'blocked' : 'unblocked'} ${dealer.username}.`, 'success');
             onSuccess();

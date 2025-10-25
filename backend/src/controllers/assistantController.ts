@@ -1,10 +1,9 @@
-// @google/genai-dev-tool: Fix: Add missing Express type imports.
+// Import type augmentation for Express.Request to include the 'user' property.
+import '../types';
 import { Request, Response } from 'express';
 import { ApiError } from '../middleware/errorHandler';
 import { bettingService } from '../services/bettingService';
 import { geminiService } from '../services/geminiService';
-// Import type augmentation for Express.Request to include the 'user' property.
-import '../types';
 
 export const handleAssistantQuery = async (req: Request, res: Response) => {
     const userId = req.user?.id;

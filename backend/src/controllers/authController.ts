@@ -1,7 +1,6 @@
-// @google/genai-dev-tool: Fix: Add missing Express type imports.
+import '../types';
 import { Request, Response } from 'express';
 import { authService } from '../services/authService';
-import '../types';
 
 export const handleLogin = async (req: Request, res: Response) => {
     const { role, username, pin } = req.body;

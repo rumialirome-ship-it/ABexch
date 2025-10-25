@@ -1,4 +1,4 @@
-// @google/genai-dev-tool: Fix: Import 'express' to provide context for module augmentation.
+// Import 'express' to provide context for module augmentation.
 // This ensures that the global Express namespace is available to be extended,
 // and it helps TypeScript correctly resolve the full types for Request and Response
 // objects throughout the application, fixing errors like missing 'body', 'user', 'status', etc.

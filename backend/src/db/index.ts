@@ -1,6 +1,5 @@
 import { Pool, PoolConfig } from 'pg';
 import dotenv from 'dotenv';
-// @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
 import * as process from 'process';
 
 dotenv.config();

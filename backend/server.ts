@@ -3,7 +3,6 @@
  * This file is intentionally left empty to prevent accidental execution of a stale server instance.
  * Please run the application via the scripts in package.json (e.g., 'npm run dev').
  */
-// @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
 import * as process from 'process';
 
 console.error("DEPRECATION WARNING: You are running the old server entry point at /backend/server.ts.");

@@ -1,7 +1,6 @@
 import { db } from './index';
 import fs from 'fs';
 import path from 'path';
-// @google/genai-dev-tool: Fix: Changed import to resolve 'process.exit' type error.
 import * as process from 'process';
 import { TransactionType, UserRole } from '../types';
 import { PoolClient } from 'pg';

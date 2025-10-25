@@ -1,10 +1,8 @@
-// @google/genai-dev-tool: Fix: Add missing Express type imports.
+import '../types';
 import { Request, Response, NextFunction } from 'express';
 import { UserRole } from '../types';
 import { db } from '../db';
-import { ApiError } from './errorHandler';
-// Force-include the global type augmentation for Express.Request
-import '../types';
+import { ApiError, asyncHandler } from './errorHandler';
 
 /**
  * Middleware to protect routes based on user roles.
@@ -12,32 +10,31 @@ import '../types';
  * and attaches the user info to the request object.
  * @param roles An array of UserRole enums that are allowed to access the route.
  */
-export const requireAuth = (roles: UserRole[]) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        const id = req.headers['x-user-id'] as string;
-        const role = req.headers['x-user-role'] as UserRole;
+export const requireAuth = (roles: UserRole[]) => asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.headers['x-user-id'] as string;
+    const userRole = req.headers['x-user-role'] as UserRole;
 
-        if (!id || !role) {
-            return next(new ApiError(401, 'Authentication headers are missing.'));
-        }
+    if (!userId || !userRole) {
+        throw new ApiError(401, 'Authentication headers are missing.');
+    }
 
-        if (!roles.includes(role)) {
-            return next(new ApiError(403, 'Forbidden: You do not have sufficient permissions to access this resource.'));
-        }
+    if (!roles.includes(userRole)) {
+        throw new ApiError(403, 'Forbidden: You do not have permission to access this resource.');
+    }
 
-        try {
-            // Verify user exists in the database to prevent header spoofing
-            const { rows } = await db.query('SELECT id, role FROM users WHERE id = $1 AND role = $2', [id, role]);
-            if (rows.length === 0) {
-                return next(new ApiError(401, 'Invalid user credentials provided in headers.'));
-            }
+    const { rows } = await db.query('SELECT id, role, is_blocked FROM users WHERE id = $1 AND role = $2', [userId, userRole]);
+    const user = rows[0];
 
-            // Attach authenticated user information to the request object
-            req.user = { id, role };
-            next();
-        } catch (error) {
-            console.error('Auth middleware error:', error);
-            next(new ApiError(500, 'An error occurred during authentication.'));
-        }
-    };
-};
+    if (!user) {
+        throw new ApiError(401, 'Invalid credentials. User not found or role mismatch.');
+    }
+    
+    if (user.is_blocked) {
+        throw new ApiError(403, 'This account has been blocked.');
+    }
+
+    // Attach user information to the request object for use in subsequent handlers
+    req.user = { id: user.id, role: user.role };
+    
+    next();
+});
