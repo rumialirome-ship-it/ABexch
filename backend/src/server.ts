@@ -6,6 +6,7 @@ import './types';
 import dotenv from 'dotenv';
 dotenv.config();
 
+// FIX: Use namespace import for express to resolve type ambiguities with other libraries (e.g., DOM).
 import express, { Express } from 'express';
 import cors from 'cors';
 import { apiRouter } from './routes';

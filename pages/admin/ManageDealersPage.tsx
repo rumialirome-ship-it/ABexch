@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout, { LoadingSpinner } from '../../components/layout/MainLayout';
-import { fetchAllDealers, addDealer, updateDealerByAdmin, updateUserBlockStatus } from '../../services/api';
+import { fetchAllDealers, addDealer, updateDealerByAdmin, updateUserBlockStatus, deleteDealerByAdmin } from '../../services/api';
 import { User } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useNotification } from '../../contexts/NotificationContext';
@@ -19,6 +19,8 @@ const ManageDealersPage: React.FC = () => {
     
     const [editingDealer, setEditingDealer] = useState<User | null>(null);
     const [blockingDealer, setBlockingDealer] = useState<User | null>(null);
+    const [deletingDealer, setDeletingDealer] = useState<User | null>(null);
+
 
     const loadDealers = async () => {
         if (!admin) return;
@@ -108,7 +110,7 @@ const ManageDealersPage: React.FC = () => {
                                             : <span className="px-2 py-1 text-xs font-semibold rounded-full bg-success/20 text-success border border-success/30">Active</span>}
                                     </td>
                                     <td className="py-4 px-4 text-center">
-                                        <MoreOptionsMenu dealer={dealer} onEdit={() => setEditingDealer(dealer)} onBlock={() => setBlockingDealer(dealer)} />
+                                        <MoreOptionsMenu dealer={dealer} onEdit={() => setEditingDealer(dealer)} onBlock={() => setBlockingDealer(dealer)} onDelete={() => setDeletingDealer(dealer)} />
                                     </td>
                                 </tr>
                             ))}
@@ -136,11 +138,12 @@ const ManageDealersPage: React.FC = () => {
             {showModal && <AddDealerModal onClose={() => setShowModal(false)} onDealerAdded={loadDealers} />}
             {editingDealer && <EditDealerModal dealer={editingDealer} onClose={() => setEditingDealer(null)} onSuccess={loadDealers} />}
             {blockingDealer && <BlockDealerModal dealer={blockingDealer} onClose={() => setBlockingDealer(null)} onSuccess={loadDealers} />}
+            {deletingDealer && <DeleteDealerModal dealer={deletingDealer} onClose={() => setDeletingDealer(null)} onSuccess={loadDealers} />}
         </MainLayout>
     );
 };
 
-const MoreOptionsMenu: React.FC<{ dealer: User, onEdit: () => void, onBlock: () => void }> = ({ dealer, onEdit, onBlock }) => {
+const MoreOptionsMenu: React.FC<{ dealer: User, onEdit: () => void, onBlock: () => void, onDelete: () => void }> = ({ dealer, onEdit, onBlock, onDelete }) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -178,6 +181,9 @@ const MoreOptionsMenu: React.FC<{ dealer: User, onEdit: () => void, onBlock: () 
                         <button onClick={() => handleAction(onEdit)} className="w-full text-left block px-4 py-2 text-sm text-text-primary hover:bg-border-color" role="menuitem">Edit Dealer</button>
                         <button onClick={() => handleAction(onBlock)} className={`w-full text-left block px-4 py-2 text-sm ${dealer.is_blocked ? 'text-success hover:bg-success/20' : 'text-danger hover:bg-danger/20'}`} role="menuitem">
                             {dealer.is_blocked ? 'Unblock Dealer' : 'Block Dealer'}
+                        </button>
+                         <button onClick={() => handleAction(onDelete)} className="w-full text-left block px-4 py-2 text-sm text-danger hover:bg-danger/20" role="menuitem">
+                            Delete Dealer
                         </button>
                     </div>
                 </div>
@@ -376,6 +382,43 @@ const BlockDealerModal: React.FC<{ dealer: User; onClose: () => void; onSuccess:
                     <button type="button" onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all hover:bg-border-color active:scale-95">Cancel</button>
                     <button type="button" onClick={handleSubmit} disabled={isLoading} className={`${isBlocking ? 'bg-danger' : 'bg-success'} text-white font-bold py-2 px-6 rounded-lg transition-all hover:opacity-90 active:scale-95 disabled:opacity-50`}>
                         {isLoading ? (isBlocking ? 'Blocking...' : 'Unblocking...') : `Confirm ${isBlocking ? 'Block' : 'Unblock'}`}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const DeleteDealerModal: React.FC<{ dealer: User, onClose: () => void, onSuccess: () => void }> = ({ dealer, onClose, onSuccess }) => {
+    const { user: admin } = useAuth();
+    const { addNotification } = useNotification();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleDelete = async () => {
+        if (!admin) return;
+        setIsLoading(true);
+        try {
+            await deleteDealerByAdmin(admin, dealer.id);
+            addNotification('✅ Dealer deleted successfully!', 'success');
+            onSuccess();
+            onClose();
+        } catch (error) {
+            addNotification(`⚠️ ${(error as Error).message}`, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-start z-50 backdrop-blur-sm animate-fade-in overflow-y-auto p-4">
+            <div className="bg-bg-secondary p-8 rounded-xl shadow-glow-danger shadow-glow-inset-accent w-full max-w-md border border-danger/50 my-auto animate-fade-in-down">
+                <h2 className="text-2xl text-danger font-bold mb-4">Delete Dealer</h2>
+                <p className="text-text-secondary mb-6">Are you sure you want to permanently delete the dealer <strong className="text-text-primary">{dealer.username}</strong>? This action cannot be undone. You can only delete dealers who do not have any users assigned to them.</p>
+                <div className="flex justify-end space-x-4 pt-4 border-t border-border-color/50">
+                    <button onClick={onClose} disabled={isLoading} className="border border-border-color text-text-secondary font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:bg-border-color hover:text-text-primary active:scale-95 disabled:opacity-50">Cancel</button>
+                    <button onClick={handleDelete} disabled={isLoading} className="bg-danger text-white font-bold py-2 px-6 rounded-lg transition-all duration-300 hover:opacity-90 hover:-translate-y-0.5 hover:shadow-glow-danger active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                        {isLoading && <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>}
+                        {isLoading ? 'Deleting...' : 'Delete Dealer'}
                     </button>
                 </div>
             </div>

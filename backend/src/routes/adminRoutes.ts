@@ -25,7 +25,8 @@ import {
     handleSetUserBlockStatus,
     handleGetDashboardStats,
     handleGetDealerById,
-    handleGetUsersForDealer
+    handleGetUsersForDealer,
+    handleDeleteDealer
 } from '../controllers/adminController';
 
 const router = Router();
@@ -53,6 +54,7 @@ router.post('/dealers', asyncHandler(handleAddDealer));
 router.get('/dealers/:dealerId', asyncHandler(handleGetDealerById));
 router.get('/dealers/:dealerId/users', asyncHandler(handleGetUsersForDealer));
 router.put('/dealers/:dealerId', asyncHandler(handleUpdateDealer));
+router.delete('/dealers/:dealerId', asyncHandler(handleDeleteDealer));
 router.post('/dealers/:dealerId/credit', asyncHandler(handleAddCreditToDealer));
 
 // --- Draw & Bet Management ---

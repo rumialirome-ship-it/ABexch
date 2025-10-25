@@ -1,5 +1,6 @@
 // Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
+// FIX: Use namespace import for express to resolve type ambiguities.
 import { Request, Response } from 'express';
 import { UserRole } from '../types';
 import { adminService } from '../services/adminService';
@@ -62,6 +63,12 @@ export const handleUpdateDealer = async (req: Request, res: Response) => {
     const { dealerId } = req.params;
     const updatedDealer = await adminService.updateDealer(dealerId, req.body);
     res.status(200).json(updatedDealer);
+};
+
+export const handleDeleteDealer = async (req: Request, res: Response) => {
+    const { dealerId } = req.params;
+    await adminService.deleteDealer(dealerId);
+    res.status(204).send();
 };
 
 // --- Financial & Betting Actions ---

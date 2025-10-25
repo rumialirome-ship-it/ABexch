@@ -1,5 +1,6 @@
 // Import type augmentation for Express.Request to include the 'user' property.
 import '../types';
+// FIX: Use namespace import for express to resolve type ambiguities.
 import { Request, Response } from 'express';
 import { dealerService } from '../services/dealerService';
 import { ApiError } from '../middleware/errorHandler';

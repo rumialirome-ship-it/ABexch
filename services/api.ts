@@ -209,6 +209,13 @@ export const updateDealerByAdmin = (admin: User, dealerId: string, dealerData: P
     });
 };
 
+export const deleteDealerByAdmin = (admin: User, dealerId: string): Promise<void> => {
+    return apiRequest(`/admin/dealers/${dealerId}`, {
+        method: 'DELETE',
+        headers: { 'x-user-id': admin.id, 'x-user-role': admin.role }
+    });
+};
+
 export const fetchDealerById = (admin: User, dealerId: string): Promise<User> => {
     return apiRequest(`/admin/dealers/${dealerId}`, { headers: { 'x-user-id': admin.id, 'x-user-role': admin.role } });
 };

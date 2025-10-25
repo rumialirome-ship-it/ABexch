@@ -226,6 +226,27 @@ export const adminService = {
         const client = await db.connect();
         try {
             await client.query('BEGIN');
+            
+            // Proactive check for username and phone conflicts
+            const trimmedUsername = username.trim();
+            const trimmedPhone = phone ? phone.trim() : null;
+
+            if (trimmedPhone) {
+                const { rows: existingUsers } = await client.query('SELECT username, phone FROM users WHERE username = $1 OR phone = $2', [trimmedUsername, trimmedPhone]);
+                if (existingUsers.length > 0) {
+                    if (existingUsers[0].username === trimmedUsername) {
+                        throw new ApiError(409, `Username '${trimmedUsername}' is already taken.`);
+                    }
+                    if (existingUsers[0].phone === trimmedPhone) {
+                        throw new ApiError(409, `Phone number '${trimmedPhone}' is already in use.`);
+                    }
+                }
+            } else {
+                const { rows: existingUsers } = await client.query('SELECT username FROM users WHERE username = $1', [trimmedUsername]);
+                if (existingUsers.length > 0) {
+                    throw new ApiError(409, `Username '${trimmedUsername}' is already taken.`);
+                }
+            }
     
             const parseAndValidateNumeric = (value: any, fieldName: string): number | null => {
                 if (value === null || value === undefined || String(value).trim() === '') {
@@ -255,7 +276,7 @@ export const adminService = {
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                  RETURNING *`,
                 [
-                    dealerId, username.trim(), finalPassword, (phone && phone.trim()) || null, UserRole.DEALER,
+                    dealerId, trimmedUsername, finalPassword, trimmedPhone, UserRole.DEALER,
                     walletBalance, finalCity, finalCommission, finalPrizeRate2D,
                     finalPrizeRate1D, finalBetLimit2D, finalBetLimit1D, finalBetLimit
                 ]
@@ -273,14 +294,9 @@ export const adminService = {
         } catch (e: any) {
             await client.query('ROLLBACK');
     
-            if (e.code === '23505') { // unique_violation
-                if (e.constraint && e.constraint.includes('username')) {
-                    throw new ApiError(409, `Username '${username}' is already taken.`);
-                }
-                if (e.constraint && e.constraint.includes('phone')) {
-                     throw new ApiError(409, `Phone number '${phone}' is already in use.`);
-                }
-                throw new ApiError(409, "A unique value constraint was violated. Please check your input.");
+            // Fallback for race conditions
+            if (e.code === '23505') { 
+                throw new ApiError(409, "A unique value (username or phone) already exists. Please try another.");
             }
     
             if (e instanceof ApiError) throw e;
@@ -357,6 +373,20 @@ export const adminService = {
         }
     
         return stripPassword(rows[0]);
+    },
+
+    async deleteDealer(dealerId: string): Promise<void> {
+        // Safety check: ensure the dealer has no assigned users before deleting.
+        const { rows: userCheck } = await db.query('SELECT 1 FROM users WHERE dealer_id = $1 LIMIT 1', [dealerId]);
+        if (userCheck.length > 0) {
+            throw new ApiError(400, 'Cannot delete dealer. Please reassign their users first.');
+        }
+
+        // Proceed with deletion if no users are found.
+        const { rowCount } = await db.query("DELETE FROM users WHERE id = $1 AND role = 'dealer'", [dealerId]);
+        if (rowCount === 0) {
+            throw new ApiError(404, 'Dealer not found or already deleted.');
+        }
     },
 
     // ... Financial Actions ...

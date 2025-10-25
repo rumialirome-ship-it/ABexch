@@ -1,4 +1,5 @@
 import '../types';
+// FIX: Use namespace import for express to resolve type ambiguities.
 import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
 
 /**

@@ -2,6 +2,8 @@
 
 
 
+
+
 import { db } from '../db';
 import { User, Bet, Commission, TopUpRequest, UserRole, Transaction } from '../types';
 import { ApiError } from '../middleware/errorHandler';
@@ -211,7 +213,7 @@ export const dealerService = {
             throw new ApiError(404, "User not found or you don't have permission to edit this user.");
         }
         
-        const allowedToUpdate = ['username', 'password', 'phone', 'city', 'prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw'];
+        const allowedToUpdate = ['username', 'password', 'phone', 'city', 'prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw', 'commission_rate'];
         const updates: { [key: string]: any } = {};
         
         for (const key of allowedToUpdate) {
@@ -221,7 +223,7 @@ export const dealerService = {
                     continue; 
                 }
                 
-                const isNumericField = ['prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw'].includes(key);
+                const isNumericField = ['prize_rate_2d', 'prize_rate_1d', 'bet_limit_2d', 'bet_limit_1d', 'bet_limit_per_draw', 'commission_rate'].includes(key);
                 if (isNumericField && (value === '' || value === null)) {
                      updates[key] = null;
                 } else {
